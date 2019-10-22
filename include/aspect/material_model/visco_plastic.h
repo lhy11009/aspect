@@ -265,6 +265,7 @@ namespace aspect
         Rheology::DiffusionCreep<dim> diffusion_creep;
         Rheology::DislocationCreep<dim> dislocation_creep;
 
+<<<<<<< e9e092c768174873b15e2243d20e1ad4c4868952
         /*
          * Objects for computing plastic stresses, viscosities, and additional outputs
          */
@@ -274,6 +275,12 @@ namespace aspect
          * Input parameters for the drucker prager plasticity.
          */
         Rheology::DruckerPragerParameters drucker_prager_parameters;
+=======
+        /**
+         * Object that handles phase transitions.
+         */
+        MaterialUtilities::PhaseFunction<dim> phase_function;
+>>>>>>> Use phase transitions
     };
 
   }
