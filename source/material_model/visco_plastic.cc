@@ -98,8 +98,6 @@ namespace aspect
       return cohesions;
     }
 
-
-
     template <int dim>
     std::pair<std::vector<double>, std::vector<bool> >
     ViscoPlastic<dim>::
@@ -109,7 +107,8 @@ namespace aspect
                                      const std::vector<double> &composition,
                                      const SymmetricTensor<2,dim> &strain_rate,
                                      const ViscosityScheme &viscous_type,
-                                     const YieldScheme &yield_type) const
+                                     const YieldScheme &yield_type,
+                                     const std::pair<std::vector<double>*, const std::vector<unsigned int>*>* gamma_inputs) const
     {
       // This function calculates viscosities assuming that all the compositional fields
       // experience the same strain rate (isostrain).
@@ -138,7 +137,6 @@ namespace aspect
                + Utilities::to_string(adiabatic_temperature_gradient_for_viscosity) + ") and pressure ("
                + Utilities::to_string(pressure) + ")."));
 
-
       // First step: viscous behavior
       // Calculate viscosities for each of the individual compositional phases
       std::vector<double> composition_viscosities(volume_fractions.size());
@@ -146,11 +144,12 @@ namespace aspect
 
       for (unsigned int j=0; j < volume_fractions.size(); ++j)
         {
+
           // Compute viscosity from iffusion creep law
-          const double viscosity_diffusion = diffusion_creep.compute_viscosity(pressure, temperature_for_viscosity, j);
+          const double viscosity_diffusion = diffusion_creep.compute_viscosity(pressure, temperature_for_viscosity, j, gamma_inputs);
 
           // Compute visocisty from dislocation creep law
-          const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, pressure, temperature_for_viscosity, j);
+          const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, pressure, temperature_for_viscosity, j, gamma_inputs);
 
           // Select what form of viscosity to use (diffusion, dislocation or composite)
           double viscosity_pre_yield = 0.0;
@@ -396,6 +395,11 @@ namespace aspect
       EquationOfStateOutputs<dim> eos_outputs (this->n_compositional_fields()+1);
       EquationOfStateOutputs<dim> eos_outputs_all_phases (this->n_compositional_fields()+1+phase_function.n_phase_transitions());
 
+      // Store value of gamma functions, and number of gamma function for each compostion
+      std::vector<double> gamma_values;
+      gamma_values.resize(phase_function.n_phase_transitions(), 0.0);
+      auto gamma_inputs = std::make_pair(&gamma_values, &phase_function.n_phase_transitions_for_each_composition());
+
       // Loop through all requested points
       for (unsigned int i=0; i < in.temperature.size(); ++i)
         {
@@ -404,9 +408,15 @@ namespace aspect
 
           MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(*this,in,i,eos_outputs_all_phases.densities[0],0);
 
+          // Compute value of gamma functions
+          for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++){
+            phase_inputs.phase_index = j;
+            gamma_values[j] = phase_function.compute_value(phase_inputs);
+          }
+          
+          // Average by value of gamma function to get value of compositions
           phase_average_equation_of_state_outputs(eos_outputs_all_phases,
-                                                  phase_function,
-                                                  phase_inputs,
+                                                  gamma_inputs,
                                                   eos_outputs);
 
           const std::vector<double> volume_fractions = MaterialUtilities::compute_volume_fractions(in.composition[i], volumetric_compositions);
@@ -446,7 +456,8 @@ namespace aspect
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
               const std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities =
-                calculate_isostrain_viscosities(volume_fractions, in.pressure[i], in.temperature[i], in.composition[i], in.strain_rate[i],viscous_flow_law,yield_mechanism);
+                calculate_isostrain_viscosities(volume_fractions, in.pressure[i], in.temperature[i], in.composition[i], in.strain_rate[i], \
+                                                viscous_flow_law, yield_mechanism, &gamma_inputs);
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
