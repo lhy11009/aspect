@@ -38,13 +38,14 @@ namespace aspect
       entropy_derivative_temperature(n_individual_compositions_and_phases, numbers::signaling_nan<double>())
     {}
 
+    // Calculate parameters for equation of state at a single point by averaging among phases
+    // Pair gamma_inputs has gamma functions as first value and a vector for phases of every composition as second value
     template <int dim>
     void
     phase_average_equation_of_state_outputs(const EquationOfStateOutputs<dim> &eos_outputs_all_phases,
                                             const std::pair<std::vector<double>*, const std::vector<unsigned int>*> &gamma_inputs, \
                                             EquationOfStateOutputs<dim> &eos_outputs)
     {
-      // Pair gamma_inputs has gamma functions as first value and a vector for phases of every composition as second value
 
       for (unsigned int c=0; c<eos_outputs.densities.size(); ++c)
         {
