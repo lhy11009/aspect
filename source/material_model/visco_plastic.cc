@@ -117,6 +117,8 @@ namespace aspect
       // The first time this function is called (first iteration of first time step)
       // a specified "reference" strain rate is used as the returned value would
       // otherwise be zero.
+
+      //Account for phase changes when gamma_inputs is not nullptr, only pass inward to function compute_viscosity
       const double edot_ii = ( (this->get_timestep_number() == 0 && strain_rate.norm() <= std::numeric_limits<double>::min())
                                ?
                                ref_strain_rate
@@ -408,7 +410,7 @@ namespace aspect
 
           MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(*this,in,i,eos_outputs_all_phases.densities[0],0);
 
-          // Compute value of gamma functions
+          // Compute value of gamma functions, thus values in gamma_inputs change
           for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++){
             phase_inputs.phase_index = j;
             gamma_values[j] = phase_function.compute_value(phase_inputs);
@@ -455,6 +457,7 @@ namespace aspect
               // isostrain amongst all compositions, allowing calculation of the viscosity ratio.
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
+              // Morover, pass gamma_inputs inside in order to updata flow law parameters by phases.
               const std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities =
                 calculate_isostrain_viscosities(volume_fractions, in.pressure[i], in.temperature[i], in.composition[i], in.strain_rate[i], \
                                                 viscous_flow_law, yield_mechanism, &gamma_inputs);

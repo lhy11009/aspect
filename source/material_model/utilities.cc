@@ -700,21 +700,17 @@ namespace aspect
 
 
 
+      // Calculate a parameter of single composition at single point by averaging phases.
+      // Either linear(by_log is 0) or using log form(by_log is 1), default is linear.
       double phase_average_value (const std::pair<std::vector<double>*, const std::vector<unsigned int>*> &gamma_inputs,
                                   const std::vector<double> &parameter_values,
                                   const unsigned int composition,
                                   bool by_log)
       {
-        // Value from phase average
-        // either weight by gamma function
-        // or
-        // weight log value by gamma function and call exp().
-        // Second scheme is only used to derive reference viscosity value for now.
         double average_value;
-
         const std::vector<double>& gamma_values = *gamma_inputs.first;
         const std::vector<unsigned int>& n_phases_per_composition = *gamma_inputs.second;
-        // base index
+        // Calculate base index for this composition
         unsigned int base = 0;
         unsigned int i;
         for(i=0; i<composition; ++i)
@@ -723,6 +719,7 @@ namespace aspect
           average_value = log(parameter_values[base]);
         else
           average_value = parameter_values[base];
+        // Alter base value by averaging among phases
         for(i=0; i<n_phases_per_composition[composition]; ++i){
           Assert(base+i+1<parameter_values.size(), ExcInternalError());
           if(by_log)

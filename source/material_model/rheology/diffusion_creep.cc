@@ -44,7 +44,7 @@ namespace aspect
                                               const unsigned int composition,
                                               const std::pair<std::vector<double>*, const std::vector<unsigned int>*> *gamma_inputs) const
       { // If there is phase chage
-        //  Phase change: average flow lay parameters from phase
+        //  Phase change: average flow lay parameters from phase, where gamma_inputs is not nullptr
         //  No phase change: take flow lay parameters from composition
         double prefactors_diffusion_c;
         double activation_energies_diffusion_c;
