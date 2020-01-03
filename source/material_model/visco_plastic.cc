@@ -490,10 +490,16 @@ namespace aspect
 
           // Fill plastic outputs if they exist.
           fill_plastic_outputs(i,volume_fractions,plastic_yielding,in,out);
+              
         }
 
       // If we use the full strain tensor, compute the change in the individual tensor components.
       strain_rheology.compute_finite_strain_reaction_terms(in, out);
+      
+      // reset corner viscosity for 2-d chunk subduction model
+      if(reset_corner_viscosity){
+        reset_corner(in.position, out.viscosities, reset_corner_viscosity_width, reset_corner_viscosity_depth, reset_corner_viscosity_constant);
+      }
     }
 
     template <int dim>
@@ -617,6 +623,18 @@ namespace aspect
                              "Using a pressure gradient of 32436 Pa/m, then a value of "
                              "0.3 $K/km$ = 0.0003 $K/m$ = 9.24e-09 $K/Pa$ gives an earth-like adiabat."
                              "Units: $K/Pa$");
+          // Reset Corner Viscosity in a subduction model
+          prm.declare_entry ("Reset corner viscosity", "false", Patterns::Bool(),
+                              "Reset the viscosity to a constant value at the two upper corners in a chunk-geometry model");
+          prm.declare_entry ("Reset corner viscosity width", "0.0", Patterns::Double(0),
+                              "Width of the corner. "
+                              "Units: $Km$");
+          prm.declare_entry ("Reset corner viscosity depth", "0.0", Patterns::Double(0),
+                              "Depth of the corner. "
+                              "Units: $Km$");
+          prm.declare_entry ("Reset corner viscosity constant", "1e20", Patterns::Double(0),
+                              "Value of the reset viscosity. "
+                              "Units: $Pa*s$");
         }
         prm.leave_subsection();
       }
@@ -715,7 +733,11 @@ namespace aspect
                                     "to the temperature for computing the viscosity, because the ambient"
                                     "temperature profile already includes the adiabatic gradient."));
 
-
+          // Reset corner viscosity for 2-d convection model
+          reset_corner_viscosity = prm.get_bool("Reset corner viscosity");
+          reset_corner_viscosity_width = prm.get_double("Reset corner viscosity width");
+          reset_corner_viscosity_depth = prm.get_double("Reset corner viscosity depth");
+          reset_corner_viscosity_constant = prm.get_double("Reset corner viscosity constant");
         }
         prm.leave_subsection();
       }
@@ -740,7 +762,46 @@ namespace aspect
             std_cxx14::make_unique<MaterialModel::PlasticAdditionalOutputs<dim>> (n_points));
         }
     }
-
+    /**
+    * A function that reselt corner viscosity for a 2-d chunk subduction model
+    */
+    template <int dim>
+    void
+    ViscoPlastic<dim>::reset_corner(const std::vector<Point<dim> > &position,
+                 std::vector<double> &viscosities,
+                 const double reset_corner_width,
+                 const double reset_corner_depth,
+                 const double reset_corner_viscosity_constant) const
+    {
+      const double outer_radius = 6.371e6;
+      const double maximum_longtitude = 61.0/180.0*M_PI;
+      Point<dim> polar_position;
+      for (unsigned int i=0; i<position.size(); i++){
+        polar_position = cartesian_to_polar(position[i]);
+        if((polar_position[0]*polar_position[1]<reset_corner_width
+            || polar_position[0]*(maximum_longtitude-polar_position[1])<reset_corner_width)
+           && outer_radius-polar_position[0]<reset_corner_depth){
+          viscosities[i] = reset_corner_viscosity_constant;
+        }
+      }
+    }
+    /**
+     * cartesian to spherical transform
+     */
+    template <int dim>
+    Point<dim>
+    ViscoPlastic<dim>::cartesian_to_polar(const Point<dim> &cartesian_position) const
+    {
+      Point<dim> polar_position;
+      double R = sqrt(pow(cartesian_position[0], 2.0) + pow(cartesian_position[1], 2.0));
+      double theta = atan2(cartesian_position[1], cartesian_position[0]);
+      if (theta < 0.0){
+        theta += (2 * M_PI);
+      }
+      polar_position[0] = R;
+      polar_position[1] = theta;
+      return polar_position;
+    } 
   }
 }
 

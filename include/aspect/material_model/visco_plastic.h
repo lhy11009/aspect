@@ -179,6 +179,14 @@ namespace aspect
         double max_visc;
         double ref_visc;
 
+        /**
+         * Reset corner viscosity
+         */
+        bool reset_corner_viscosity;
+        double reset_corner_viscosity_width;
+        double reset_corner_viscosity_depth;
+        double reset_corner_viscosity_constant;
+
         std::vector<double> thermal_diffusivities;
 
         EquationOfState::MulticomponentIncompressible<dim> equation_of_state;
@@ -242,7 +250,6 @@ namespace aspect
                                            const MaterialModel::MaterialModelInputs<dim> &in,
                                            MaterialModel::MaterialModelOutputs<dim> &out) const;
 
-
         /**
          * A function that returns a ComponentMask that represents all compositional
          * fields that should be considered 'volumetric', that is representing a
@@ -250,6 +257,23 @@ namespace aspect
          * (as opposed to non-volumetric quantities like the amount of finite-strain).
          */
         ComponentMask get_volumetric_composition_mask() const;
+
+        /**
+         * A function that reselt corner viscosity for a 2-d chunk subduction model
+         */
+        void
+        reset_corner(const std::vector<Point<dim> > &position,
+                     std::vector<double> &viscosities,
+                     const double reset_corner_width,
+                     const double reset_corner_depth,
+                     const double reset_corner_viscosity_constant) const;
+        
+        /**
+        * cartesian to spherical transform
+        */
+        Point<dim>
+        cartesian_to_polar(const Point<dim> &cartesian_position) const;
+        
 
         std::vector<double> exponents_stress_limiter;
 
