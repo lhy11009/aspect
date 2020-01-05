@@ -1239,6 +1239,24 @@ namespace aspect
     }
     prm.leave_subsection ();
 
+    prm.enter_subsection("Geometry model");
+    {
+      prm.enter_subsection("Chunk");
+      {
+          prm.declare_entry ("Chunk outer radius", "1",
+                             Patterns::Double (0),
+                             "Radius at the top surface of the chunk. Units: $\\si{m}$.");
+          prm.declare_entry ("Chunk minimum longitude", "0",
+                             Patterns::Double (-180, 360), // enables crossing of either hemisphere
+                             "Minimum longitude of the chunk. Units: degrees.");
+          prm.declare_entry ("Chunk maximum longitude", "1",
+                             Patterns::Double (-180, 360), // enables crossing of either hemisphere
+                             "Maximum longitude of the chunk. Units: degrees.");
+      }
+      prm.leave_subsection ();
+    }
+    prm.leave_subsection ();
+
     prm.enter_subsection ("Volume of Fluid");
     {
       prm.declare_entry ("Enable interface tracking", "false",
@@ -1912,7 +1930,7 @@ namespace aspect
       prm.leave_subsection();
     }
     prm.leave_subsection ();
-    /*
+    
     prm.enter_subsection("Geometry model");
     {
       prm.enter_subsection("Chunk");
@@ -1923,7 +1941,7 @@ namespace aspect
       }
       prm.leave_subsection();
     }
-    */
+    prm.leave_subsection();
 
     // then, finally, let user additions that do not go through the usual
     // plugin mechanism, declare their parameters if they have subscribed

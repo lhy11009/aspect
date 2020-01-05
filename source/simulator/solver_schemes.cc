@@ -1321,9 +1321,8 @@ namespace aspect
   template <int dim>
   void Simulator<dim>::reset_corner_temperature ()
   {
-    parameters.outer_radius = 6.371e6;
-    const double maximum_longitude_pi = 61.0/180.0*M_PI; //parameters.maximum_longitude/180.0*M_PI;
-    const double minimum_longitude_pi = 0.0; //parameters.minimum_longitude/180.0*M_PI;
+    const double maximum_longitude_pi = parameters.maximum_longitude/180.0*M_PI; //parameters.maximum_longitude/180.0*M_PI;
+    const double minimum_longitude_pi = parameters.minimum_longitude/180.0*M_PI; //parameters.maximum_longitude/180.0*M_PI;
     const Quadrature<dim> quadrature(dof_handler.get_fe().base_element(introspection.base_elements.temperature).get_unit_support_points());
     std::vector<types::global_dof_index> local_dof_indices (dof_handler.get_fe().dofs_per_cell);
     FEValues<dim> fe_values (*mapping,
@@ -1350,7 +1349,6 @@ namespace aspect
               if((polar_position[0]*(polar_position[1]-minimum_longitude_pi)<parameters.reset_corner_temperature_width
                   || polar_position[0]*(maximum_longitude_pi-polar_position[1])<parameters.reset_corner_temperature_width)
                   && parameters.outer_radius-polar_position[0]<parameters.reset_corner_temperature_depth){
-              //if (true){
                 solution(local_dof_indices[system_local_dof]) = parameters.reset_corner_temperature_constant;
               }
             }
