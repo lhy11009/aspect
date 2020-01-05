@@ -186,6 +186,10 @@ namespace aspect
         double reset_corner_viscosity_width;
         double reset_corner_viscosity_depth;
         double reset_corner_viscosity_constant;
+        double outer_radius;
+        double maximum_longitude;
+        double minimum_longitude;
+
 
         std::vector<double> thermal_diffusivities;
 

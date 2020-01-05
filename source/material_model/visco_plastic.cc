@@ -742,6 +742,19 @@ namespace aspect
         prm.leave_subsection();
       }
       prm.leave_subsection();
+      /*
+      prm.enter_subsection("Geometry model");
+      {
+        prm.enter_subsection("Chunk");
+        {
+          outer_radius = prm.get_double("Chunk outer radius");
+          maximum_longitude = prm.get_double("Chunk maximum longitude");
+          minimum_longitude = prm.get_double("Chunk minimum longitude");
+        }
+        prm.leave_subsection();
+      }
+      prm.leave_subsection();
+      */
 
       // Declare dependencies on solution variables
       this->model_dependence.viscosity = NonlinearDependence::temperature | NonlinearDependence::pressure | NonlinearDependence::strain_rate | NonlinearDependence::compositional_fields;
@@ -773,13 +786,13 @@ namespace aspect
                  const double reset_corner_depth,
                  const double reset_corner_viscosity_constant) const
     {
-      const double outer_radius = 6.371e6;
-      const double maximum_longtitude = 61.0/180.0*M_PI;
-      Point<dim> polar_position;
+      const double maximum_longitude_pi = 61.0/180.0*M_PI; //maximum_longitude/180.0*M_PI;
+      const double minimum_longitude_pi = 0.0; //minimum_longitude/180.0*M_PI;
+      const double outer_radius = 6.371e6; //minimum_longitude/180.0*M_PI;
       for (unsigned int i=0; i<position.size(); i++){
-        polar_position = cartesian_to_polar(position[i]);
-        if((polar_position[0]*polar_position[1]<reset_corner_width
-            || polar_position[0]*(maximum_longtitude-polar_position[1])<reset_corner_width)
+        Point<dim> polar_position = cartesian_to_polar(position[i]);
+        if((polar_position[0]*(polar_position[1]-minimum_longitude_pi)<reset_corner_width
+            || polar_position[0]*(maximum_longitude_pi-polar_position[1])<reset_corner_width)
            && outer_radius-polar_position[0]<reset_corner_depth){
           viscosities[i] = reset_corner_viscosity_constant;
         }

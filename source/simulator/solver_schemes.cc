@@ -371,6 +371,9 @@ namespace aspect
   void Simulator<dim>::solve_single_advection_single_stokes ()
   {
     assemble_and_solve_temperature();
+    // reset corner temperature for a subduction model in chunk geometry
+    if(parameters.reset_corner_temperature)
+      reset_corner_temperature();
     assemble_and_solve_composition();
     assemble_and_solve_stokes();
 
@@ -1305,14 +1308,76 @@ namespace aspect
       postprocess ();
   }
 
-
-
   template <int dim>
   void Simulator<dim>::solve_no_advection_no_stokes ()
   {
     if (parameters.run_postprocessors_on_nonlinear_iterations)
       postprocess ();
   }
+
+  /**
+   * reset corner temperature
+   */ 
+  template <int dim>
+  void Simulator<dim>::reset_corner_temperature ()
+  {
+    const double maximum_longitude_pi = 61.0*180.0/M_PI; //parameters.maximum_longitude/180.0*M_PI;
+    const double minimum_longitude_pi = 0.0; //parameters.minimum_longitude/180.0*M_PI;
+    const Quadrature<dim> quadrature(dof_handler.get_fe().base_element(introspection.base_elements.temperature).get_unit_support_points());
+    std::vector<types::global_dof_index> local_dof_indices (dof_handler.get_fe().dofs_per_cell);
+    FEValues<dim> fe_values (*mapping,
+                             dof_handler.get_fe(),
+                             quadrature,
+                             update_quadrature_points | update_values | update_gradients);
+    MaterialModel::MaterialModelInputs<dim> in(quadrature.size(),
+                                               introspection.n_compositional_fields);
+    for (const auto &cell : dof_handler.active_cell_iterators())
+      if (cell->is_locally_owned())
+        {
+          fe_values.reinit(cell);
+          in.reinit(fe_values, cell, introspection, solution);
+          cell->get_dof_indices (local_dof_indices);
+          // for each temperature dof, write into the
+          // vector the reset temperature. note that quadrature points and
+          // dofs are enumerated in the same order
+          for (unsigned int i=0; i<dof_handler.get_fe().base_element(introspection.base_elements.temperature).dofs_per_cell; ++i)
+            {
+              const unsigned int system_local_dof
+                = dof_handler.get_fe().component_to_system_index(introspection.component_indices.temperature,
+                                                           /*dof index within component=*/i);
+              Point<dim> polar_position = cartesian_to_polar(in.position[i]);
+              /*
+              if((polar_position[0]*(polar_position[1]-minimum_longitude_pi)<parameters.reset_corner_width
+                  || polar_position[0]*(maximum_longitude_pi-polar_position[1])<parameters.reset_corner_width)
+                  && parameters.outer_radius-polar_position[0]<parameters.reset_corner_depth){
+              */
+              if (true){
+                solution(local_dof_indices[system_local_dof]) = parameters.reset_corner_temperature_constant;
+              }
+            }
+        }
+    current_linearization_point.block(introspection.block_indices.temperature) = 
+      solution.block(introspection.block_indices.temperature);
+  }
+  
+  /**
+  * cartesian to spherical transform
+  */
+  template <int dim>
+  Point<dim>
+  Simulator<dim>::cartesian_to_polar(const Point<dim> &cartesian_position) const
+  {
+    Point<dim> polar_position;
+    double R = sqrt(pow(cartesian_position[0], 2.0) + pow(cartesian_position[1], 2.0));
+    double theta = atan2(cartesian_position[1], cartesian_position[0]);
+    if (theta < 0.0){
+      theta += (2 * M_PI);
+    }
+    polar_position[0] = R;
+    polar_position[1] = theta;
+    return polar_position;
+  } 
+
 }
 
 // explicit instantiation of the functions we implement in this file

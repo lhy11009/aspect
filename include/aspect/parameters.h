@@ -588,6 +588,17 @@ namespace aspect
     MaterialModel::MaterialAveraging::AveragingOperation material_averaging;
 
     /**
+     * Reset corner temperature for subduction model in chunk geometry
+     */
+    bool                           reset_corner_temperature;
+    double                         reset_corner_temperature_width;
+    double                         reset_corner_temperature_depth;
+    double                         reset_corner_temperature_constant;
+    double                         outer_radius;
+    double                         maximum_longitude;
+    double                         minimum_longitude;
+
+    /**
      * @}
      */
 

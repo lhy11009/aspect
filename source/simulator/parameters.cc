@@ -1219,6 +1219,23 @@ namespace aspect
                          "More averaging schemes are available in the averaging material "
                          "model. This material model is a ``compositing material model'' "
                          "which can be used in combination with other material models.");
+      
+      prm.enter_subsection ("Visco Plastic");
+      {
+      // Reset Corner temperature in a subduction model
+        prm.declare_entry ("Reset corner temperature", "false", Patterns::Bool(),
+                           "Reset the temperature to a constant value at the two upper corners in a chunk-geometry model");
+        prm.declare_entry ("Reset corner temperature width", "0.0", Patterns::Double(0),
+                           "Width of the corner. "
+                           "Units: $Km$");
+        prm.declare_entry ("Reset corner temperature depth", "0.0", Patterns::Double(0),
+                           "Depth of the corner. "
+                           "Units: $Km$");
+        prm.declare_entry ("Reset corner temperature constant", "1000.0", Patterns::Double(0),
+                           "Value of the reset temperature. "
+                           "Units: $K$");
+      }
+      prm.leave_subsection ();
     }
     prm.leave_subsection ();
 
@@ -1884,8 +1901,29 @@ namespace aspect
       material_averaging
         = MaterialModel::MaterialAveraging::parse_averaging_operation_name
           (prm.get ("Material averaging"));
+      // Reset corner viscosity for 2-d convection model
+      prm.enter_subsection("Visco Plastic");
+      {
+        reset_corner_temperature = prm.get_bool("Reset corner temperature");
+        reset_corner_temperature_width = prm.get_double("Reset corner temperature width");
+        reset_corner_temperature_depth = prm.get_double("Reset corner temperature depth");
+        reset_corner_temperature_constant = prm.get_double("Reset corner temperature constant");
+      }
+      prm.leave_subsection();
     }
     prm.leave_subsection ();
+    /*
+    prm.enter_subsection("Geometry model");
+    {
+      prm.enter_subsection("Chunk");
+      {
+        outer_radius = prm.get_double("Chunk outer radius");
+        maximum_longitude = prm.get_double("Chunk maximum longitude");
+        minimum_longitude = prm.get_double("Chunk minimum longitude");
+      }
+      prm.leave_subsection();
+    }
+    */
 
     // then, finally, let user additions that do not go through the usual
     // plugin mechanism, declare their parameters if they have subscribed

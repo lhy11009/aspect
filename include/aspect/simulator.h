@@ -1630,7 +1630,19 @@ namespace aspect
        */
       double
       compute_initial_stokes_residual();
-
+      
+      /**
+       * reset corner temperature
+       */ 
+      void 
+      reset_corner_temperature ();
+  
+      /**
+      * cartesian to spherical transform
+      */
+      Point<dim>
+      cartesian_to_polar(const Point<dim> &cartesian_position) const;
+      
       /**
        * @}
        */

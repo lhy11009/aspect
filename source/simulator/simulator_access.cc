@@ -732,6 +732,7 @@ namespace aspect
             ExcMessage("You can not call this function if there is no particle world."));
     return *simulator->particle_world.get();
   }
+  
 }
 
 

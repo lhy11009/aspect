@@ -900,6 +900,11 @@ namespace aspect
        */
       Particle::World<dim> &
       get_particle_world();
+      
+      /**
+       * Reset corner temperature
+       */
+      void reset_corner_temperature();
 
       /** @} */
 
