@@ -281,6 +281,11 @@ namespace aspect
          * temperature gradient added to temperature used in the flow law.
          */
         double adiabatic_temperature_gradient_for_viscosity;
+        
+        /**
+         * start pressure for adiabatic temperature
+         */
+        double adiabatic_start_pressure;
 
         Rheology::StrainDependent<dim> strain_rheology;
 

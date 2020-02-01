@@ -129,7 +129,10 @@ namespace aspect
       // Choice of activation volume depends on whether there is an adiabatic temperature
       // gradient used when calculating the viscosity. This allows the same activation volume
       // to be used in incompressible and compressible models.
-      const double temperature_for_viscosity = temperature + adiabatic_temperature_gradient_for_viscosity*pressure;
+      double temperature_for_viscosity = temperature;
+      if(pressure > adiabatic_start_pressure)
+        temperature_for_viscosity += adiabatic_temperature_gradient_for_viscosity 
+                                     *(pressure - adiabatic_start_pressure);
       Assert(temperature_for_viscosity != 0, ExcMessage(
                "The temperature used in the calculation of the visco-plastic rheology is zero. "
                "This is not allowed, because this value is used to divide through. It is probably "
@@ -623,6 +626,16 @@ namespace aspect
                              "Using a pressure gradient of 32436 Pa/m, then a value of "
                              "0.3 $K/km$ = 0.0003 $K/m$ = 9.24e-09 $K/Pa$ gives an earth-like adiabat."
                              "Units: $K/Pa$");
+          
+          // Temperature in viscosity laws to include an adiabat (note units of K/Pa)
+          prm.declare_entry ("Adiabat start pressure for viscosity", "0.0", Patterns::Double(0),
+                             "Related to Adiabat temperature gradient for viscosity,"
+                             "so that the adiabatic temperature gradient is only added when pressure is bigger,"
+                             "as adiabatic temperature gradient in lithosphere is smaller"
+                             "and varies a lot with lithosphere"
+                             "to simplify, we can choose to not account for that"
+                             "Units: Pa$");
+
           // Reset Corner Viscosity in a subduction model
           prm.declare_entry ("Reset corner viscosity", "false", Patterns::Bool(),
                               "Reset the viscosity to a constant value at the two upper corners in a chunk-geometry model");
@@ -727,6 +740,7 @@ namespace aspect
 
           // Include an adiabat temperature gradient in flow laws
           adiabatic_temperature_gradient_for_viscosity = prm.get_double("Adiabat temperature gradient for viscosity");
+          adiabatic_start_pressure = prm.get_double("Adiabat start pressure for viscosity");
           if (this->get_heating_model_manager().adiabatic_heating_enabled())
             AssertThrow (adiabatic_temperature_gradient_for_viscosity == 0.0,
                          ExcMessage("If adiabatic heating is enabled you should not add another adiabatic gradient"
