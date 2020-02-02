@@ -50,17 +50,20 @@ namespace aspect
         double activation_energies_diffusion_c;
         double activation_volumes_diffusion_c;
         double grain_size_exponents_diffusion_c;
+        double grain_size_c;
         if (gamma_inputs!=nullptr){
           prefactors_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, prefactors_diffusion, composition, true);
           activation_energies_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, activation_energies_diffusion, composition);
           activation_volumes_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, activation_volumes_diffusion , composition);
           grain_size_exponents_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, grain_size_exponents_diffusion, composition);
+          grain_size_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, grain_size, composition);
         }
         else{
           prefactors_diffusion_c = prefactors_diffusion[composition];
           activation_energies_diffusion_c = activation_energies_diffusion[composition];
           activation_volumes_diffusion_c = activation_volumes_diffusion[composition];
           grain_size_exponents_diffusion_c = grain_size_exponents_diffusion[composition];
+          grain_size_c = grain_size[composition];
         }
         // TODO: Add other parameters and use them below
 
@@ -74,7 +77,7 @@ namespace aspect
                                            std::exp((activation_energies_diffusion_c +
                                                      pressure*activation_volumes_diffusion_c)/
                                                     (constants::gas_constant*temperature)) *
-                                           std::pow(grain_size, grain_size_exponents_diffusion_c);
+                                           std::pow(grain_size_c, grain_size_exponents_diffusion_c);
 
         return viscosity_diffusion;
       }
@@ -107,7 +110,11 @@ namespace aspect
                            "List of activation volumes, $V_a$, for background material and compositional fields, "
                            "for a total of N+1 values, where N is the number of compositional fields. "
                            "If only one value is given, then all use the same value.  Units: $m^3 / mol$");
-        prm.declare_entry ("Grain size", "1e-3", Patterns::Double(0), "Units: $m$");
+        prm.declare_entry ("Grain size", "1e-3",
+                           Patterns::Anything(),
+                           "List of grain sizes, $V_a$, for background material and compositional fields, "
+                           "for a total of N+1 values, where N is the number of compositional fields. "
+                           "If only one value is given, then all use the same value.  Units: $m$");
       }
 
 
@@ -150,7 +157,12 @@ namespace aspect
                                                                     "Activation volumes for diffusion creep",
                                                                     true,
                                                                     expected_n_phases_per_composition);
-        grain_size = prm.get_double("Grain size");
+        grain_size = Utilities::parse_map_to_double_array(prm.get("Grain size"),
+                                                                    list_of_composition_names,
+                                                                    has_background_field,
+                                                                    "Grain_size",
+                                                                    true,
+                                                                    expected_n_phases_per_composition);
       }
     }
   }

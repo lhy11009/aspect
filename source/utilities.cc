@@ -170,7 +170,6 @@ namespace aspect
             // Handle the format where there is only one value, assign this to all keys 
             if (Patterns::Double().match(input_string)){
               const double value = dealii::Utilities::string_to_double(input_string);
-              std::cerr<< "only one value: " << value << std::endl; //debug
               for (unsigned int i=0; i<list_of_keys.size(); ++i){
                 parsed_map.emplace(list_of_keys[i], value);
               }
