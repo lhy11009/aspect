@@ -673,7 +673,13 @@ namespace aspect
 
           auto n_phase_transitions_for_each_composition =
             std::make_shared<std::vector<unsigned int>>(phase_function.n_phase_transitions_for_each_composition());
-
+          
+          auto n_value_input_per_composition =
+            std::make_shared<std::vector<unsigned int>>(phase_function.n_phase_transitions_for_each_composition());
+          
+          for (auto &p:*n_value_input_per_composition)
+            ++p;
+          
           // We require one more entries for density, etc as there are phase transitions
           for (auto &n_phases: *n_phase_transitions_for_each_composition)
             n_phases += 1;
@@ -723,11 +729,11 @@ namespace aspect
           // Rheological parameters
           // Diffusion creep parameters
           diffusion_creep.initialize_simulator (this->get_simulator());
-          diffusion_creep.parse_parameters(prm);
+          diffusion_creep.parse_parameters(prm, n_value_input_per_composition);
 
           // Dislocation creep parameters
           dislocation_creep.initialize_simulator (this->get_simulator());
-          dislocation_creep.parse_parameters(prm);
+          dislocation_creep.parse_parameters(prm, n_value_input_per_composition);
 
           // Plasticity parameters
           drucker_prager_parameters = drucker_prager_plasticity.parse_parameters(this->n_compositional_fields()+1,

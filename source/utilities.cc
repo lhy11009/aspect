@@ -167,17 +167,26 @@ namespace aspect
           }
         else if (Patterns::List(Patterns::Double(),1,list_of_keys.size()).match(input_string))
           {
-            // Handle the format of a comma separated list of doubles, with no keywords
-            const std::vector<double> values = possibly_extend_from_1_to_N (dealii::Utilities::string_to_double(dealii::Utilities::split_string_list(input_string)),
-                                                                            list_of_keys.size(),
-                                                                            property_name);
-
-            for (unsigned int i=0; i<values.size(); ++i)
-              {
-                // list_of_keys and values have the same length, which is guaranteed by the
-                // call to possibly_extend_from_1_to_N() above
-                parsed_map.emplace(list_of_keys[i],values[i]);
+            // Handle the format where there is only one value, assign this to all keys 
+            if (Patterns::Double().match(input_string)){
+              const double value = dealii::Utilities::string_to_double(input_string);
+              std::cerr<< "only one value: " << value << std::endl; //debug
+              for (unsigned int i=0; i<list_of_keys.size(); ++i){
+                parsed_map.emplace(list_of_keys[i], value);
               }
+            }
+            else{
+              // Handle the format of a comma separated list of doubles, with no keywords
+              const std::vector<double> values = possibly_extend_from_1_to_N (dealii::Utilities::string_to_double(dealii::Utilities::split_string_list(input_string)),
+                                                                              list_of_keys.size(),
+                                                                              property_name);
+              for (unsigned int i=0; i<values.size(); ++i)
+                {
+                  // list_of_keys and values have the same length, which is guaranteed by the
+                  // call to possibly_extend_from_1_to_N() above
+                  parsed_map.emplace(list_of_keys[i],values[i]);
+                }
+            }
           }
         else
           {
@@ -189,7 +198,6 @@ namespace aspect
                                      + "list of `<double>' or `<key1> : <double>|<double>|..., "
                                      + "<key2> : <double>|... , ... '."));
           }
-
         return parsed_map;
       }
     }
@@ -213,6 +221,9 @@ namespace aspect
       std::multimap<std::string, double> parsed_map = parse_string_to_map(input_string,
                                                                           field_names,
                                                                           property_name);
+
+      // allow only one value for a key, even if n_values_per_key for that key is not 1 
+      std::vector<bool> only_one_value_fields(n_fields, false);
 
       // Second: Now check that the structure of the map is as expected
       {
@@ -286,11 +297,12 @@ namespace aspect
 
             if (check_structure)
               {
-                AssertThrow((*n_values_per_key)[field_index] == n_values,
+                AssertThrow(((*n_values_per_key)[field_index] == n_values || n_values == 1),
                             ExcMessage("The key <" + field_names[field_index] + "> in <"+ property_name + "> does not have "
                                        + "the expected number of values. It expects " + std::to_string((*n_values_per_key)[field_index])
                                        + " values, but we found " + std::to_string(n_values) + " values."));
-
+                if(!((*n_values_per_key)[field_index] == n_values))
+                  only_one_value_fields[field_index] = true;
               }
 
             ++field_index;
@@ -299,14 +311,23 @@ namespace aspect
 
       // Finally: Convert the map into a vector of doubles, sorted in the order
       // of the field_names input parameter
+      unsigned int field_index = 0;
       std::vector<double> return_values;
       for (const std::string &field_name: field_names)
         {
           const std::pair<std::multimap<std::string, double>::const_iterator,
                 std::multimap<std::string, double>::const_iterator> entry_range = parsed_map.equal_range(field_name);
 
-          for (auto entry = entry_range.first; entry != entry_range.second; ++entry)
-            return_values.push_back(entry->second);
+          if (only_one_value_fields[field_index]){
+            auto entry = entry_range.first;
+            for (unsigned int i=0; i< (*n_values_per_key)[field_index]; ++i)
+              return_values.push_back(entry->second);
+          }
+          else{
+            for (auto entry = entry_range.first; entry != entry_range.second; ++entry)
+              return_values.push_back(entry->second);
+          }
+          ++ field_index;
         }
 
       return return_values;
