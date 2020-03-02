@@ -215,7 +215,7 @@ namespace aspect
                                           const SymmetricTensor<2,dim> &strain_rate,
                                           const ViscosityScheme &viscous_type,
                                           const YieldScheme &yield_type,
-                                          const std::pair<std::vector<double>*, const std::vector<unsigned int>*>* gamma_inputs=nullptr) const;
+                                          const std::pair<std::vector<double>, const std::vector<unsigned int>>& gamma_inputs={}) const;
 
 
         /**

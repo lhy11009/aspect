@@ -42,7 +42,7 @@ namespace aspect
       DiffusionCreep<dim>::compute_viscosity (const double pressure,
                                               const double temperature,
                                               const unsigned int composition,
-                                              const std::pair<std::vector<double>*, const std::vector<unsigned int>*> *gamma_inputs) const
+                                              const std::pair<std::vector<double>, const std::vector<unsigned int>> &gamma_inputs) const
       { // If there is phase chage
         //  Phase change: average flow lay parameters from phase, where gamma_inputs is not nullptr
         //  No phase change: take flow lay parameters from composition
@@ -50,11 +50,11 @@ namespace aspect
         double activation_energies_diffusion_c;
         double activation_volumes_diffusion_c;
         double grain_size_exponents_diffusion_c;
-        if (gamma_inputs!=nullptr){
-          prefactors_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, prefactors_diffusion, composition, true);
-          activation_energies_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, activation_energies_diffusion, composition);
-          activation_volumes_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, activation_volumes_diffusion , composition);
-          grain_size_exponents_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, grain_size_exponents_diffusion, composition);
+        if (gamma_inputs != std::pair<std::vector<double>, const std::vector<unsigned int>>()){
+          prefactors_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, prefactors_diffusion, composition, true);
+          activation_energies_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, activation_energies_diffusion, composition);
+          activation_volumes_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, activation_volumes_diffusion , composition);
+          grain_size_exponents_diffusion_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, grain_size_exponents_diffusion, composition);
         }
         else{
           prefactors_diffusion_c = prefactors_diffusion[composition];

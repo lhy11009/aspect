@@ -63,7 +63,7 @@ namespace aspect
                              const double pressure,
                              const double temperature,
                              const unsigned int composition,
-                             const std::pair<std::vector<double>*, const std::vector<unsigned int>*> *gamma_inputs=nullptr) const;
+                             const std::pair<std::vector<double>, const std::vector<unsigned int>> &gamma_inputs) const;
 
         private:
 

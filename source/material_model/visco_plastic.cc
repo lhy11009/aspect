@@ -108,7 +108,7 @@ namespace aspect
                                      const SymmetricTensor<2,dim> &strain_rate,
                                      const ViscosityScheme &viscous_type,
                                      const YieldScheme &yield_type,
-                                     const std::pair<std::vector<double>*, const std::vector<unsigned int>*>* gamma_inputs) const
+                                     const std::pair<std::vector<double>, const std::vector<unsigned int>>& gamma_inputs) const
     {
       // This function calculates viscosities assuming that all the compositional fields
       // experience the same strain rate (isostrain).
@@ -398,9 +398,9 @@ namespace aspect
       EquationOfStateOutputs<dim> eos_outputs_all_phases (this->n_compositional_fields()+1+phase_function.n_phase_transitions());
 
       // Store value of gamma functions, and number of gamma function for each compostion
-      std::vector<double> gamma_values;
-      gamma_values.resize(phase_function.n_phase_transitions(), 0.0);
-      auto gamma_inputs = std::make_pair(&gamma_values, &phase_function.n_phase_transitions_for_each_composition());
+      std::vector<double> gamma_values(phase_function.n_phase_transitions(), 0.0);
+      std::pair<std::vector<double>, const std::vector<unsigned int>> gamma_inputs = 
+        std::make_pair(gamma_values, phase_function.n_phase_transitions_for_each_composition());
 
       // Loop through all requested points
       for (unsigned int i=0; i < in.temperature.size(); ++i)
@@ -413,7 +413,7 @@ namespace aspect
           // Compute value of gamma functions, thus values in gamma_inputs change
           for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++){
             phase_inputs.phase_index = j;
-            gamma_values[j] = phase_function.compute_value(phase_inputs);
+            gamma_inputs.first[j] = phase_function.compute_value(phase_inputs);
           }
           
           // Average by value of gamma function to get value of compositions
@@ -460,7 +460,7 @@ namespace aspect
               // Morover, pass gamma_inputs inside in order to updata flow law parameters by phases.
               const std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities =
                 calculate_isostrain_viscosities(volume_fractions, in.pressure[i], in.temperature[i], in.composition[i], in.strain_rate[i], \
-                                                viscous_flow_law, yield_mechanism, &gamma_inputs);
+                                                viscous_flow_law, yield_mechanism, gamma_inputs);
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated

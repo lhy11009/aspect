@@ -702,14 +702,14 @@ namespace aspect
 
       // Calculate a parameter of single composition at single point by averaging phases.
       // Either linear(by_log is 0) or using log form(by_log is 1), default is linear.
-      double phase_average_value (const std::pair<std::vector<double>*, const std::vector<unsigned int>*> &gamma_inputs,
+      double phase_average_value (const std::pair<std::vector<double>, const std::vector<unsigned int>> &gamma_inputs,
                                   const std::vector<double> &parameter_values,
                                   const unsigned int composition,
                                   bool by_log)
       {
         double average_value;
-        const std::vector<double>& gamma_values = *gamma_inputs.first;
-        const std::vector<unsigned int>& n_phases_per_composition = *gamma_inputs.second;
+        const std::vector<double>& gamma_values = gamma_inputs.first;
+        const std::vector<unsigned int>& n_phases_per_composition = gamma_inputs.second;
         // Calculate base index for this composition
         unsigned int base = 0;
         unsigned int i;

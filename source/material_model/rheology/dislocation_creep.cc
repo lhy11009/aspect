@@ -44,7 +44,7 @@ namespace aspect
                                                 const double pressure,
                                                 const double temperature,
                                                 const unsigned int composition,
-                                                const std::pair<std::vector<double>*, const std::vector<unsigned int>*> *gamma_inputs) const
+                                                const std::pair<std::vector<double>, const std::vector<unsigned int>> &gamma_inputs) const
       { // If there is phase chage
         //  Phase change: average flow lay parameters from phase, where gamma_inputs is not nullptr
         //  No phase change: take flow lay parameters from composition
@@ -52,11 +52,11 @@ namespace aspect
         double activation_energies_dislocation_c;
         double activation_volumes_dislocation_c;
         double stress_exponents_dislocation_c;
-        if (gamma_inputs!=nullptr){
-          prefactors_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, prefactors_dislocation, composition, true);
-          activation_energies_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, activation_energies_dislocation, composition);
-          activation_volumes_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, activation_volumes_dislocation , composition);
-          stress_exponents_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(*gamma_inputs, stress_exponents_dislocation, composition);
+        if (gamma_inputs != std::pair<std::vector<double>, const std::vector<unsigned int>>()){
+          prefactors_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, prefactors_dislocation, composition, true);
+          activation_energies_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, activation_energies_dislocation, composition);
+          activation_volumes_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, activation_volumes_dislocation , composition);
+          stress_exponents_dislocation_c = MaterialModel::MaterialUtilities::phase_average_value(gamma_inputs, stress_exponents_dislocation, composition);
         }
         else{
           prefactors_dislocation_c = prefactors_dislocation[composition];
