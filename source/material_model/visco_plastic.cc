@@ -108,7 +108,7 @@ namespace aspect
                                      const SymmetricTensor<2,dim> &strain_rate,
                                      const ViscosityScheme &viscous_type,
                                      const YieldScheme &yield_type,
-                                     const std::pair<std::vector<double>, const std::vector<unsigned int>>& gamma_inputs) const
+                                     const std::pair<std::vector<double>, const std::vector<unsigned int>> &gamma_inputs) const
     {
       // This function calculates viscosities assuming that all the compositional fields
       // experience the same strain rate (isostrain).
@@ -399,8 +399,8 @@ namespace aspect
 
       // Store value of gamma functions, and number of gamma function for each compostion
       std::vector<double> gamma_values(phase_function.n_phase_transitions(), 0.0);
-      std::pair<std::vector<double>, const std::vector<unsigned int>> gamma_inputs = 
-        std::make_pair(gamma_values, phase_function.n_phase_transitions_for_each_composition());
+      std::pair<std::vector<double>, const std::vector<unsigned int>> gamma_inputs =
+                                                                     std::make_pair(gamma_values, phase_function.n_phase_transitions_for_each_composition());
 
       // Loop through all requested points
       for (unsigned int i=0; i < in.temperature.size(); ++i)
@@ -411,11 +411,12 @@ namespace aspect
           MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(*this,in,i,eos_outputs_all_phases.densities[0],0);
 
           // Compute value of gamma functions, thus values in gamma_inputs change
-          for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++){
-            phase_inputs.phase_index = j;
-            gamma_inputs.first[j] = phase_function.compute_value(phase_inputs);
-          }
-          
+          for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++)
+            {
+              phase_inputs.phase_index = j;
+              gamma_inputs.first[j] = phase_function.compute_value(phase_inputs);
+            }
+
           // Average by value of gamma function to get value of compositions
           phase_average_equation_of_state_outputs(eos_outputs_all_phases,
                                                   gamma_inputs,

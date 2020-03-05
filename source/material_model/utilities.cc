@@ -708,26 +708,27 @@ namespace aspect
                                   bool by_log)
       {
         double average_value;
-        const std::vector<double>& gamma_values = gamma_inputs.first;
-        const std::vector<unsigned int>& n_phases_per_composition = gamma_inputs.second;
+        const std::vector<double> &gamma_values = gamma_inputs.first;
+        const std::vector<unsigned int> &n_phases_per_composition = gamma_inputs.second;
         // Calculate base index for this composition
         unsigned int base = 0;
         unsigned int i;
-        for(i=0; i<composition; ++i)
+        for (i=0; i<composition; ++i)
           base += n_phases_per_composition[i] + 1;
-        if(by_log)
+        if (by_log)
           average_value = log(parameter_values[base]);
         else
           average_value = parameter_values[base];
         // Alter base value by averaging among phases
-        for(i=0; i<n_phases_per_composition[composition]; ++i){
-          Assert(base+i+1<parameter_values.size(), ExcInternalError());
-          if(by_log)
-            average_value += gamma_values[base-composition+i] * log(parameter_values[base+i+1] / parameter_values[base+i]);
-          else 
-            average_value += gamma_values[base-composition+i] * (parameter_values[base+i+1] - parameter_values[base+i]);
-        }
-        if(by_log)
+        for (i=0; i<n_phases_per_composition[composition]; ++i)
+          {
+            Assert(base+i+1<parameter_values.size(), ExcInternalError());
+            if (by_log)
+              average_value += gamma_values[base-composition+i] * log(parameter_values[base+i+1] / parameter_values[base+i]);
+            else
+              average_value += gamma_values[base-composition+i] * (parameter_values[base+i+1] - parameter_values[base+i]);
+          }
+        if (by_log)
           return exp(average_value);
         else
           return average_value;
