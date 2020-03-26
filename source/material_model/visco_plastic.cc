@@ -692,11 +692,11 @@ namespace aspect
           // Rheological parameters
           // Diffusion creep parameters
           diffusion_creep.initialize_simulator (this->get_simulator());
-          diffusion_creep.parse_parameters(prm);
+          diffusion_creep.parse_parameters(prm, n_phase_transitions_for_each_composition);
 
           // Dislocation creep parameters
           dislocation_creep.initialize_simulator (this->get_simulator());
-          dislocation_creep.parse_parameters(prm);
+          dislocation_creep.parse_parameters(prm, n_phase_transitions_for_each_composition);
 
           // Plasticity parameters
           drucker_prager_parameters = drucker_prager_plasticity.parse_parameters(this->n_compositional_fields()+1,
