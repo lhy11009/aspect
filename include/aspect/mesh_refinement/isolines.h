@@ -32,6 +32,21 @@ namespace aspect
 {
   namespace MeshRefinement
   {
+    namespace Internal
+    {
+
+      class Isoline
+      {
+        public:
+          std::vector<double> min_value;
+          std::vector<double> max_value;
+          double min_refinement;
+          double max_refinement;
+          std::vector<std::string> property;
+      }
+
+
+    }
 
     /**
      * A class that implements a Isolines TODO
@@ -73,18 +88,9 @@ namespace aspect
 
       private:
         /**
-         * The coordinate representation to evaluate the function. Possible
-         * choices are depth, cartesian and spherical.
+         * Todo
          */
-        Utilities::Coordinates::CoordinateSystem coordinate_system;
-
-        /**
-         * A function object representing the maximum refinement level. The
-         * function always depends on 3 variables, although in the case of the
-         * 'depth' coordinate system only the first is used to evaluate the
-         * function.
-         */
-        Functions::ParsedFunction<dim> max_refinement_level;
+        std::vector<Isoline> isolines;
 
     };
   }

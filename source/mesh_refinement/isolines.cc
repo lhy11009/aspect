@@ -139,18 +139,17 @@ namespace aspect
       {
         prm.enter_subsection("Isolines");
         {
-          isolines = Utilities::parse_map_to_double_array (prm.get("Isolines"), // input_string
+          /*isolines = Utilities::parse_map_to_double_array (prm.get("Isolines"), // input_string
                                                            list_of_composition_names, // list_of_keys
                                                            has_background_field, // expects_background_field
                                                            "Isoterms", // property_name
                                                            true, // allow_multiple_values_per_key
                                                            2, // n_values_per_key: check is 2 is correct (min, max)
-                                                           true); // allow missing keys: check whether we want true or false
+                                                           true); // allow missing keys: check whether we want true or false*/
           /**
-           * In the end I would like to have the following structure:
-           * a vector containing std::vector<std::map<std::string,std::pair<double,double> > >
-           * Where the std::string should become a enum.
+           * Fill in the isolines variable
            */
+
 
         }
         prm.leave_subsection();
