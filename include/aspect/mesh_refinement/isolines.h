@@ -34,16 +34,33 @@ namespace aspect
   {
     namespace Internal
     {
+      enum class PropertyName
+      {
+        Temperature,
+        Composition
+      };
+
+      class Property
+      {
+        public:
+          PropertyName name;
+          unsigned int index;
+      };
 
       class Isoline
       {
         public:
-          std::vector<double> min_value;
-          std::vector<double> max_value;
+          /**
+           * Todo
+           */
+          bool values_are_in_range(const std::vector<double> values) const;
+
+          std::vector<double> min_values;
+          std::vector<double> max_values;
           double min_refinement;
           double max_refinement;
-          std::vector<std::string> property;
-      }
+          std::vector<Property> properties;
+      };
 
 
     }
@@ -90,7 +107,7 @@ namespace aspect
         /**
          * Todo
          */
-        std::vector<Isoline> isolines;
+        std::vector<Internal::Isoline> isolines;
 
     };
   }
