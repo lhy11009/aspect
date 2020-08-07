@@ -2,7 +2,7 @@
 # combination with the prm polygon initial
 # topography model.
 
-set Dimension = 2
+set Dimension = 3
 set CFL number                             = 1.0
 set End time                               = 0
 set Start time                             = 0
@@ -32,8 +32,10 @@ subsection Geometry model
   subsection Box
     set X extent = 660000
     set Y extent = 660000
+    set Z extent = 660000
     set X repetitions = 1
     set Y repetitions = 1
+    set Z repetitions = 1
   end
 end
 
@@ -42,8 +44,8 @@ end
 subsection Initial temperature model
   set Model name = function
   subsection Function
-    set Variable names = x, y
-    set Function expression = if(x < 500000,if(y< 330000,100+x/1000,100+x/250),0)
+    set Variable names = x, y, z
+    set Function expression = if(z < 500000,if(x < 330000 && y < 330000,100+z/1000,100+z/250),0)
   end
 end
 
@@ -51,8 +53,8 @@ end
 subsection Initial composition model
   set Model name = function
   subsection Function
-    set Variable names = x, y
-    set Function expression = if(x < 500000,if(y < 330000,1,0),0);if(x < 500000,0,1);if(x < 500000,if(y < 330000,0,1),0)
+    set Variable names = x, y, z
+    set Function expression = if(z < 500000,if(x < 330000 && y < 330000,1,0),0);if(z < 500000,if(x < 330000 && y < 330000,0,0),1);if(z < 500000,if(x < 330000 && y < 330000,0,1),0)
   end
 end
 
@@ -80,10 +82,10 @@ end
 
 subsection Mesh refinement
   set Initial global refinement          = 1
-  set Initial adaptive refinement        = 3
+  set Initial adaptive refinement        = 2
   set Strategy = isolines
   subsection Isolines
-    set Isolines = 4,    4,    Temperature: 0 | 600,   C_2 : 0.0 | 0.5 ;\
+    set Isolines = 3,    3,    Temperature: 0 | 600,   C_2 : 0.0 | 0.5 ;\
                    0,    0,    Temperature: 1600 | 3000,   C_2 : 0.0 | 0.5
   end
 end
@@ -94,17 +96,17 @@ end
 # safely merged with any existing subsections with the same name.
 
 subsection Boundary temperature model
-  set Fixed temperature boundary indicators   = 3
+  set Fixed temperature boundary indicators   = 5
 end
 
 subsection Boundary velocity model
-  set Zero velocity boundary indicators       = 0,1,2,3
+  set Zero velocity boundary indicators       = 0,1,2,3,4,5
 end
 
 subsection Postprocess
   set List of postprocessors = visualization
   subsection Visualization
-    set Output format            = vtu
+    set Output format            = gnuplot
   end
 end
 
