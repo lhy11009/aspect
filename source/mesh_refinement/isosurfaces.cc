@@ -75,7 +75,7 @@ namespace aspect
           }
         if (found == false)
           {
-            // The property name has not been found. This could come from that the compositional field was not present.
+            // The property name has not been found. This could come from that the compositional field is not present.
             // Abort and warn the user.
             std::string key_list = "Temperature";
             for (auto &composition : available_compositions)
@@ -88,12 +88,12 @@ namespace aspect
       }
 
       /**
-       * converts strings describing the refinment level which potentially contains a min
-       * or max statment indcluded in them to a int. For example if minimum_refinement_level
+       * converts strings describing the refinement level which potentially contains a min
+       * or max statement included in them to a int. For example if minimum_refinement_level
        * is 1, and the string is 'min+1', it will return 2. The returned value will be capped
        * by the provided @p minimum_refinement_level and @p maximum_refinement_level.
        *
-       * This function will throw an assert then the string contains `max+` or `min-` since
+       * This function will throw an assertion when the string contains `max+` or `min-` since
        * that is always incorrect.
        */
       unsigned int min_max_string_to_int(const std::string &string_value, const unsigned int minimum_refinement_level, const unsigned int  maximum_refinement_level)
@@ -198,29 +198,29 @@ namespace aspect
 
                       if ( isosurface.are_all_values_in_range(values))
                         {
-                          // If the current refinement level is smaller or equal to the minimum
-                          // refinement level, any coarsening flags should be cleared.
+                          // If the current refinement level is smaller than or equal to the minimum
+                          // refinement level, any coarsening flag should be cleared.
                           if (cell->level() <= isosurface.min_refinement)
                             {
                               clear_coarsen = true;
                             }
 
-                          // If the current refinement level is smaller then the minimum
-                          // refinement level, a refinment flag should be placed.
+                          // If the current refinement level is smaller than the minimum
+                          // refinement level, a refinement flag should be placed.
                           if (cell->level() <  isosurface.min_refinement)
                             {
                               refine = true;
                               break;
                             }
 
-                          // If the current refinement level is larger or equal to the maximum refinement
+                          // If the current refinement level is larger than or equal to the maximum refinement
                           // level, any refinement flag should be cleared.
                           if (cell->level() >= isosurface.max_refinement)
                             {
                               clear_refine = true;
                             }
 
-                          // If the current refinement level is larger then the maximum refinemment level,
+                          // If the current refinement level is larger than the maximum refinemment level,
                           // a coarsening flag should be placed.
                           if (cell->level() >  isosurface.max_refinement)
                             {
@@ -270,21 +270,21 @@ namespace aspect
         {
           prm.declare_entry ("Isosurfaces", "depth",
                              Patterns::Anything(),
-                             "A list of isosurface separated by semi-colons (;). Each isosurface entry consists of "
+                             "A list of isosurfaces separated by semi-colons (;). Each isosurface entry consists of "
                              "multiple entries separated by a comma. The first two entries indicate the minimum and maximum "
-                             "refinement levels respectively. The entries after the first two describe the field the isosurface "
-                             "applies to, followed by a colon (:) followed by the minimum and maximum grid levels separated by "
+                             "refinement levels respectively. The entries after the first two describe the fields the isosurface "
+                             "applies to, followed by a colon (:), which again followed by the minimum and maximum grid levels separated by "
                              "bar (|). An example for an isosurface is '0, 2, Temperature: 300 | 600; 2, 2, C\\_1: 0.5 | 1'. "
-                             "In this example the mesh refinment is kept between level 0 and level 2 if the temperature is between "
+                             "In this example the mesh refinement is kept between level 0 and level 2 if the temperature is between "
                              "300 and 600 and the compositional field C\\_1 is between 0.5 and 1. "
                              "\n\n"
-                             "The first two entries for each isoline, describing the minimum and maximum grid levels, can be "
-                             "a number or one of the key values 'min' and 'max'. This indicates the key will be replace with "
-                             "the global minimum an maximum refinment levels. The 'min' and 'max' keys will also accept adding "
-                             "values to and substracting values from them respectively. This is done by adding a '+' or '-' and "
-                             "number behind them (e.g. min+2 or max-1). Note that you can't substract from a minimum value or "
-                             "add to the maximum value. If for example `max-4` drops below the minimum or `min+4` goes above the "
-                             "maximum, it will simply use the gobal minimum and maximum value respectively. The same holds for any "
+                             "The first two entries for each isosurface, describing the minimum and maximum grid levels, can be "
+                             "two numbers or contain one of the key values 'min' and 'max'. This indicates the key will be replaced with "
+                             "the global minimum and maximum refinement levels. The 'min' and 'max' keys will also allow "
+                             "values to be added to or substracted from them. This is done by adding a '+' or '-' and "
+                             "number behind them (e.g. min+2 or max-1). Note that you can't substract a value from a minimum value or "
+                             "add a value to the maximum value. If, for example, `max-4` drops below the minimum or `min+4` goes above the "
+                             "maximum, it will simply use the global minimum and maximum values respectively. The same holds for any "
                              "mesh refinement level below the global minimum or above the global maximum."
                              "\n\n"
                              "If isosurfaces overlap, the last one sets the values.");
@@ -328,7 +328,7 @@ namespace aspect
               isosurface.min_refinement = Internal::min_max_string_to_int(field_entries[0], minimum_refinement_level, maximum_refinement_level);
               isosurface.max_refinement = Internal::min_max_string_to_int(field_entries[1], minimum_refinement_level, maximum_refinement_level);
               AssertThrow(isosurface.min_refinement <= isosurface.max_refinement,
-                          ExcMessage("The provided maximum refinement level has to be larger the then the minimum refinement level."));
+                          ExcMessage("The provided maximum refinement level has to be larger than the minimum refinement level."));
               for (auto field_entry = field_entries.begin()+2; field_entry != field_entries.end(); ++field_entry)
                 {
                   AssertThrow(Patterns::Map(Patterns::Anything(),
@@ -341,11 +341,11 @@ namespace aspect
                   properties.push_back(Internal::Property(key_and_value[0], compositions)); // convert key to property name
                   const std::vector<std::string> values = dealii::Utilities::split_string_list(key_and_value[1], '|');
                   AssertThrow(values.size() == 2,
-                              ExcMessage("Both a maximum and minimum value is required for each isosurface."));
+                              ExcMessage("Both a maximum and a minimum values are required for each isosurface."));
                   min_value_inputs.push_back(Utilities::string_to_double(values[0]));  // get min and max values of the range
                   max_value_inputs.push_back(Utilities::string_to_double(values[1]));
                   AssertThrow(min_value_inputs.back() < max_value_inputs.back(),
-                              ExcMessage("The provided maximum refinement level has to be larger than the minimum refinement level."));
+                              ExcMessage("The provided maximum refinement level has to be larger than the provided minimum refinement level."));
                 }
               isosurface.min_values = min_value_inputs;
               isosurface.max_values = max_value_inputs;
@@ -372,7 +372,7 @@ namespace aspect
                                               "specific field entries(e.g. temperature, compsitions)."
                                               "\n\n"
                                               "The way these indicators are derived on each isosurface is by "
-                                              "checking the conditions whether solutions of specific "
+                                              "checking whether the solutions of specific "
                                               "fields are within the ranges of values given. If these conditions "
                                               "hold, then an indicator is either put on or taken off "
                                               "in order to secure mesh refinement within the range of levels "
@@ -380,14 +380,16 @@ namespace aspect
                                               "minimum and maximum refinement function onto fields that they "
                                               "are interested in."
                                               "\n\n"
-                                              "For now, only temperature and names of compositions are allowed as "
-                                              "field entries."
+                                              "For now, only temperature and compositional fields are allowed as "
+                                              "field entries. The key words could be 'Temperature' or one of the names "
+                                              "of the compositional fields which are either specified by user or set up "
+                                              "as C\\_0, C\\_1, etc."
                                               "\n\n"
-                                              "Usage: A list of isosurface separated by semi-colons (;). Each "
+                                              "Usage: A list of isosurfaces separated by semi-colons (;). Each "
                                               "isosurface entry consists of multiple entries separated by a comma. "
                                               "The first two entries indicate the minimum and maximum refinement "
                                               "levels respectively. The entries after the first two describe the "
-                                              "field the isosurface applies to, followed by a colon (:) followed by "
+                                              "fields the isosurface applies to, followed by a colon (:), which again followed by "
                                               "the minimum and maximum grid levels separated by bar (|). An example "
                                               "for an isosurface is '0, 2, Temperature: 300 | 600; 2, 2, C\\_1: 0.5 | 1'. "
                                               "If isosurfaces overlap, the last one sets the values. "

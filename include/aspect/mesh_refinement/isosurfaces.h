@@ -45,7 +45,7 @@ namespace aspect
         public:
           /**
            * constructor. Converts a property name into a structure containing a property type
-           * and  index. If the property contains multiple itmes (e.g. the property compositional field has a
+           * and  index. If the property contains multiple items (e.g. the property compositional field has a
            * field index) they are store in the index
            * @param property_name The name of a property, which can be Temperature for the temperature field or
            * the name of a compositional field listed in the parameter available_compositions.
@@ -61,7 +61,7 @@ namespace aspect
 
 
           /**
-           * A index in case the property type contains multiple values. This is
+           * An index, in case the property type contains multiple values. This is
            * currently only used for storing which compositional field the property
            * corresponds to.
            */
@@ -92,7 +92,7 @@ namespace aspect
 
     /**
      * A class that implements an Isosurfaces mesh refinement plugin. This
-     * plugin allows for setting a minimum and maximum refinment level in
+     * plugin allows for setting a minimum and a maximum refinement levels in
      * a part of the model domain where a value (e.g. Temperature) is between
      * two other values (e.g. two isotherms). This is currently implemented
      * for temperature and compositions.
@@ -120,7 +120,7 @@ namespace aspect
         tag_additional_cells () const override;
 
         /**
-         * Declare the parameters this class takes through input files.
+         * Declare the parameters this class takes from input files.
          */
         static
         void
