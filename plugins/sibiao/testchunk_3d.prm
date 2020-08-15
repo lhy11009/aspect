@@ -1,0 +1,145 @@
+# Load the shared libraries that prescribe the temperature DoFs, the initial condition and the termination criterion. 
+set Additional shared libraries = ../../libprescribed_temperature.so
+
+# We use the advection only solver scheme, because we are only intreseted in the temperature evolution. 
+set Dimension   = 3
+set End time    = 1e8
+set Adiabatic surface temperature = 2700
+set Maximum time step = 5e5
+set Nonlinear solver scheme = single Advection, no Stokes
+set Use conduction timestep = true
+set LAB temperature = 1600
+
+# As we use the advection only solver scheme, we have to prescribe 
+# the Stokes solution. Here we set all velocities to zero, and the pressure
+# to the hydrotstaic pressure. 
+subsection Prescribed Stokes solution
+  set Model name = function
+  subsection Velocity function
+    set Function expression = 0;0;0
+  end
+end
+
+# The radiogenic heat production is intriduced by useing the compositional heating plugin. 
+# It lets us define a constant heating rate for each composition. 
+subsection Heating model
+  set List of model names = adiabatic heating, compositional heating
+  subsection Compositional heating
+    # List of heat production per unit volume values for background and
+    # compositional fields, for a total of N+1 values, where N is the number
+    # of compositional fields. Units: $W/m^3$.
+    set Compositional heating values                          = 0, 9e-7, 0 # asthenosphere, crust, lithosphere 
+
+    # List of integers, detailing for each compositional field if it should be
+    # included in the averaging scheme when the heat production is computed
+    # (if 1) or not (if 0).
+    set Use compositional field for heat production averaging = 1, 1, 1
+  end
+end
+
+# The geometry is a 3d cube with a side length of 410 km. 
+subsection Geometry model
+  set Model name = chunk
+
+  subsection Chunk
+    set Chunk minimum longitude                      = 260      # degrees; 100W
+    set Chunk maximum longitude                      = 340        # 10W
+    set Longitude repetitions                        = 1    
+    set Chunk minimum latitude                       = -60 
+    set Chunk maximum latitude                       = 20
+    set Latitude repetitions                         = 1 
+    set Chunk inner radius                           = 3481e3
+    set Chunk outer radius                           = 6371e3
+    set Radius repetitions                           = 1    
+  end
+end
+
+# Mesh refinement specifications 
+ subsection Mesh refinement
+   set Initial global refinement                      = 2
+   set Initial adaptive refinement                    = 3
+   set Time steps between mesh refinement             = 100 
+   set Strategy                                       = minimum refinement function
+#   set Run postprocessors on initial refinement       = true
+   subsection Minimum refinement function
+     set Coordinate system                           = spherical
+     set Variable names                               = r,longi,lati
+     set Function constants                           = h1=6331e3, h2=6271e3
+     set Function expression                          = if(r>=h1,5,  if(r>h2 &r<h1, 3, 2))
+   end
+end
+
+#Initial age-dependent temperature field                               
+subsection Initial temperature model
+  set Model name = age_assimilation_T
+  subsection Age assimilation model
+    set Data directory = ../../../assim_age_100-20W_60S-20N/
+    set Data file name = assim_age_iniT.%d.dat
+    set Data file time step = 1e6
+    set First data file number = 101
+    set Decreasing file order = true
+    set Maximum oceanic plate thickness = 100e3
+    set Maximum oceanic plate temperature = 1613
+    set Maximum continental plate thickness = 200e3
+    set Maximum continental plate temperature = 1653
+
+  end
+end
+
+subsection Boundary temperature model
+  set Fixed temperature boundary indicators          = outer,inner
+  set List of model names                            = spherical constant
+  subsection Spherical constant
+    set Inner temperature                            = 2729
+    set Outer temperature                            = 273
+  end
+end
+
+subsection Gravity model
+  set Model name = radial constant
+  subsection Radial constant
+    set Magnitude = 10
+  end
+end
+
+# We have two compositional fields, representing the crust and the lithosphere. 
+subsection Compositional fields
+  set Number of fields = 2
+  set Names of fields  = crust, lithosphere
+end
+
+# The inital distribution of these compositional fields is read in through an ascii data file. 
+subsection Initial composition model
+  set Model name = function 
+  subsection Function
+   set Coordinate system                            = spherical
+   set Variable names = rad,lati, long
+   set Function constants = Ts=273, Tbo=1613, Tbc=1621, hb=410e3, ho=10e3
+   set Function expression = if(rad>6321e3, 1, 0); if(rad>6271e3 && rad<=6321e3, 1,0)
+  end 
+
+end
+
+subsection Material model
+  set Model name = multicomponent
+
+  # first entry is background mantle, values are from Naliboff & Buiter, 2015
+  subsection Multicomponent
+    set Densities = 3300, 2800, 3250
+    set Specific heats = 750 
+    set Thermal conductivities = 4.7, 2.5, 2.25 # asthenosphere, crust, lithosphere 
+  end
+end
+
+subsection Postprocess
+  set List of postprocessors = visualization, temperature statistics
+  subsection Visualization
+    set List of output variables = material properties, heat flux map, heating
+    set Time between graphical output = 1e6
+    subsection Material properties
+       set List of material properties = density,thermal expansivity,specific heat,viscosity,thermal diffusivity
+    end
+  end
+end
+
+
