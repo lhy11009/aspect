@@ -85,11 +85,12 @@ namespace aspect
         double katrina_mantle_temperature(const double r) const;
 
         /**
-         * return temperature calculated from a half space cooling model
+         * Calculate temperature from a half-space cooling model
+         * We use the internal temperature and the surface temperature so that it is easier to plug in.
          */ 
         double 
-        half_space_cooling (const double surface_temperature, 
-                            const double mantle_temperature,
+        half_space_cooling (const double internal_temperature, 
+                            const double surface_temperature,
                             const double depth, 
                             const double thermal_diffusivity,
                             const double age) const;

@@ -105,7 +105,6 @@ namespace aspect
       const double PHIC=0.628319;
       const double PHIM=1.06465;
       const double RC=4.000e+05;
-      const double DR=2.000e+04;
       const double ST=2.000e+05;
       const double SM=2.700e+05;
       const double VSUB=1.58549e-09;
@@ -115,38 +114,127 @@ namespace aspect
       const double K=1.000e-06;
 
       double temperature;
+
+
+      // a thickness of thermal boundary on the upper slab boundary
+      const double Ht_slab = sqrt(K*RC/VSUB);
+
       if (phi<=0.0)
+      {
+        // ghost domain
         temperature = TM;
+      }
       else if ((phi<=PHIC)&&(phi>0))
-        //temperature = half_space_cooling(TS, TM, abs(Ro-r), K, Ro*phi/VSUB);
-        temperature = TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*Ro*phi/VSUB))));
+      {
+        // subducting plate
+        temperature = half_space_cooling(TM, TS, abs(Ro-r), K, Ro*phi/VSUB);
+      }
       else if (((Ro-r)<=ST)
                 &&(Ro*phi<=Ro*PHIC+std::min(RC,sqrt(abs(2*RC*(Ro-r)-pow(Ro-r, 2.0)))))
-                &&(phi>PHIC)){
-        //const double subducting_plate_temperature = half_space_cooling(TS, TM, abs(Ro-r), K, Ro*phi/VSUB);
-        //const double depth_within_slab = RC+DR*abs(Ro-r)/SM-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0));
-        //const double slab_temperature = half_space_cooling(TS, TM, depth_within_slab, K, Ro*phi/VSUB);
-        //temperature = std:min(subducting_plate_temperature, slab_temperature);
-        temperature = std::min(TS+(TM-TS)*(1-erfc((RC+DR*abs(Ro-r)/SM-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0)))/\
-                                             (2*sqrt(K*Ro*phi/VSUB)))),\
-                          TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*Ro*phi/VSUB)))));
+                &&(phi>PHIC))
+                {
+        // slab
+        // temperature of the plate at the same depth
+        const double plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, Ro*phi/VSUB);
+        
+        // the depth withing the initial slab
+        const double depth_in_slab = RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0));
+        const double slab_temperature = half_space_cooling(TM, TS, depth_in_slab, K, Ro*phi/VSUB);
+
+        // cooling temperature as the smaller of these two
+
+        const double cooling_temperature = std::min(plate_temperature, slab_temperature);
+
+        // a perturbation on the upper surface
+        // This is implemented as tranform from internal temperature of the slab to surface temperature.
+        // The surface temperature is taken as the average of TS and temperature of overiding plate.
+        const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
+        const double perturbation_temperature = (depth_in_slab < Ht_slab)?
+                                          (over_plate_temperature -cooling_temperature)
+                                          * (1-sin(M_PI/2.0*depth_in_slab/Ht_slab)) / 2.0:
+                                          0.0;
+        
+        // Final temperature is the sum of the two parts.
+        temperature = cooling_temperature + perturbation_temperature;
                 }
       else if (((Ro-r)>ST)
                &&((Ro-r)<=SM)
                &&(Ro*phi<=Ro*PHIC+std::min(RC,sqrt(abs(2*RC*(Ro-r)-pow(Ro-r, 2.0))))))
-        temperature = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST)+\
-                      (TM-(TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST)))*\
-                      (1-erfc((RC+DR*abs(Ro-r)/SM-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow(abs(Ro-r)-RC, 2.0)))/ \
-                              (2*sqrt(K*Ro*phi/VSUB))));
+               {
+        // temperature below the slab tip
+        // A half-space cooling temperature is assigned once more but
+        // an intermediate temperature is taken for the surface temperature.
+        // depth of this interface
+        // This have the same expression to depth_in_slab, except that this is actually below the initial slab
+        const double depth_interface = (RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow(abs(Ro-r)-RC, 2.0)));
+
+        // Intermediate temperature on this interface
+        const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
+
+        const double cooling_temperature = half_space_cooling(TM, T_interface, depth_interface, K, Ro*phi/VSUB);
+        
+        // the depth withing the initial slab
+        const double depth_in_slab = RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0));
+        
+        // temperature overiding plate
+        const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
+        
+        // a perturbation on the upper surface
+        // a thickness of thermal boundary on top
+        // This is implemented as tranform from internal temperature of the slab to surface temperature.
+        // The surface temperature is taken as the average of the intermediate temperature,
+        // and temperature of overiding plate.
+        const double perturbation_temperature = (depth_in_slab < Ht_slab)?
+                                          (over_plate_temperature -cooling_temperature)
+                                          * (1-sin(M_PI/2.0*depth_in_slab/Ht_slab)) / 2.0:
+                                          0.0;
+
+        // Final temperature is the sum of the two parts.
+        temperature = cooling_temperature + perturbation_temperature;
+               }
       else if (PHIM-phi>0)
-        temperature = TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*AGEOP))));
+      {
+        // overiding plate
+        const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
+        
+        // the depth withing the initial slab
+        // This formula includes absolute value just to make sure it is consistent with the previous 'depth_in_slab'
+        const double depth_out_slab = abs(RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0)));
+        
+        // a perturbation on the upper surface of the slab
+        // This is implemented as tranform from temperature of the overiding plate to surface temperature.
+        // Out of the upper boundary layer of the slab, this is 0.0
+        double perturbation_temperature = 0.0;
+        if (depth_out_slab<Ht_slab)
+        { 
+          if ((Ro-r)<ST)
+          {
+            // Surface temperature is taken as the average of TS and temperature of overiding plate.
+            perturbation_temperature = (TS - over_plate_temperature)
+                                        * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab)) / 2.0;
+          }
+          else if ((Ro-r)<SM)
+          {
+            // Surface temperature is taken as the average of an intermediate temperature
+            // and temperature of overiding plate.
+            // Intermediate temperature on this interface
+            const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
+
+            perturbation_temperature = (T_interface - over_plate_temperature)
+                                        * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab)) / 2.0;
+          }
+        }
+        temperature = over_plate_temperature + perturbation_temperature;
+      }
       else
       {
+        // mantle
         temperature = TM;
       }
       return temperature;
     }
     
+
     template <int dim>
     double
     Subduction2T<dim>::
@@ -191,14 +279,14 @@ namespace aspect
     template <int dim>
     double
     Subduction2T<dim>::
-    half_space_cooling (const double surface_temperature, 
-                        const double mantle_temperature,
+    half_space_cooling (const double internal_temperature, 
+                        const double surface_temperature,
                         const double depth, 
                         const double thermal_diffusivity,
                         const double age) const
     {
-      double temperature = surface_temperature + (mantle_temperature-surface_temperature)*
-                                                (1 - erfc(depth / (2 * sqrt(thermal_diffusivity * age))));
+      double temperature = internal_temperature - 
+                           (internal_temperature - surface_temperature) * erfc(depth / (2 * sqrt(thermal_diffusivity * age)));
       return temperature;
     }
 
