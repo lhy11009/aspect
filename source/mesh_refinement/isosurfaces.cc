@@ -196,7 +196,41 @@ namespace aspect
                             }
                         }
 
-                      if ( isosurface.are_all_values_in_range(values))
+                      bool additional_condition = true;
+
+                      // add additional condition for temperature
+                      // see if there is temperature isoline included
+                      bool has_temperature = false;
+                      for (unsigned int index = 0; index < isosurface.properties.size(); ++index)
+                        {
+                          if (isosurface.properties[index].type == Internal::PropertyType::Temperature)
+                            {
+                              has_temperature = true;
+                            }
+                        }
+
+                      // exclude region above a radius, and only include the slab
+                      if (has_temperature)
+                        {
+                          // maximum radius
+                          const double max_radius = 6301e3;
+
+                          // get radius
+                          const Point<dim> i_point = fe_values.quadrature_point(i_quad);
+                          const Utilities::Coordinates::CoordinateSystem coordinate_system_indicator =
+                            Utilities::Coordinates::string_to_coordinate_system("spherical");
+                          Utilities::NaturalCoordinate<dim> natural_point =
+                            this->get_geometry_model().cartesian_to_other_coordinates(i_point, coordinate_system_indicator);
+                          const double radius = natural_point.get_coordinates()[0];
+
+                          // check on radius
+                          if (radius > max_radius)
+                            {
+                              additional_condition = false;
+                            }
+                        }
+
+                      if ( isosurface.are_all_values_in_range(values) && additional_condition)
                         {
                           // If the current refinement level is smaller than or equal to the minimum
                           // refinement level, any coarsening flag should be cleared.
