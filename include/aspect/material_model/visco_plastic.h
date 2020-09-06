@@ -31,8 +31,10 @@
 #include <aspect/material_model/rheology/drucker_prager.h>
 #include <aspect/material_model/equation_of_state/multicomponent_incompressible.h>
 #include <aspect/material_model/rheology/elasticity.h>
+#include <aspect/utilities.h>
 
 #include<deal.II/fe/component_mask.h>
+#include<deal.II/base/parsed_function.h>
 
 namespace aspect
 {
@@ -355,6 +357,14 @@ namespace aspect
                                            MaterialModel::MaterialModelOutputs<dim> &out,
                                            const std::vector<double> &phase_function_values = std::vector<double>()) const;
 
+        /**
+         * A function that resets the values of viscosity in specified region with specified value.
+         * If reset_viscosity is false, this is skipped.
+         */
+        void reset_calculated_viscosities(const unsigned int point_index,
+                                          std::vector<double> &viscosities,
+                                          const MaterialModel::MaterialModelInputs<dim> &in) const;
+
 
         /**
          * A function that returns a ComponentMask that represents all compositional
@@ -411,6 +421,22 @@ namespace aspect
          * Whether to include viscoelasticity in the constitutive formulation.
          */
         bool use_elasticity;
+
+        /**
+         * Whether to reset viscosity for some part as the last step of computing viscosity
+         */
+        bool reset_viscosity;
+
+        /**
+         * A function object representing the temperature used to reset viscosity
+         */
+        Functions::ParsedFunction<dim> reset_viscosity_function;
+
+        /**
+         * The coordinate representation to evaluate the function to reset viscosity. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
     };
 
   }
