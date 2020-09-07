@@ -702,6 +702,17 @@ namespace aspect
               reset_calculated_viscosities(i, out.viscosities, in);
             }
         }
+
+      // Reaction at mid ocean ridge
+      if (reaction_mor)
+        {
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim> >();
+              reaction_mor_compositions(i, out.reaction_terms, reaction_rate_out, in);
+            }
+        }
+
     }
 
     template <int dim>
@@ -850,11 +861,40 @@ namespace aspect
 
           // Reset Viscosity for some part as the last step of computing viscosity
           prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
-                             "Reset viscosity ");
+                             "Reset viscosity");
           prm.enter_subsection("Reset viscosity function");
           {
             /**
-             * Choose the coordinates to evaluate the maximum refinement level
+             * Choose the coordinates to evaluate the Reset viscosity
+             * function. The function can be declared in dependence of depth,
+             * cartesian coordinates or spherical coordinates. Note that the order
+             * of spherical coordinates is r,phi,theta and not r,theta,phi, since
+             * this allows for dimension independent expressions.
+             */
+            prm.declare_entry ("Coordinate system", "cartesian",
+                               Patterns::Selection ("cartesian|spherical|depth"),
+                               "A selection that determines the assumed coordinate "
+                               "system for the function variables. Allowed values "
+                               "are `cartesian', `spherical', and `depth'. `spherical' coordinates "
+                               "are interpreted as r,phi or r,phi,theta in 2D/3D "
+                               "respectively with theta being the polar angle. `depth' "
+                               "will create a function, in which only the first "
+                               "parameter is non-zero, which is interpreted to "
+                               "be the depth of the point.");
+
+            Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
+          }
+          prm.leave_subsection();
+
+          // chemical reaction at the mor
+          prm.declare_entry ("Reaction mor", "false", Patterns::Bool(),
+                             "Whether to include chemical reaction at mid-ocean ridge");
+
+          // a function for chemical reaction at the mor
+          prm.enter_subsection("Reaction mor function");
+          {
+            /**
+             * Choose the coordinates to evaluate the Reaction mor
              * function. The function can be declared in dependence of depth,
              * cartesian coordinates or spherical coordinates. Note that the order
              * of spherical coordinates is r,phi,theta and not r,theta,phi, since
@@ -1007,6 +1047,8 @@ namespace aspect
 
           // Reset viscosity for some part as the last step of computing viscosity
           reset_viscosity = prm.get_bool("Reset viscosity");
+
+          // A function for reset viscosity for some part as the last step of computing viscosity
           prm.enter_subsection("Reset viscosity function");
           {
             reset_viscosity_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
@@ -1026,6 +1068,31 @@ namespace aspect
               throw;
             }
           prm.leave_subsection();
+
+          // Chemical reaction at the mor
+          reaction_mor = prm.get_bool("Reaction mor");
+
+          // A function for chemical reaction at the mor
+          prm.enter_subsection("Reaction mor function");
+          {
+            reaction_mor_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
+          }
+          try
+            {
+              reaction_mor_function.parse_parameters (prm);
+            }
+          catch (...)
+            {
+              std::cerr << "ERROR: FunctionParser failed to parse\n"
+                        << "\t'Reaction mor.Function'\n"
+                        << "with expression\n"
+                        << "\t'" << prm.get("Function expression") << "'"
+                        << "More information about the cause of the parse error \n"
+                        << "is shown below.\n";
+              throw;
+            }
+          prm.leave_subsection();
+
         }
         prm.leave_subsection();
       }
@@ -1070,6 +1137,59 @@ namespace aspect
         {
           viscosities[i] = new_viscosity;
         }
+    }
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::reaction_mor_compositions(const unsigned int i,
+                                                 std::vector<std::vector<double> > &reaction_terms,
+                                                 ReactionRateOutputs<dim> *reaction_rate_out,
+                                                 const MaterialModel::MaterialModelInputs<dim> &in) const
+    {
+      // get value of composition
+      const std::vector<double> &composition = in.composition[i];
+
+      // figure out the right condition by function
+      // convert to coordinate system used by the function
+      Utilities::NaturalCoordinate<dim> point =
+        this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], reaction_mor_function_coordinate_system);
+
+      // get index of target composition from function
+      // use negative value as invalid value
+      const int composition_index = reaction_mor_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
+
+      // modify the reaction term accordingly
+      for (unsigned c=0; c<this->n_compositional_fields(); ++c)
+        {
+          double delta_C = 0.0;
+          // reset value of compositions
+          if (composition_index >= 0)
+            {
+              if (c == (unsigned) composition_index)
+                {
+                  delta_C = 1.0 - composition[c];
+                }
+              else
+                {
+                  delta_C = - composition[c];
+                }
+            }
+          reaction_terms[i][c] = delta_C;
+
+          // Fill reaction rate outputs instead of the reaction terms if we use operator splitting
+          // (and then set the latter to zero).
+          if (this->get_parameters().use_operator_splitting)
+            {
+              if (reaction_rate_out != nullptr)
+                reaction_rate_out->reaction_rates[i][c] = (this->get_timestep_number() > 0
+                                                           ?
+                                                           reaction_terms[i][c] / this->get_timestep()
+                                                           :
+                                                           0.0);
+              reaction_terms[i][c] = 0.0;
+            }
+        }
+
     }
 
 

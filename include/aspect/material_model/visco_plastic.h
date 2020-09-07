@@ -365,6 +365,15 @@ namespace aspect
                                           std::vector<double> &viscosities,
                                           const MaterialModel::MaterialModelInputs<dim> &in) const;
 
+        /**
+         * A function that react the composition fields in mor region
+         * If reaction_mor is false, this is skipped.
+         */
+        void reaction_mor_compositions(const unsigned int point_index,
+                                       std::vector<std::vector<double> > &reaction_terms,
+                                       ReactionRateOutputs<dim> *reaction_rate_out,
+                                       const MaterialModel::MaterialModelInputs<dim> &in) const;
+
 
         /**
          * A function that returns a ComponentMask that represents all compositional
@@ -437,6 +446,22 @@ namespace aspect
          * choices are depth, cartesian and spherical.
          */
         Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
+
+        /*
+        * Whether this is chemical reaction at the mor
+        */
+        bool reaction_mor;
+
+        /**
+         * A function object representing the composition index of chemical reaction at mor
+         */
+        Functions::ParsedFunction<dim> reaction_mor_function;
+
+        /**
+         * The coordinate representation to evaluate the function to react chemical at mor. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem reaction_mor_function_coordinate_system;
     };
 
   }
