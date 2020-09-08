@@ -862,6 +862,11 @@ namespace aspect
           // Reset Viscosity for some part as the last step of computing viscosity
           prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
                              "Reset viscosity");
+
+          // Add a variable: fix_unrealistic_compositions
+          prm.declare_entry ("Fix unrealistic compositions", "false", Patterns::Bool(),
+                             "Fix unrealistic compositions");
+
           prm.enter_subsection("Reset viscosity function");
           {
             /**
@@ -1072,6 +1077,9 @@ namespace aspect
           // Chemical reaction at the mor
           reaction_mor = prm.get_bool("Reaction mor");
 
+          // Add a fix_unrealistic_compositions variable
+          fix_unrealistic_compositions = prm.get_bool("Fix unrealistic compositions");
+
           // A function for chemical reaction at the mor
           prm.enter_subsection("Reaction mor function");
           {
@@ -1162,9 +1170,22 @@ namespace aspect
       for (unsigned c=0; c<this->n_compositional_fields(); ++c)
         {
           double delta_C = 0.0;
-          // reset value of compositions
-          if (composition_index >= 0)
+
+          // determine whether to reset composition in the mor region
+          bool condition = false;
+          if (fix_unrealistic_compositions)
             {
+              condition = (composition_index >= 0 && composition[c] > 0.0 && composition[c] < 1.0);
+            }
+          else
+            {
+              condition = (composition_index >= 0);
+            }
+
+
+          if (condition)
+            {
+              // reset value of compositions, only take care of realistic values
               if (c == (unsigned) composition_index)
                 {
                   delta_C = 1.0 - composition[c];
@@ -1173,6 +1194,16 @@ namespace aspect
                 {
                   delta_C = - composition[c];
                 }
+            }
+          else if ( fix_unrealistic_compositions && composition[c] < 0.0)
+            {
+              // take care of unrealistic negative values
+              delta_C = - composition[c];
+            }
+          else if ( fix_unrealistic_compositions && composition[c] > 1.0)
+            {
+              // take care of unrealistic values bigger than 1.0
+              delta_C = 1.0 - composition[c];
             }
           reaction_terms[i][c] = delta_C;
 

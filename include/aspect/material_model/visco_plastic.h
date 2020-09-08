@@ -368,6 +368,9 @@ namespace aspect
         /**
          * A function that react the composition fields in mor region
          * If reaction_mor is false, this is skipped.
+         * For values that are non-realistic (negative or bigger than one), a condition is
+         * implemented to react these values to 0.0 or 1.0. This has higher priority than
+         * reaction in mor region.
          */
         void reaction_mor_compositions(const unsigned int point_index,
                                        std::vector<std::vector<double> > &reaction_terms,
@@ -451,6 +454,11 @@ namespace aspect
         * Whether this is chemical reaction at the mor
         */
         bool reaction_mor;
+
+        /*
+        * Whether unrealistic values of compositions(negative or bigger than one) are fixed
+        */
+        bool fix_unrealistic_compositions;
 
         /**
          * A function object representing the composition index of chemical reaction at mor
