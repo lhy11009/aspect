@@ -1,0 +1,20 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Iterations for temperature solver
+# 10: Iterations for composition solver 1
+# 11: Iterations for Stokes solver
+# 12: Velocity iterations in Stokes preconditioner
+# 13: Schur complement iterations in Stokes preconditioner
+# 14: Visualization file name
+# 15: RMS velocity (m/year)
+# 16: Max. velocity (m/year)
+# 17: Number of advected particles
+# 18: Particle file name
+0 0.000000000000e+00 0.000000000000e+00 400 3808 1683 1683 4 0  0 64 1002 213 output-test_additional_viscosity_outputs/solution/solution-00000 4.49120217e-03 1.63464639e-02 22 output-test_additional_viscosity_outputs/particles/particles-00000 
+1 1.240362864006e+06 1.240362864006e+06 400 3808 1683 1683 2 0 34 33  295 111 output-test_additional_viscosity_outputs/solution/solution-00001 1.14492739e-02 3.77018912e-02 22 output-test_additional_viscosity_outputs/particles/particles-00001 

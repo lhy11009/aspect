@@ -19,6 +19,7 @@
 */
 
 #include <aspect/material_model/visco_plastic.h>
+#include <aspect/material_model/grain_size.h>
 #include <aspect/utilities.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/base/signaling_nan.h>
@@ -39,6 +40,13 @@ namespace aspect
         names.emplace_back("current_cohesions");
         names.emplace_back("current_friction_angles");
         names.emplace_back("plastic_yielding");
+        return names;
+      }
+      
+      std::vector<std::string> make_additional_viscosity_outputs_names()
+      {
+        std::vector<std::string> names;
+        names.emplace_back("dislocation_viscosity");
         return names;
       }
     }
@@ -168,6 +176,32 @@ namespace aspect
       // We will never get here, so just return something
       return cohesions;
     }
+    
+    template <int dim>
+    AdditionalViscosityOutputs<dim>::AdditionalViscosityOutputs (const unsigned int n_points)
+      :
+      NamedAdditionalMaterialOutputs<dim>(make_additional_viscosity_outputs_names()),
+      dislocation_viscosities(n_points, numbers::signaling_nan<double>())
+    {}
+
+
+
+    template <int dim>
+    std::vector<double>
+    AdditionalViscosityOutputs<dim>::get_nth_output(const unsigned int idx) const
+    {
+      AssertIndexRange (idx, 1);
+      switch (idx)
+        {
+          case 0:
+            return dislocation_viscosities;
+
+          default:
+            AssertThrow(false, ExcInternalError());
+        }
+      // we will never get here, so just return something
+      return dislocation_viscosities;
+    }
 
 
 
@@ -179,7 +213,8 @@ namespace aspect
                                      const std::vector<double> &volume_fractions,
                                      const ViscosityScheme &viscous_type,
                                      const YieldScheme &yield_type,
-                                     const std::vector<double> &phase_function_values) const
+                                     const std::vector<double> &phase_function_values,
+                                     AdditionalViscosityOutputs<dim> *add_viscosities_out) const
     {
       // Initialize or fill variables used to calculate viscosities
       std::vector<bool> composition_yielding(volume_fractions.size(), false);
@@ -234,6 +269,12 @@ namespace aspect
           const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, in.pressure[i], temperature_for_viscosity, j,
                                                                                    phase_function_values,
                                                                                    phase_function.n_phase_transitions_for_each_composition());
+          
+          // record the viscosity_dislocation for output
+          if (add_viscosities_out != nullptr)
+          {
+            add_viscosities_out->dislocation_viscosities[i] = viscosity_dislocation;
+          }
 
           // Step 1c: select what form of viscosity to use (diffusion, dislocation, fk, or composite)
           double viscosity_pre_yield = 0.0;
@@ -636,9 +677,20 @@ namespace aspect
               // isostrain amongst all compositions, allowing calculation of the viscosity ratio.
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
-              const std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities =
-                calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
-                                                yield_mechanism, phase_function_values);
+              
+              // prepare for output of dislocation creep
+              std::pair<std::vector<double>, std::vector<bool> > calculate_viscosities;
+              if(AdditionalViscosityOutputs<dim> *add_viscosities_out = out.template get_additional_output<AdditionalViscosityOutputs<dim> >())
+              {
+                // change for output dislocation creep viscosity
+                calculate_viscosities = calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
+                                                                        yield_mechanism, phase_function_values, add_viscosities_out);
+              }
+              else
+              {
+                calculate_viscosities = calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
+                                                                        yield_mechanism, phase_function_values);
+              }
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
@@ -1126,6 +1178,13 @@ namespace aspect
         }
       if (use_elasticity)
         elastic_rheology.create_elastic_outputs(out);
+      // add dislocation viscosity
+      if (out.template get_additional_output<AdditionalViscosityOutputs<dim> >() == nullptr)
+        {
+          const unsigned int n_points = out.n_evaluation_points();
+          out.additional_outputs.push_back(
+            std_cxx14::make_unique<MaterialModel::AdditionalViscosityOutputs<dim>> (n_points));
+        }
     }
 
     template <int dim>

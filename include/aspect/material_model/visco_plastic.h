@@ -75,6 +75,27 @@ namespace aspect
          */
         std::vector<double> yielding;
     };
+    
+    /**
+     * Additional output fields for the dislocation viscosity parameters
+     * to be added to the MaterialModel::MaterialModelOutputs structure
+     * and filled in the MaterialModel::GrainSize::evaluate() function.
+     */
+    template <int dim>
+    class AdditionalViscosityOutputs : public NamedAdditionalMaterialOutputs<dim>
+    {
+      public:
+        AdditionalViscosityOutputs(const unsigned int n_points);
+
+        std::vector<double> get_nth_output(const unsigned int idx) const override;
+
+        /**
+         * Dislocation viscosities at the evaluation points passed to
+         * the instance of MaterialModel::Interface::evaluate() that fills
+         * the current object.
+         */
+        std::vector<double> dislocation_viscosities;
+    };
 
     /**
      * A material model combining viscous and plastic deformation, with
@@ -331,7 +352,8 @@ namespace aspect
                                           const std::vector<double> &volume_fractions,
                                           const ViscosityScheme &viscous_type,
                                           const YieldScheme &yield_type,
-                                          const std::vector<double> &phase_function_values = std::vector<double>()) const;
+                                          const std::vector<double> &phase_function_values = std::vector<double>(),
+                                          AdditionalViscosityOutputs<dim> *add_viscosities_out = nullptr) const;
 
 
         /**

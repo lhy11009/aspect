@@ -1,0 +1,106 @@
+-----------------------------------------------------------------------------
+-- This is ASPECT, the Advanced Solver for Problems in Earth's ConvecTion.
+--     . version 2.3.0-pre (output_diffusion_creep, 776f3a8c3)
+--     . using deal.II 9.2.0
+--     .       with 32 bit indices and vectorization level 1 (128 bits)
+--     . using Trilinos 12.18.1
+--     . using p4est 2.2.0
+--     . running in DEBUG mode
+--     . running with 1 MPI process
+-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+-- For information on how to cite ASPECT, see:
+--   https://aspect.geodynamics.org/citing.html?ver=2.3.0-pre&particles=1&sha=776f3a8c3&src=code
+-----------------------------------------------------------------------------
+Number of active cells: 400 (on 1 levels)
+Number of degrees of freedom: 7,174 (3,366+442+1,683+1,683)
+
+*** Timestep 0:  t=0 years
+   Solving temperature system... 0 iterations.
+   Solving slab system ... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+20 iterations.
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.61639e-16, 2.39993e-16, 1
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 1
+
+   Solving temperature system... 0 iterations.
+   Solving slab system ... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+17 iterations.
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.61639e-16, 2.39993e-16, 1.10505
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 1.10505
+
+   Solving temperature system... 0 iterations.
+   Solving slab system ... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+16 iterations.
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.61639e-16, 2.39993e-16, 0.560694
+      Relative nonlinear residual (total system) after nonlinear iteration 3: 0.560694
+
+   Solving temperature system... 0 iterations.
+   Solving slab system ... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+15 iterations.
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.61639e-16, 2.39993e-16, 0.335523
+      Relative nonlinear residual (total system) after nonlinear iteration 4: 0.335523
+
+
+   Postprocessing:
+     Writing graphical output: output-test_additional_viscosity_outputs/solution/solution-00000
+     RMS, max velocity:        0.00449 m/year, 0.0163 m/year
+     Writing particle output:  output-test_additional_viscosity_outputs/particles/particles-00000
+
+*** Timestep 1:  t=1.24036e+06 years
+   Solving temperature system... 0 iterations.
+   Solving slab system ... 13 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+18 iterations.
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.87517e-16, 0.117376, 0.59601
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.59601
+
+   Solving temperature system... 0 iterations.
+   Solving slab system ... 21 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+17 iterations.
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.96356e-16, 0.0904417, 0.220354
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 0.220354
+
+
+   Postprocessing:
+     Writing graphical output: output-test_additional_viscosity_outputs/solution/solution-00001
+     RMS, max velocity:        0.0114 m/year, 0.0377 m/year
+     Writing particle output:  output-test_additional_viscosity_outputs/particles/particles-00001
+
+Termination requested by criterion: end step
+
+
++----------------------------------------------+------------+------------+
+| Total wallclock time elapsed since start     |      17.5s |            |
+|                                              |            |            |
+| Section                          | no. calls |  wall time | % of total |
++----------------------------------+-----------+------------+------------+
+| Assemble Stokes system           |         6 |      2.81s |        16% |
+| Assemble composition system      |         6 |      4.15s |        24% |
+| Assemble temperature system      |         6 |      4.38s |        25% |
+| Build Stokes preconditioner      |         6 |      2.34s |        13% |
+| Build composition preconditioner |         6 |    0.0212s |      0.12% |
+| Build temperature preconditioner |         6 |    0.0246s |      0.14% |
+| Initialization                   |         1 |     0.822s |       4.7% |
+| Particles: Advect                |         4 |   0.00406s |         0% |
+| Particles: Generate              |         1 |    0.0162s |         0% |
+| Particles: Initialization        |         1 |  0.000258s |         0% |
+| Particles: Sort                  |         4 |    0.0111s |         0% |
+| Postprocessing                   |         2 |      1.34s |       7.6% |
+| Setup dof systems                |         1 |     0.216s |       1.2% |
+| Setup initial conditions         |         1 |     0.235s |       1.3% |
+| Setup matrices                   |         1 |     0.139s |      0.79% |
+| Solve Stokes system              |         6 |     0.936s |       5.3% |
+| Solve composition system         |         6 |    0.0115s |         0% |
+| Solve temperature system         |         6 |   0.00737s |         0% |
++----------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-- For information on how to cite ASPECT, see:
+--   https://aspect.geodynamics.org/citing.html?ver=2.3.0-pre&particles=1&sha=776f3a8c3&src=code
+-----------------------------------------------------------------------------
