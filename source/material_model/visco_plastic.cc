@@ -47,6 +47,7 @@ namespace aspect
       {
         std::vector<std::string> names;
         names.emplace_back("dislocation_viscosity");
+        names.emplace_back("diffusion_viscosity");
         return names;
       }
     }
@@ -181,7 +182,8 @@ namespace aspect
     AdditionalViscosityOutputs<dim>::AdditionalViscosityOutputs (const unsigned int n_points)
       :
       NamedAdditionalMaterialOutputs<dim>(make_additional_viscosity_outputs_names()),
-      dislocation_viscosities(n_points, numbers::signaling_nan<double>())
+      dislocation_viscosities(n_points, numbers::signaling_nan<double>()),
+      diffusion_viscosities(n_points, numbers::signaling_nan<double>())
     {}
 
 
@@ -190,11 +192,14 @@ namespace aspect
     std::vector<double>
     AdditionalViscosityOutputs<dim>::get_nth_output(const unsigned int idx) const
     {
-      AssertIndexRange (idx, 1);
+      AssertIndexRange (idx, 2);
       switch (idx)
         {
           case 0:
             return dislocation_viscosities;
+          
+          case 1:
+            return diffusion_viscosities;
 
           default:
             AssertThrow(false, ExcInternalError());
@@ -264,13 +269,19 @@ namespace aspect
           const double viscosity_diffusion = diffusion_creep.compute_viscosity(in.pressure[i], temperature_for_viscosity, j,
                                                                                phase_function_values,
                                                                                phase_function.n_phase_transitions_for_each_composition());
+          
+          // record the diffusion viscosities for output
+          if (add_viscosities_out != nullptr)
+          {
+            add_viscosities_out->diffusion_viscosities[i] = viscosity_diffusion;
+          }
 
           // Step 1b: compute viscosity from dislocation creep law
           const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, in.pressure[i], temperature_for_viscosity, j,
                                                                                    phase_function_values,
                                                                                    phase_function.n_phase_transitions_for_each_composition());
           
-          // record the viscosity_dislocation for output
+          // record the dislocation viscosities for output
           if (add_viscosities_out != nullptr)
           {
             add_viscosities_out->dislocation_viscosities[i] = viscosity_dislocation;
