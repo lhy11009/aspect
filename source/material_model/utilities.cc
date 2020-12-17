@@ -834,6 +834,12 @@ namespace aspect
               function_value = (depth_deviation > 0) ? 1. : 0.;
             else
               function_value = 0.5*(1.0 + std::tanh(depth_deviation / transition_widths[in.phase_index]));
+
+            // use lower limits and upper limits to restrict the region of phase transition
+            if (in.depth < transition_depth_lower_limits[in.phase_index])
+              function_value = 0.0;
+            else if (in.depth > transition_depth_upper_limits[in.phase_index])
+              function_value = 1.0;
           }
         else
           {
@@ -846,8 +852,13 @@ namespace aspect
               function_value = (pressure_deviation > 0) ? 1. : 0.;
             else
               function_value = 0.5*(1.0 + std::tanh(pressure_deviation / transition_pressure_widths[in.phase_index]));
-          }
 
+            // use lower limits and upper limits to restrict the region of phase transition
+            if (in.pressure < transition_pressure_lower_limits[in.phase_index])
+              function_value = 0.0;
+            else if (in.depth > transition_pressure_upper_limits[in.phase_index])
+              function_value = 1.0;
+          }
         return function_value;
       }
 
@@ -988,6 +999,30 @@ namespace aspect
                            "For negative slopes the other way round. "
                            "List must have the same number of entries as Phase transition depths. "
                            "Units: \\si{\\pascal\\per\\kelvin}.");
+        prm.declare_entry ("Phase transition depth lower limits", "-1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of depth. The phase transitions "
+                           "only happen at deeper region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\meter}.");
+        prm.declare_entry ("Phase transition depth upper limits", "1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of depth. The phase transitions "
+                           "only happen at shallower region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\meter}.");
+        prm.declare_entry ("Phase transition pressure lower limits", "-1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of pressure. The phase transitions "
+                           "only happen at deeper region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\pascal}.");
+        prm.declare_entry ("Phase transition pressure upper limits", "1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of pressure. The phase transitions "
+                           "only happen at shallower region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\pascal}.");
       }
 
 
@@ -1023,6 +1058,23 @@ namespace aspect
                                                                                true,
                                                                                n_phase_transitions_per_composition,
                                                                                true);
+            
+            transition_depth_lower_limits         = Utilities::parse_map_to_double_array (prm.get("Phase transition depth lower limits"),
+                                                                               list_of_composition_names,
+                                                                               has_background_field,
+                                                                               "Phase transition depth lower limits",
+                                                                               true,
+                                                                               n_phase_transitions_per_composition,
+                                                                               true);
+            
+            transition_depth_upper_limits         = Utilities::parse_map_to_double_array (prm.get("Phase transition depth upper limits"),
+                                                                               list_of_composition_names,
+                                                                               has_background_field,
+                                                                               "Phase transition depth upper limits",
+                                                                               true,
+                                                                               n_phase_transitions_per_composition,
+                                                                               true);
+            
           }
         else
           {
@@ -1038,6 +1090,22 @@ namespace aspect
                                                                                list_of_composition_names,
                                                                                has_background_field,
                                                                                "Phase transition pressure widths",
+                                                                               true,
+                                                                               n_phase_transitions_per_composition,
+                                                                               true);
+
+            transition_pressure_lower_limits         = Utilities::parse_map_to_double_array (prm.get("Phase transition pressure lower limits"),
+                                                                               list_of_composition_names,
+                                                                               has_background_field,
+                                                                               "Phase transition pressure lower limits",
+                                                                               true,
+                                                                               n_phase_transitions_per_composition,
+                                                                               true);
+            
+            transition_pressure_upper_limits         = Utilities::parse_map_to_double_array (prm.get("Phase transition pressure upper limits"),
+                                                                               list_of_composition_names,
+                                                                               has_background_field,
+                                                                               "Phase transition pressure upper limits",
                                                                                true,
                                                                                n_phase_transitions_per_composition,
                                                                                true);

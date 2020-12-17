@@ -419,6 +419,10 @@ namespace aspect
           std::vector<double> transition_widths;
           std::vector<double> transition_pressure_widths;
           std::vector<double> transition_slopes;
+          std::vector<double> transition_depth_lower_limits;
+          std::vector<double> transition_depth_upper_limits;
+          std::vector<double> transition_pressure_lower_limits;
+          std::vector<double> transition_pressure_upper_limits;
 
           /**
            * Whether to define the phase transitions based on depth, or pressure.
