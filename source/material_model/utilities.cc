@@ -819,9 +819,17 @@ namespace aspect
       {
         // the percentage of material that has undergone the transition
         double function_value;
-
-        if (use_depth_instead_of_pressure)
-          {
+        double use_manually_method_for_spcrust = manually_method_crust[in.phase_index];
+        if ( abs(use_manually_method_for_spcrust - 1.0) < 1e-8)
+        {
+           function_value = compute_value_crust_1_0(in);
+        }
+        else if ( abs(use_manually_method_for_spcrust - 1.1) < 1e-8)
+        {
+           function_value = compute_value_crust_1_1(in);
+        }
+        else if (use_depth_instead_of_pressure)
+        {
             // calculate the deviation from the transition point (convert temperature to depth)
             double depth_deviation = in.depth - transition_depths[in.phase_index];
 
@@ -941,6 +949,152 @@ namespace aspect
         return transition_slopes[phase_index];
       }
 
+      template <int dim>
+      double
+      PhaseFunction<dim>::
+      compute_value_crust_1_0 (const PhaseFunctionInputs<dim> &in) const
+      {
+        const double version = 1.0;
+        // version 1.0
+        double function_value = 0.0;
+        int phase_index_crust = 0;
+        // composition-wise index
+        while ( abs(manually_method_crust[in.phase_index - phase_index_crust - 1] - version) < 1e-8)
+            phase_index_crust++;
+        // find a region in a phase diagram
+        const double P0 = 1.50e9; // Pa
+        std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, 0.0, 0.0, false, false, false);
+        
+        // define ecologite transition by temperature
+        const double W1 = 75.0;
+        // const double T1 = 1048.0; // K
+        const double T1 = crust_eclogite_transition_T + W1;  // as what we need is the dash line
+        std::pair<bool, double> result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+
+        const int phase_index_660 = in.phase_index - phase_index_crust + 2;  // third one
+        const double d660 = transition_depths[phase_index_660];
+        const double T660 = transition_temperatures[phase_index_660];
+        const double W660 = transition_widths[phase_index_660];
+        const double slope660 = transition_slopes[phase_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+        // std::cout << d660 << T660 << W660 << slope660/in.pressure_depth_derivative << in.pressure << in.temperature << std::endl;
+
+        if (result0.first && result1.first && (!result660.first)){
+          // crustal eclogite transition
+          if (phase_index_crust == 0)
+          {
+            function_value = 0.5*(1.0 + std::tanh(result1.second/W1));
+          }
+          else
+            function_value = 0.0;
+        }
+        else if ( (!result1.first) && result660.first){
+          // 660 for mantle
+          function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+        }
+        else if ( result1.first && result660.first){
+          // 660 for crust
+          if (phase_index_crust == 0)
+            function_value = 1.0;
+          else
+            function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+        }
+        else{
+          // phase 0
+          function_value = 0.0;
+        }
+        return function_value;
+      }
+
+      template <int dim>
+      double
+      PhaseFunction<dim>::
+      compute_value_crust_1_1 (const PhaseFunctionInputs<dim> &in) const
+      {
+        // version 1.1
+        const double version = 1.1;
+        double function_value = 0.0;
+        int phase_index_crust = 0;
+        // composition-wise index
+        while ( abs(manually_method_crust[in.phase_index - phase_index_crust - 1] - version) < 1e-8)
+            phase_index_crust++;
+        // find a region in a phase diagram
+        // todo
+        const double W0 = crust_eclogite_transition_P_width;
+        const double P0 = crust_eclogite_transition_P + W0; // Pa
+        std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, W0, 0.0, false, false, false);
+        
+        // define ecologite transition by temperature
+        const double W1 = crust_eclogite_transition_T_width;
+        // const double T1 = 1048.0; // K
+        const double T1 = crust_eclogite_transition_T + W1;  // as what we need is the dash line
+        std::pair<bool, double> result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+
+        const int phase_index_660 = in.phase_index - phase_index_crust + 2;  // third one
+        const double d660 = transition_depths[phase_index_660];
+        const double T660 = transition_temperatures[phase_index_660];
+        const double W660 = transition_widths[phase_index_660];
+        const double slope660 = transition_slopes[phase_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+        // std::cout << d660 << T660 << W660 << slope660/in.pressure_depth_derivative << in.pressure << in.temperature << std::endl;
+
+        if (result0.first && result1.first && (!result660.first)){
+          // crustal eclogite transition
+          const double deviation = std::min(result0.second/W0, result1.second/W1);
+          if (phase_index_crust == 0)
+          {
+            function_value = 0.5*(1.0 + std::tanh(deviation));
+          }
+          else
+            function_value = 0.0;
+        }
+        else if ( (!result1.first) && result660.first){
+          // 660 for mantle
+          function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+        }
+        else if ( result1.first && result660.first){
+          // 660 for crust
+          if (phase_index_crust == 0)
+            function_value = 1.0;
+          else
+            function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+        }
+        else{
+          // phase 0
+          function_value = 0.0;
+        }
+        return function_value;
+      }
+
+      template<int dim> 
+      std::pair<bool, double> 
+      PhaseFunction<dim>::
+      compute_point_to_line (const PhaseFunctionInputs<dim> &in, 
+                             const double T, const double P, const double W, const double slope,
+                             bool by_depth, bool is_negative, bool is_vertical) const
+      {
+        // In this approach, we define a transition as a solid line and a range.
+        // The solid line is a rigid boundary for the new phase.
+        // While the range is a width of transition. 
+        double deviation;
+        bool is_in;
+        if (is_vertical)
+          deviation = in.temperature - T;
+        else
+        {
+          if (by_depth)
+            deviation = in.depth - P - slope * (in.temperature - T);
+          else
+            deviation = in.pressure - P - slope * (in.temperature - T);
+        }
+        // In this approach, a transition must has a direction in defination
+        // We need an opposite direction when the transition defined from higher pressure to lower pressure.
+        if (is_negative)
+          deviation *= -1.0;
+        // Deviation must be smaller than 2*W, value for function would be 0.04 there.
+        is_in = (deviation > -2.0 * W);
+        return std::make_pair(is_in, deviation);
+      }
 
 
       template <int dim>
@@ -1023,6 +1177,27 @@ namespace aspect
                            "only happen at shallower region"
                            "List must have the same number of entries as Phase transition depths. "
                            "Units: \\si{\\pascal}.");
+        // define the manually defined composition
+        prm.declare_entry ("Manually define phase method crust", "0.0",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of pressure. The phase transitions "
+                           "only happen at shallower region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\pascal}.");
+        prm.enter_subsection ("Eclogite transition");
+        {
+          // declare A value for the eclogite transition temperature
+          // todo
+          prm.declare_entry ("Temperature for eclogite transition", "973.0", Patterns::Double (),
+                             "The temperature for crustal phase transition");
+          prm.declare_entry ("Temperature width for eclogite transition", "75.0", Patterns::Double (),
+                             "The width of temperature for crustal phase transition");
+          prm.declare_entry ("Pressure for eclogite transition", "1.5e9", Patterns::Double (),
+                             "The pressure for crustal phase transition");
+          prm.declare_entry ("Pressure width for eclogite transition", "0.5e9", Patterns::Double (),
+                             "The width of pressure for crustal phase transition");
+        }
+        prm.leave_subsection();
       }
 
 
@@ -1040,6 +1215,7 @@ namespace aspect
         n_phase_transitions_per_composition.reset(new std::vector<unsigned int>());
 
         use_depth_instead_of_pressure = prm.get_bool ("Define transition by depth instead of pressure");
+
 
         if (use_depth_instead_of_pressure)
           {
@@ -1075,6 +1251,25 @@ namespace aspect
                                                                                n_phase_transitions_per_composition,
                                                                                true);
             
+        // parse the manually defined composition
+        // prm.get_bool ("Define transition by depth instead of pressure") =prm.get_bool ("Manually define phase method composition")
+            manually_method_crust         = Utilities::parse_map_to_double_array (prm.get("Manually define phase method crust"),
+                                                                               list_of_composition_names,
+                                                                               has_background_field,
+                                                                               "Define transition by depth instead of pressure",
+                                                                               true,
+                                                                               n_phase_transitions_per_composition,
+                                                                               true);
+        // parse A value for the eclogite transition temperature
+        // todo
+            prm.enter_subsection ("Eclogite transition");
+            {
+              crust_eclogite_transition_T     =  Utilities::string_to_double(prm.get("Temperature for eclogite transition"));
+              crust_eclogite_transition_T_width     =  Utilities::string_to_double(prm.get("Temperature width for eclogite transition"));
+              crust_eclogite_transition_P     =  Utilities::string_to_double(prm.get("Pressure for eclogite transition"));
+              crust_eclogite_transition_P_width     =  Utilities::string_to_double(prm.get("Pressure width for eclogite transition"));
+            }
+            prm.leave_subsection();
           }
         else
           {

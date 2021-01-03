@@ -389,6 +389,20 @@ namespace aspect
           n_phase_transitions_for_each_composition () const;
 
           /**
+          * Compute value for crust compostion
+          */ 
+          double compute_value_crust_1_0 (const PhaseFunctionInputs<dim> &in) const;
+          
+          double compute_value_crust_1_1 (const PhaseFunctionInputs<dim> &in) const;
+          
+          /**
+          * Compute relative position to a line
+          */ 
+          std::pair<bool, double> compute_point_to_line (const PhaseFunctionInputs<dim> &in,
+                                                         const double T, const double P, const double W, const double slope,
+                                                         bool by_depth, bool is_negative, bool is_vertical) const;
+
+          /**
            * Declare the parameters this class takes through input files.
            * Note that this class does not declare its own subsection,
            * i.e. the parameters will be declared in the subsection that
@@ -436,6 +450,21 @@ namespace aspect
            * A vector that stores how many phase transitions there are for each compositional field.
            */
           std::shared_ptr<std::vector<unsigned int> > n_phase_transitions_per_composition;
+
+          /**
+           * A method define the composition which uses self-defined way to compute phase value
+           */
+          std::vector<double> manually_method_crust;
+
+          /**
+           * todo
+           * A value for the eclogite transition temperature
+           */
+          double crust_eclogite_transition_T;
+          double crust_eclogite_transition_T_width;
+          double crust_eclogite_transition_P;
+          double crust_eclogite_transition_P_width;
+
       };
     }
   }
