@@ -149,9 +149,11 @@ namespace aspect
         // This is implemented as tranform from internal temperature of the slab to surface temperature.
         // The surface temperature is taken as the average of TS and temperature of overiding plate.
         const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
+        // todo method for perturbation
+        double perturbation_fucntion_value = sin(M_PI/2.0*depth_in_slab/Ht_slab);
         const double perturbation_temperature = (depth_in_slab < Ht_slab)?
                                           (over_plate_temperature -cooling_temperature)
-                                          * (1-sin(M_PI/2.0*depth_in_slab/Ht_slab)) / 2.0:
+                                          * (1- perturbation_fucntion_value/ 2.0:
                                           0.0;
         
         // Final temperature is the sum of the two parts.
@@ -295,7 +297,8 @@ namespace aspect
     Subduction2T<dim>::declare_parameters (ParameterHandler &prm)
     {
       prm.enter_subsection ("Initial temperature model");
-      {
+      { 
+        //todo
         /*
         prm.declare_entry ("Remove temperature heterogeneity down to specified depth",
                            boost::lexical_cast<std::string>(-std::numeric_limits<double>::max()),
@@ -333,6 +336,7 @@ namespace aspect
     {
       prm.enter_subsection ("Initial temperature model");
       {
+        // todo
         /*
         no_perturbation_depth   = prm.get_double ("Remove temperature heterogeneity down to specified depth");
         reference_temperature   = prm.get_double ("Set reference temperature down to specified depth");

@@ -120,6 +120,12 @@ namespace aspect
          */
         Point<dim> cartesian_to_polar(const Point<dim> &cartesian_position) const;
 
+        /**
+         * todo
+         * method of slab boudnary
+         */
+        // method_for_slab_boundary;
+
 
     };
   }

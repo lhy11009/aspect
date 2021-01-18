@@ -10,7 +10,7 @@ set Prescribe internal temperatures = true
 set Resume computation = false
 set Nonlinear solver scheme = iterated Advection and Newton Stokes
 set CFL number = 0.5
-set Max nonlinear iterations = 100
+set Max nonlinear iterations = 1
 set Max nonlinear iterations in pre-refinement = 0
 set Nonlinear solver tolerance = 1.0
 
@@ -41,6 +41,7 @@ subsection Solver parameters
     end
     subsection Stokes solver parameters
         set Linear solver tolerance = 1.0
+        set Number of cheap Stokes solver steps = 0 
     end
 end
 
@@ -66,22 +67,11 @@ end
 
 subsection Mesh refinement
     set Initial global refinement = 5
-    set Initial adaptive refinement = 4
+    set Initial adaptive refinement = 0
     set Minimum refinement level = 5
-    set Strategy = isosurfaces, minimum refinement function
     set Time steps between mesh refinement = 10
     set Run postprocessors on initial refinement = true
     set Skip solvers on initial refinement = true
-    subsection Isosurfaces
-        set Isosurfaces = 11, 12, spcrust: 0.5 | 1.0; 10, 12, spharz: 0.5 | 1.0;  10, 12, opcrust: 0.5 | 1.0; 9, 12, opharz: 0.5 | 1.0; 10, 12, Temperature: 270.0 | 1173.0
-    end
-    subsection Minimum refinement function
-        set Coordinate system = spherical
-        set Variable names = r,phi,t
-        set Function constants = Ro=6.371e6, UM=670e3, DD=100e3
-        set Function expression = ((Ro-r<UM)? \
-                                   ((Ro-r<DD)? 8: 6): 0.0)
-    end
 end
 
 

@@ -1043,7 +1043,15 @@ namespace aspect
           const double deviation = std::min(result0.second/W0, result1.second/W1);
           if (phase_index_crust == 0)
           {
-            function_value = 0.5*(1.0 + std::tanh(deviation));
+            if(true)
+              function_value = 0.5*(1.0 + std::tanh(deviation));
+            else
+            {
+              if(deviation > 0.0)
+                function_value = 1.0;
+              else
+                function_value = 0.5*(2.0 + deviation);
+            }
           }
           else
             function_value = 0.0;
