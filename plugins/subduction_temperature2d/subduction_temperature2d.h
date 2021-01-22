@@ -125,6 +125,9 @@ namespace aspect
          * method of slab boudnary
          */
         // method_for_slab_boundary;
+        // todo
+        double thermal_boundary_width_factor_in;
+        double thermal_boundary_width_factor_out;
 
 
     };

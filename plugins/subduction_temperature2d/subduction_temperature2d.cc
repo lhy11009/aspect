@@ -117,7 +117,9 @@ namespace aspect
 
 
       // a thickness of thermal boundary on the upper slab boundary
-      const double Ht_slab = sqrt(K*RC/VSUB);
+      // todo
+      const double Ht_slab_in = thermal_boundary_width_factor_in * sqrt(K*RC/VSUB);
+      const double Ht_slab_out = thermal_boundary_width_factor_out * sqrt(K*RC/VSUB);
 
       if (phi<=0.0)
       {
@@ -149,11 +151,11 @@ namespace aspect
         // This is implemented as tranform from internal temperature of the slab to surface temperature.
         // The surface temperature is taken as the average of TS and temperature of overiding plate.
         const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
-        // todo method for perturbation
-        double perturbation_fucntion_value = sin(M_PI/2.0*depth_in_slab/Ht_slab);
-        const double perturbation_temperature = (depth_in_slab < Ht_slab)?
+        // method for perturbation
+        double perturbation_fucntion_value = sin(M_PI/2.0*depth_in_slab/Ht_slab_in);
+        const double perturbation_temperature = (depth_in_slab < Ht_slab_in)?
                                           (over_plate_temperature -cooling_temperature)
-                                          * (1- perturbation_fucntion_value/ 2.0:
+                                          * (1- perturbation_fucntion_value) / 2.0:
                                           0.0;
         
         // Final temperature is the sum of the two parts.
@@ -186,9 +188,9 @@ namespace aspect
         // This is implemented as tranform from internal temperature of the slab to surface temperature.
         // The surface temperature is taken as the average of the intermediate temperature,
         // and temperature of overiding plate.
-        const double perturbation_temperature = (depth_in_slab < Ht_slab)?
+        const double perturbation_temperature = (depth_in_slab < Ht_slab_in)?
                                           (over_plate_temperature -cooling_temperature)
-                                          * (1-sin(M_PI/2.0*depth_in_slab/Ht_slab)) / 2.0:
+                                          * (1-sin(M_PI/2.0*depth_in_slab/Ht_slab_in)) / 2.0:
                                           0.0;
 
         // Final temperature is the sum of the two parts.
@@ -207,13 +209,13 @@ namespace aspect
         // This is implemented as tranform from temperature of the overiding plate to surface temperature.
         // Out of the upper boundary layer of the slab, this is 0.0
         double perturbation_temperature = 0.0;
-        if (depth_out_slab<Ht_slab)
+        if (depth_out_slab<Ht_slab_out)
         { 
           if ((Ro-r)<ST)
           {
             // Surface temperature is taken as the average of TS and temperature of overiding plate.
             perturbation_temperature = (TS - over_plate_temperature)
-                                        * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab)) / 2.0;
+                                        * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab_out)) / 2.0;
           }
           else if ((Ro-r)<SM)
           {
@@ -223,7 +225,7 @@ namespace aspect
             const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
 
             perturbation_temperature = (T_interface - over_plate_temperature)
-                                        * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab)) / 2.0;
+                                        * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab_out)) / 2.0;
           }
         }
         temperature = over_plate_temperature + perturbation_temperature;
@@ -298,33 +300,20 @@ namespace aspect
     {
       prm.enter_subsection ("Initial temperature model");
       { 
-        //todo
-        /*
-        prm.declare_entry ("Remove temperature heterogeneity down to specified depth",
-                           boost::lexical_cast<std::string>(-std::numeric_limits<double>::max()),
-                           Patterns::Double (),
-                           "This will remove temperature variations prescribed by the input model "
-                           "down to the specified depth (in meters). Note that your resolution has "
-                           "to be adequate to capture this cutoff. For example if you specify a depth "
-                           "of 660km, but your closest spherical depth layers are only at 500km and "
-                           "750km (due to a coarse resolution) it will only remove heterogeneities "
-                           "down to 500km. Similar caution has to be taken when using adaptive meshing.");
-        prm.declare_entry ("Set reference temperature down to specified depth", "1600",
-                           Patterns::Double (),
-                           "This parameter sets the a constant value of temperature down to the specified depth.");
-        prm.declare_entry ("Use Yamauchi and Takei parameterization", "true",
-                           Patterns::Bool(),
-                           "This parameter determines whether to use the anelasticity model of "
-                           "Yamauchi & Takei (2016) to convert absolute Vs into temperature");
-        prm.declare_entry ("Use original density and frequency model of Yamauchi and Takei", "true",
-                           Patterns::Bool(),
-                           "Use original density and frequency model of Yamauchi & Takei (2016) where density"
-                           "has simple pressure-dependence and shear wave is period set at 100s");
-        */
-
         Utilities::AsciiDataBase<dim>::declare_parameters(prm,
                                                           "$ASPECT_SOURCE_DIR/data/initial-temperature/ascii-data/test/",
                                                           "box_2d_Vs_YT16.txt");
+        prm.enter_subsection("Subduction 2d temperature");
+        {
+         // todo
+         prm.declare_entry ("Thermal boundary width factor in", "1.0",
+                            Patterns::Double (),
+                            "This parameter controls the width of the slab thermal boundary");
+         prm.declare_entry ("Thermal boundary width factor out", "1.0",
+                            Patterns::Double (),
+                            "This parameter controls the width of the slab thermal boundary");
+        }
+        prm.leave_subsection();
       }
       prm.leave_subsection();
     }
@@ -336,13 +325,13 @@ namespace aspect
     {
       prm.enter_subsection ("Initial temperature model");
       {
-        // todo
-        /*
-        no_perturbation_depth   = prm.get_double ("Remove temperature heterogeneity down to specified depth");
-        reference_temperature   = prm.get_double ("Set reference temperature down to specified depth");
-        use_yamauchi_takei = prm.get_bool ("Use Yamauchi and Takei parameterization");
-        use_original_model = prm.get_bool ("Use original density and frequency model of Yamauchi and Takei");
-        */
+        prm.enter_subsection("Subduction 2d temperature");
+        {
+          // todo
+          thermal_boundary_width_factor_in = prm.get_double("Thermal boundary width factor in");
+          thermal_boundary_width_factor_out = prm.get_double("Thermal boundary width factor out");
+        }
+        prm.leave_subsection();
 
         Utilities::AsciiDataBase<dim>::parse_parameters(prm);
       }
