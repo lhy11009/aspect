@@ -395,6 +395,8 @@ namespace aspect
           
           double compute_value_crust_1_1 (const PhaseFunctionInputs<dim> &in) const;
           
+          double compute_value_crust_1_2 (const PhaseFunctionInputs<dim> &in) const;
+          
           /**
           * Compute relative position to a line
           */ 
@@ -464,6 +466,8 @@ namespace aspect
           double crust_eclogite_transition_T_width;
           double crust_eclogite_transition_P;
           double crust_eclogite_transition_P_width;
+          double crust_eclogite_transition_max_P;
+          double crust_eclogite_transition_max_P_width;
 
       };
     }

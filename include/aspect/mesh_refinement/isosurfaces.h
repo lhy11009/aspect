@@ -139,6 +139,12 @@ namespace aspect
          */
         std::vector<Internal::Isosurface> isosurfaces;
 
+        /**
+         * todo
+         * A depth to refine by temperature below this depth
+         */
+        double minimum_depth_for_temperature;
+
     };
   }
 }

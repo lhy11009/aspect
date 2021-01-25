@@ -213,18 +213,13 @@ namespace aspect
                       if (has_temperature)
                         {
                           // maximum radius
-                          const double max_radius = 6301e3;
-
+                          //todo
                           // get radius
                           const Point<dim> i_point = fe_values.quadrature_point(i_quad);
-                          const Utilities::Coordinates::CoordinateSystem coordinate_system_indicator =
-                            Utilities::Coordinates::string_to_coordinate_system("spherical");
-                          Utilities::NaturalCoordinate<dim> natural_point =
-                            this->get_geometry_model().cartesian_to_other_coordinates(i_point, coordinate_system_indicator);
-                          const double radius = natural_point.get_coordinates()[0];
+                          const double depth = this->get_geometry_model().depth(i_point);
 
                           // check on radius
-                          if (radius > max_radius)
+                          if (depth < minimum_depth_for_temperature)
                             {
                               additional_condition = false;
                             }
@@ -323,7 +318,9 @@ namespace aspect
                              "mesh refinement level below the global minimum or above the global maximum."
                              "\n\n"
                              "If isosurfaces overlap, the last one sets the values.");
-
+          prm.declare_entry ("Minimum depth for temperature", "70e3",
+                             Patterns::Double(),
+                             "A minimum depth for temperature method to take effects");
         }
         prm.leave_subsection();
       }
@@ -387,6 +384,8 @@ namespace aspect
               isosurface.properties = properties;
               isosurfaces.push_back(isosurface);
             }
+            //todo
+            minimum_depth_for_temperature = prm.get_double("Minimum depth for temperature");
         }
         prm.leave_subsection();
       }
