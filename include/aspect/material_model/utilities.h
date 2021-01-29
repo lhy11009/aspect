@@ -346,6 +346,77 @@ namespace aspect
          */
         unsigned int phase_index;
       };
+      
+      // hardwire
+      // A class to deal with eclogite transtiion
+       template <int dim>
+       class EclogiteTransition: public ::aspect::SimulatorAccess<dim>{
+         public:
+          
+          /**
+           * Declare the parameters this class takes through input files.
+           * Note that this class does not declare its own subsection,
+           * i.e. the parameters will be declared in the subsection that
+           * was active before calling this function.
+           */
+          static
+          void
+          declare_parameters (ParameterHandler &prm);
+
+          /**
+           * Read the parameters this class declares from the parameter file.
+           * Note that this class does not declare its own subsection,
+           * i.e. the parameters will be parsed from the subsection that
+           * was active before calling this function.
+           */
+          void
+          parse_parameters (ParameterHandler &prm);
+
+          /**
+           * function to compute value of phase function on a eclogite composition
+           * version 1.0
+           */
+          double
+          compute_value_crust_1_0 (const PhaseFunctionInputs<dim> &in,
+                                   const std::vector<double>& manually_method_crust,
+                                   const std::vector<double>& transition_depths,
+                                   const std::vector<double>& transition_temperatures,
+                                   const std::vector<double>& transition_widths,
+                                   const std::vector<double>& transition_slopes) const;
+      
+          /* function to compute value of phase function on a eclogite composition
+           * version 1.1
+           */
+          double
+          compute_value_crust_1_1 (const PhaseFunctionInputs<dim> &in,
+                                   const std::vector<double>& manually_method_crust,
+                                   const std::vector<double>& transition_depths,
+                                   const std::vector<double>& transition_temperatures,
+                                   const std::vector<double>& transition_widths,
+                                   const std::vector<double>& transition_slopes) const;
+      
+          /* function to compute value of phase function on a eclogite composition
+           * version 1.2
+           */
+          double
+          compute_value_crust_1_2 (const PhaseFunctionInputs<dim> &in,
+                                   const std::vector<double>& manually_method_crust,
+                                   const std::vector<double>& transition_depths,
+                                   const std::vector<double>& transition_temperatures,
+                                   const std::vector<double>& transition_widths,
+                                   const std::vector<double>& transition_slopes) const;
+
+         private:
+         /**
+           * A value for the eclogite transition temperature
+           */
+          double crust_eclogite_transition_T;
+          double crust_eclogite_transition_T_width;
+          double crust_eclogite_transition_P;
+          double crust_eclogite_transition_P_width;
+          double crust_eclogite_transition_max_P;
+          double crust_eclogite_transition_max_P_width;
+       };
 
       /**
        * A class that bundles functionality to compute the values and
@@ -387,22 +458,6 @@ namespace aspect
            */
           const std::vector<unsigned int> &
           n_phase_transitions_for_each_composition () const;
-
-          /**
-          * Compute value for crust compostion
-          */ 
-          double compute_value_crust_1_0 (const PhaseFunctionInputs<dim> &in) const;
-          
-          double compute_value_crust_1_1 (const PhaseFunctionInputs<dim> &in) const;
-          
-          double compute_value_crust_1_2 (const PhaseFunctionInputs<dim> &in) const;
-          
-          /**
-          * Compute relative position to a line
-          */ 
-          std::pair<bool, double> compute_point_to_line (const PhaseFunctionInputs<dim> &in,
-                                                         const double T, const double P, const double W, const double slope,
-                                                         bool by_depth, bool is_negative, bool is_vertical) const;
 
           /**
            * Declare the parameters this class takes through input files.
@@ -459,7 +514,13 @@ namespace aspect
           std::vector<double> manually_method_crust;
 
           /**
-           * todo
+           * hardwire
+           * An instantiation of the Eclogite_Transition class to deal with eclogite transition
+           */
+
+          EclogiteTransition<dim> eclogite_transition;
+
+          /**
            * A value for the eclogite transition temperature
            */
           double crust_eclogite_transition_T;
@@ -470,6 +531,23 @@ namespace aspect
           double crust_eclogite_transition_max_P_width;
 
       };
+
+          
+      /**
+       * compute the distance to a line in P, T diagram
+       */ 
+      template <int dim>
+      std::pair<bool, double> 
+      compute_point_to_line (const PhaseFunctionInputs<dim> &in, 
+                             const double T, const double P, const double W, const double slope,
+                             bool by_depth, bool is_negative, bool is_vertical);
+
+      /**
+       * Average the deviation from two lines
+       * This is used to smooth the corner of phase diagram where two lines intercepts
+       */ 
+      double average_deviation(double x1, double x2, double pinpoint);
+
     }
   }
 }
