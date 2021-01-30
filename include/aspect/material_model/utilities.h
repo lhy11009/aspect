@@ -410,10 +410,15 @@ namespace aspect
          /**
            * A value for the eclogite transition temperature
            */
+          // line 1: T (vertical)
           double crust_eclogite_transition_T;
           double crust_eclogite_transition_T_width;
+          // todo
+          double crust_eclogite_transition_T_slope;
+          // line 2: pressure (horizontal)
           double crust_eclogite_transition_P;
           double crust_eclogite_transition_P_width;
+          // line 3: max P (horizontal, higher than line 2)
           double crust_eclogite_transition_max_P;
           double crust_eclogite_transition_max_P_width;
        };
@@ -519,17 +524,6 @@ namespace aspect
            */
 
           EclogiteTransition<dim> eclogite_transition;
-
-          /**
-           * A value for the eclogite transition temperature
-           */
-          double crust_eclogite_transition_T;
-          double crust_eclogite_transition_T_width;
-          double crust_eclogite_transition_P;
-          double crust_eclogite_transition_P_width;
-          double crust_eclogite_transition_max_P;
-          double crust_eclogite_transition_max_P_width;
-
       };
 
           

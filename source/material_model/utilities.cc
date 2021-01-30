@@ -1199,6 +1199,9 @@ namespace aspect
                              "The temperature for crustal phase transition");
           prm.declare_entry ("Temperature width for eclogite transition", "75.0", Patterns::Double (),
                              "The width of temperature for crustal phase transition");
+          // todo
+          prm.declare_entry ("Temperature slope for eclogite transition", "1e10", Patterns::Double (),
+                             "The clapeyron slope of temperature for crustal phase transition");
           prm.declare_entry ("Pressure for eclogite transition", "1.5e9", Patterns::Double (),
                              "The pressure for crustal phase transition");
           prm.declare_entry ("Pressure width for eclogite transition", "0.5e9", Patterns::Double (),
@@ -1220,6 +1223,8 @@ namespace aspect
         {
           crust_eclogite_transition_T     =  Utilities::string_to_double(prm.get("Temperature for eclogite transition"));
           crust_eclogite_transition_T_width     =  Utilities::string_to_double(prm.get("Temperature width for eclogite transition"));
+          // todo
+          crust_eclogite_transition_T_slope     =  Utilities::string_to_double(prm.get("Temperature slope for eclogite transition"));
           crust_eclogite_transition_P     =  Utilities::string_to_double(prm.get("Pressure for eclogite transition"));
           crust_eclogite_transition_P_width     =  Utilities::string_to_double(prm.get("Pressure width for eclogite transition"));
           crust_eclogite_transition_max_P = Utilities::string_to_double(prm.get("Max pressure for eclogite transition"));
@@ -1385,9 +1390,23 @@ namespace aspect
         std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, W0, 0.0, false, false, false);
         
         // define ecologite transition by temperature
-        const double W1 = crust_eclogite_transition_T_width;
-        const double T1 = crust_eclogite_transition_T + W1;  // as what we need is the dash line
-        std::pair<bool, double> result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+        // todo add a slope
+        double W1;
+        const double T1 = crust_eclogite_transition_T + crust_eclogite_transition_T_width;  // as what we need is the dash line
+        std::pair<bool, double>  result1;
+        if (abs(crust_eclogite_transition_T_slope) > 1e9)
+        {
+          // vertical
+          W1 = crust_eclogite_transition_T_width;
+          result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+        }
+        else
+        {
+          // with a slope, pinpoint at (T1, P0), as W1 is a width by temperature, it is multiplied with slope
+          W1 = crust_eclogite_transition_T_width * abs(crust_eclogite_transition_T_slope);
+          result1 = compute_point_to_line(in, T1, crust_eclogite_transition_P, W1, 
+                                          crust_eclogite_transition_T_slope, false, false, false);
+        }
 
         // line 2: maximux pressure on basaltic composition
         const double P2 = crust_eclogite_transition_max_P;
