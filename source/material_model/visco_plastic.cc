@@ -266,8 +266,16 @@ namespace aspect
                         + Utilities::to_string(in.pressure[i]) + ")."));
 
           // Step 1a: compute viscosity from diffusion creep law
+          // hardwire: decoupled transition of eclogite
+          std::vector<double> re_phase_function_values(phase_function_values);
+          if (eclogite_decoupled_viscosity.decoupling_eclogite_viscosity){
+            double depth = this->get_geometry_model().depth(in.position[i]);
+            eclogite_decoupled_viscosity.recompute_phase_functions(re_phase_function_values, depth,
+                                                                   phase_function.n_phase_transitions_for_each_composition());
+          }
+
           const double viscosity_diffusion = diffusion_creep.compute_viscosity(in.pressure[i], temperature_for_viscosity, j,
-                                                                               phase_function_values,
+                                                                               re_phase_function_values,
                                                                                phase_function.n_phase_transitions_for_each_composition());
           
           // record the diffusion viscosities for output
@@ -278,7 +286,7 @@ namespace aspect
 
           // Step 1b: compute viscosity from dislocation creep law
           const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, in.pressure[i], temperature_for_viscosity, j,
-                                                                                   phase_function_values,
+                                                                                   re_phase_function_values,
                                                                                    phase_function.n_phase_transitions_for_each_composition());
           
           // record the dislocation viscosities for output
@@ -982,7 +990,8 @@ namespace aspect
             Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
           }
           prm.leave_subsection();
-
+          // declare parameters for eclogite_decoupled_viscosity
+          EclogiteDecoupledViscosity<dim>::declare_parameters(prm);
         }
         prm.leave_subsection();
       }
@@ -1163,7 +1172,8 @@ namespace aspect
               throw;
             }
           prm.leave_subsection();
-
+          // parse for Decoupling eclogite viscousity
+          eclogite_decoupled_viscosity.parse_parameters(prm);
         }
         prm.leave_subsection();
       }
@@ -1293,7 +1303,53 @@ namespace aspect
 
     }
 
+    //hardwire
+    template <int dim>
+    void
+    EclogiteDecoupledViscosity<dim>::declare_parameters (ParameterHandler &prm)
+    {
 
+        prm.declare_entry ("Decoupling eclogite viscosity", "false", Patterns::Bool(),
+                             "Apply decoupled viscosity on eclogite transition");
+        prm.enter_subsection ("Eclogite decoupled viscosity");
+        {
+          //
+          prm.declare_entry ("Decoupled depth", "100e3", Patterns::Double (),
+                             "Viscosity of eclogite is decoupled under this depth");
+          prm.declare_entry ("Decoupled depth width", "5e3", Patterns::Double (),
+                             "This is a width of change, analogy to the width of phase transitions");
+        }
+        prm.leave_subsection();
+
+    }
+    
+    //parse parameters
+    template <int dim>
+    void
+    EclogiteDecoupledViscosity<dim>::parse_parameters (ParameterHandler &prm)
+    {
+        decoupling_eclogite_viscosity = prm.get_bool("Decoupling eclogite viscosity");
+        prm.enter_subsection ("Eclogite decoupled viscosity");
+        {
+          decoupled_depth = Utilities::string_to_double(prm.get("Decoupled depth"));
+          decoupled_depth_width = Utilities::string_to_double(prm.get("Decoupled depth width"));
+        }
+        prm.leave_subsection();
+    }
+        
+    template <int dim>
+    void
+    EclogiteDecoupledViscosity<dim>::
+    recompute_phase_functions(std::vector<double>& re_phase_function_values, const double depth, 
+                              const std::vector<unsigned int> &n_phases_per_composition) const
+    {
+      unsigned int comp_crust = 1;
+      unsigned int base = 0;
+      // only need to set the first phase of crust to 1.0
+      for (unsigned int i=0; i<comp_crust; ++i)
+        base += n_phases_per_composition[i] + 1;
+      re_phase_function_values[base-comp_crust] = 0.5*(1.0 + std::tanh((depth - decoupled_depth) / decoupled_depth_width));
+    }
   }
 }
 

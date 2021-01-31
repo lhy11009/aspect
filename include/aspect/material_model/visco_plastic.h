@@ -104,6 +104,46 @@ namespace aspect
         std::vector<double> diffusion_viscosities;
     };
 
+    /* hardwire
+    decoupled transition of viscosity on eclogite transition
+    */
+    template <int dim>
+    class EclogiteDecoupledViscosity{
+      public:
+        // declare
+        // parse
+        /**
+         * Declare the parameters this class takes through input files.
+         * Note that this class does not declare its own subsection,
+         * i.e. the parameters will be declared in the subsection that
+         * was active before calling this function.
+         */
+        static
+        void
+        declare_parameters (ParameterHandler &prm);
+
+        /**
+         * Read the parameters this class declares from the parameter file.
+         * Note that this class does not declare its own subsection,
+         * i.e. the parameters will be parsed from the subsection that
+         * was active before calling this function.
+         */
+        void
+        parse_parameters (ParameterHandler &prm);
+       
+        void
+        recompute_phase_functions(std::vector<double>& re_phase_function_values, const double depth,
+                                  const std::vector<unsigned int> &n_phases_per_composition) const;
+        
+        /* Whether to activate*/
+        bool decoupling_eclogite_viscosity;
+
+      private:
+        /* decoupled depth and width*/
+        double decoupled_depth;
+        double decoupled_depth_width;
+    };
+
     /**
      * A material model combining viscous and plastic deformation, with
      * the option to also include viscoelastic deformation.
@@ -499,6 +539,9 @@ namespace aspect
          * choices are depth, cartesian and spherical.
          */
         Utilities::Coordinates::CoordinateSystem reaction_mor_function_coordinate_system;
+
+        // hardwire decoupled eclogite viscosity transition
+        EclogiteDecoupledViscosity<dim> eclogite_decoupled_viscosity;
     };
 
   }
