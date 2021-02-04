@@ -405,6 +405,17 @@ namespace aspect
                                    const std::vector<double>& transition_temperatures,
                                    const std::vector<double>& transition_widths,
                                    const std::vector<double>& transition_slopes) const;
+          
+          /* function to compute value of phase function on a eclogite composition
+           * version 1.3
+           */
+          double
+          compute_value_crust_1_3 (const PhaseFunctionInputs<dim> &in,
+                                   const std::vector<double>& manually_method_crust,
+                                   const std::vector<double>& transition_depths,
+                                   const std::vector<double>& transition_temperatures,
+                                   const std::vector<double>& transition_widths,
+                                   const std::vector<double>& transition_slopes) const;
 
          private:
          /**
@@ -413,7 +424,6 @@ namespace aspect
           // line 1: T (vertical)
           double crust_eclogite_transition_T;
           double crust_eclogite_transition_T_width;
-          // todo
           double crust_eclogite_transition_T_slope;
           // line 2: pressure (horizontal)
           double crust_eclogite_transition_P;
@@ -421,6 +431,59 @@ namespace aspect
           // line 3: max P (horizontal, higher than line 2)
           double crust_eclogite_transition_max_P;
           double crust_eclogite_transition_max_P_width;
+       };
+      
+      // hardwire
+      // A class to deal with eclogite transtiion
+       template <int dim>
+       class PyroliteTransition: public ::aspect::SimulatorAccess<dim>{
+         public:
+          
+          /**
+           * Declare the parameters this class takes through input files.
+           * Note that this class does not declare its own subsection,
+           * i.e. the parameters will be declared in the subsection that
+           * was active before calling this function.
+           */
+          static
+          void
+          declare_parameters (ParameterHandler &prm);
+
+          /**
+           * Read the parameters this class declares from the parameter file.
+           * Note that this class does not declare its own subsection,
+           * i.e. the parameters will be parsed from the subsection that
+           * was active before calling this function.
+           */
+          void
+          parse_parameters (ParameterHandler &prm);
+          
+          /**
+           * function to compute value of phase function on a pyrolite composition
+           * version 1.0
+           */
+          double
+          compute_value_pyrolite_1_0 (const PhaseFunctionInputs<dim> &in,
+                                   const std::vector<double>& manually_method_pyrolite,
+                                   const std::vector<double>& transition_depths,
+                                   const std::vector<double>& transition_temperatures,
+                                   const std::vector<double>& transition_widths,
+                                   const std::vector<double>& transition_slopes) const;
+          
+          /**
+           * function to compute value of phase function on a harzburgite composition
+           * version 1.0
+           */
+          double
+          compute_value_harzburgite_1_0 (const PhaseFunctionInputs<dim> &in,
+                                   const std::vector<double>& manually_method_harzburgite,
+                                   const std::vector<double>& transition_depths,
+                                   const std::vector<double>& transition_temperatures,
+                                   const std::vector<double>& transition_widths,
+                                   const std::vector<double>& transition_slopes) const;
+          private:
+          
+          int foo;
        };
 
       /**
@@ -514,16 +577,31 @@ namespace aspect
           std::shared_ptr<std::vector<unsigned int> > n_phase_transitions_per_composition;
 
           /**
-           * A method define the composition which uses self-defined way to compute phase value
+           * A method define the composition which uses self-defined way to compute crustal phase value
            */
           std::vector<double> manually_method_crust;
+          
+          /**
+           * A method define the composition which uses self-defined way to compute pyrolite phase value
+           */
+          std::vector<double> manually_method_pyrolite;
+          
+          /**
+           * A method define the composition which uses self-defined way to compute harzburgite phase value
+           */
+          std::vector<double> manually_method_harzburgite;
 
           /**
            * hardwire
            * An instantiation of the Eclogite_Transition class to deal with eclogite transition
            */
-
           EclogiteTransition<dim> eclogite_transition;
+          
+          /**
+           * hardwire
+           * An instantiation of the Eclogite_Transition class to deal with eclogite transition
+           */
+          PyroliteTransition<dim> pyrolite_transition;
       };
 
           
