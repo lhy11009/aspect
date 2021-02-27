@@ -1765,7 +1765,7 @@ namespace aspect
             if(phase_index_pyrolite == partial_index_660_gt1)
               function_value += 0.5*(1.0 + std::tanh(result660_gt1.second/W660_gt1));
         }
-        if (result660_gt_combined.first && in.temperature > T660_gt_combined){
+        if (result660_gt_combined.first && in.temperature >= T660_gt_combined){
           // 660 for pyrolite combined, at higher temperature, gt -> brg
             if(phase_index_pyrolite == partial_index_660_gt_combined)
               function_value += 0.5*(1.0 + std::tanh(result660_gt_combined.second/W660_gt_combined));

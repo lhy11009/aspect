@@ -93,10 +93,10 @@ subsection Material model
         set Manually define phase method crust = background: 0.0, spcrust: 1.3, spharz:0.0
         set Thermal diffusivities = 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6,1.0e-6
         # todo
-        set Heat capacities = background:3300.0|3586.0|3723.5|3757.0|4219.0|4443.0|4681.8|5149.8,\
-                              spcrust:3000.0|3540.0|3761.1|4545.0,\
-                              spharz:3235.0|3651.0|3815.0|3815.0|4523.0|4635.0|4754.5|4988.4,\
-                              opcrust:1000.0, opharz:1000.0
+        set Heat capacities = background: 3300.0|3394.4|3442.1|3453.2|3617.6|3691.5|3774.7|3929.1,\
+                        spharz: 3235.0|3372.3|3441.7|3441.7|3680.8|3717.8|3759.4|3836.6,\
+                        spcrust: 3000.0|3540.0|3613.0|3871.7,\
+                        opcrust: 3000.0, opharz: 3235.0
         set Densities = 3300.0
         set Thermal expansivities = 0.0
         subsection Eclogite transition
