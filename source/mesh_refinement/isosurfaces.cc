@@ -258,32 +258,32 @@ namespace aspect
                         }
                     }
                 }
-
-              // if both coarsen and refine are true, give preference to refinement
-              if (coarsen == true && refine == true)
-                coarsen = false;
-              if (refine == true)
-                clear_refine = false;
-              if (coarsen == true)
-                clear_coarsen = false;
-
-              // Perform the actual placement of the coarsening and refinement flags.
-              if (clear_coarsen == true)
-                {
-                  cell->clear_coarsen_flag ();
-                }
-              if (coarsen == true)
-                {
-                  cell->set_coarsen_flag ();
-                }
-              if (clear_refine == true)
-                {
-                  cell->clear_refine_flag ();
-                }
-              if (refine == true)
-                {
-                  cell->set_refine_flag ();
-                }
+                
+                // if both coarsen and refine are true, give preference to refinement
+                if (coarsen == true && refine == true)
+                  coarsen = false;
+                if (refine == true)
+                  clear_refine = false;
+                if (clear_coarsen == true)
+                  coarsen = false;
+ 
+                // Perform the actual placement of the coarsening and refinement flags.
+                if (clear_coarsen == true)
+                  {
+                    cell->clear_coarsen_flag ();
+                  }
+                if (clear_refine == true)
+                  {
+                    cell->clear_refine_flag ();
+                  }
+                if (coarsen == true)
+                  {
+                    cell->set_coarsen_flag ();
+                  }
+                if (refine == true)
+                  {
+                    cell->set_refine_flag ();
+                  }
             }
         }
     }
