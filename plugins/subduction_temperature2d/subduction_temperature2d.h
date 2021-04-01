@@ -100,6 +100,21 @@ namespace aspect
         double
         temperature_substract_adiabatic(const double r, const double temperature) const;
 
+
+        /**
+         * get the right side of a ellipse
+         */
+        double 
+        ellipse_equation_right(const double AC, const double BC, const double x, const double y) const;
+
+        /**
+         * derive the distance between two points allinged with the ellipse focus
+         */
+        double
+        ellipse_spherical_dr(const double AC, const double BC, const double x, const double y) const;
+         
+
+
         /**
          * Declare the parameters for the input files.
          */

@@ -104,7 +104,8 @@ namespace aspect
       const double Ro=6.371e6;
       const double PHIC=0.628319;
       const double PHIM=1.06465;
-      const double RC=4.000e+05;
+      const double AC=2.000e+05;
+      const double BC=4.000e+05;
       const double ST=2.000e+05;
       const double SM=2.700e+05;
       const double VSUB=1.58549e-09;
@@ -117,9 +118,13 @@ namespace aspect
 
 
       // a thickness of thermal boundary on the upper slab boundary
-      // todo
-      const double Ht_slab_in = thermal_boundary_width_factor_in * sqrt(K*RC/VSUB);
-      const double Ht_slab_out = thermal_boundary_width_factor_out * sqrt(K*RC/VSUB);
+      const double Ht_slab_in = thermal_boundary_width_factor_in * sqrt(K*BC/VSUB);
+      const double Ht_slab_out = thermal_boundary_width_factor_out * sqrt(K*BC/VSUB);
+
+      // a condition to determine if the point is within the ellipse envelop of
+      // the initial slab
+      double m = ellipse_equation_right(AC, BC, Ro*(phi-PHIC), r+BC-Ro);
+      bool is_in_ellipse = (m <= 1);
 
       if (phi<=0.0)
       {
@@ -132,7 +137,7 @@ namespace aspect
         temperature = half_space_cooling(TM, TS, abs(Ro-r), K, Ro*phi/VSUB);
       }
       else if (((Ro-r)<=ST)
-                &&(Ro*phi<=Ro*PHIC+std::min(RC,sqrt(abs(2*RC*(Ro-r)-pow(Ro-r, 2.0)))))
+                && is_in_ellipse
                 &&(phi>PHIC))
                 {
         // slab
@@ -140,7 +145,7 @@ namespace aspect
         const double plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, Ro*phi/VSUB);
         
         // the depth withing the initial slab
-        const double depth_in_slab = RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0));
+        const double depth_in_slab = ellipse_spherical_dr(AC, BC, Ro*(phi-PHIC), r+BC-Ro); // distance from focus to slab surface
         const double slab_temperature = half_space_cooling(TM, TS, depth_in_slab, K, Ro*phi/VSUB);
 
         // cooling temperature as the smaller of these two
@@ -163,22 +168,21 @@ namespace aspect
                 }
       else if (((Ro-r)>ST)
                &&((Ro-r)<=SM)
-               &&(Ro*phi<=Ro*PHIC+std::min(RC,sqrt(abs(2*RC*(Ro-r)-pow(Ro-r, 2.0))))))
+               && is_in_ellipse)
                {
         // temperature below the slab tip
         // A half-space cooling temperature is assigned once more but
         // an intermediate temperature is taken for the surface temperature.
         // depth of this interface
         // This have the same expression to depth_in_slab, except that this is actually below the initial slab
-        const double depth_interface = (RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow(abs(Ro-r)-RC, 2.0)));
+
+        // the depth withing the initial slab
+        const double depth_in_slab = ellipse_spherical_dr(AC, BC, Ro*(phi-PHIC), r+BC-Ro); // distance from focus to slab surface
 
         // Intermediate temperature on this interface
         const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
 
-        const double cooling_temperature = half_space_cooling(TM, T_interface, depth_interface, K, Ro*phi/VSUB);
-        
-        // the depth withing the initial slab
-        const double depth_in_slab = RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0));
+        const double cooling_temperature = half_space_cooling(TM, T_interface, depth_in_slab, K, Ro*phi/VSUB);
         
         // temperature overiding plate
         const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
@@ -201,9 +205,9 @@ namespace aspect
         // overiding plate
         const double over_plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, AGEOP);
         
-        // the depth withing the initial slab
         // This formula includes absolute value just to make sure it is consistent with the previous 'depth_in_slab'
-        const double depth_out_slab = abs(RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow((Ro-r)-RC, 2.0)));
+        // the depth out of the initial slab
+        const double depth_out_slab = ellipse_spherical_dr(AC, BC, Ro*(phi-PHIC), r+BC-Ro); // distance from focus to slab surface
         
         // a perturbation on the upper surface of the slab
         // This is implemented as tranform from temperature of the overiding plate to surface temperature.
@@ -236,6 +240,47 @@ namespace aspect
         temperature = TM;
       }
       return temperature;
+    }
+
+    template <int dim>
+    double
+    Subduction2T<dim>::
+    ellipse_equation_right(const double AC, const double BC, const double x, const double y) const
+    {
+      // compute the value on the right side of a ellipse equation
+      double m = sqrt(pow(x/AC, 2.0) + pow(y/BC, 2.0));
+      return m;
+    }
+    
+    template <int dim>
+    double
+    Subduction2T<dim>::
+    ellipse_spherical_dr(const double AC, const double BC, const double x, const double y) const
+    {
+      // distance from focus to slab surface
+      double a, b ,c, consf, rpc;
+      if (BC > AC)
+      {
+        a = BC;
+        b = AC;
+        c = sqrt(a*a - b*b);
+        rpc = sqrt(x*x + (y-c)*(y-c));
+        consf = (y-c)/rpc; // angle of the focus-intersection with the semi-long axis
+      }
+      else
+      {
+        a = AC;
+        b = BC;
+        c = sqrt(a*a - b*b);
+        rpc = sqrt((x-c)*(x-c) + y*y);
+        consf = (x-c)/rpc; // angle of the focus-intersection with the semi-long axis
+      }
+      double e = sqrt(1 - b*b /(a*a));
+      double p = a * (1 - e*e);
+      c = a * e;
+      double rout = p / (1 + e*consf);
+      double d = abs(rout - rpc);
+      return d;
     }
     
 
@@ -330,6 +375,8 @@ namespace aspect
           // todo
           thermal_boundary_width_factor_in = prm.get_double("Thermal boundary width factor in");
           thermal_boundary_width_factor_out = prm.get_double("Thermal boundary width factor out");
+          //semix = ;
+          //semiy = ;
         }
         prm.leave_subsection();
 

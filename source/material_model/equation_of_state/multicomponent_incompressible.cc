@@ -42,7 +42,7 @@ namespace aspect
             out.thermal_expansion_coefficients[c] = thermal_expansivities[c];
             out.specific_heat_capacities[c] = specific_heats[c];
             out.compressibilities[c] = 0.0;
-            out.entropy_derivative_pressure[c] = 0.0;
+            out.entropy_derivaitve_pressure[c] = 0.0;
             out.entropy_derivative_temperature[c] = 0.0;
           }
       }
