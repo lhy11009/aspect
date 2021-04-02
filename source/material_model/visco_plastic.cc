@@ -687,6 +687,56 @@ namespace aspect
           out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.compressibilities, MaterialUtilities::arithmetic);
           out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
           out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+          
+          // Calculate entropy derivative
+          //  out.entropy_derivative_pressure[i] and out.entropy_derivative_temperature[i] above are both 0.0
+          {
+            double entropy_gradient_pressure = 0.0;
+            double entropy_gradient_temperature = 0.0;
+            const double rho = out.densities[i];
+
+            if (this->get_adiabatic_conditions().is_initialized() && this->include_latent_heat())
+              for (unsigned int phase=0; phase<phase_function.n_phase_transitions(); ++phase)
+                {
+                  const double depth = this->get_geometry_model().depth(in.position[i]);
+                  const double pressure_depth_derivative = gravity_norm*reference_density;
+
+                  // compute the derivatives of phase functions, and parse the value of claperyon slope
+                  const MaterialUtilities::PhaseFunctionInputs<dim> phase_in(in.temperature[i],
+                                                                             in.pressure[i],
+                                                                             depth,
+                                                                             pressure_depth_derivative,
+                                                                             phase);
+                  const double PhaseFunctionDerivative = phase_function.compute_derivative(phase_in);
+                  const double clapeyron_slope = phase_function.get_transition_slope(phase);
+
+                  // figure out the index of composition in the vector of 'volume_fractions'
+                  int composition_index = 0;  // 
+                  int base = 0;
+                  const std::vector<unsigned int> &n_phases_per_composition = phase_function.n_phase_transitions_for_each_composition();
+                  for (unsigned int j = 0; j < volume_fractions.size(); j++){
+                    if (base + n_phases_per_composition[j] - j > phase)
+                    {
+                      composition_index = j;
+                      break;
+                    }
+                    base += n_phases_per_composition[j] + 1;
+                  }
+
+                  // derive the derivatives of entropy
+                  int parameter_value_index = phase + composition_index; // match index in phase function to parameters
+                  double density_jump = eos_outputs_all_phases.densities[parameter_value_index + 1]
+                                        - eos_outputs_all_phases.densities[parameter_value_index];
+                  double entropy_change = clapeyron_slope * density_jump / (rho * rho) * volume_fractions[composition_index];
+                  // we need DeltaS * DX/Dpressure_deviation for the pressure derivative
+                  // and - DeltaS * DX/Dpressure_deviation * gamma for the temperature derivative
+                  entropy_gradient_pressure += PhaseFunctionDerivative * entropy_change;
+                  entropy_gradient_temperature -= PhaseFunctionDerivative * entropy_change * clapeyron_slope;
+                }
+
+            out.entropy_derivative_pressure[i] = entropy_gradient_pressure;
+            out.entropy_derivative_temperature[i] = entropy_gradient_temperature;
+          }
 
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding
           bool plastic_yielding = false;
