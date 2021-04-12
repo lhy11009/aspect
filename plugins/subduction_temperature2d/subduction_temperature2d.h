@@ -112,6 +112,30 @@ namespace aspect
          */
         double
         ellipse_spherical_dr(const double AC, const double BC, const double x, const double y) const;
+
+
+        /**
+         * compute the distance between a point in the ellipse to a point on the surface
+         */
+        double
+        ellipse_distance_sqr(const double AC, const double BC, const double xp, 
+                             const double yp, const double theta) const;
+
+        /**
+         * compute the distance derivative to theta
+         */ 
+        double
+        ellipse_distance_sqr_div(const double AC, const double BC, const double xp, 
+                                 const double yp, const double theta) const;
+
+
+        /**
+         * compute the shortest distance of a point in the ellipse to the surface
+         */ 
+        std::pair<double, int> 
+        ellipse_distance_sqr_shortest1(const double AC, const double BC,
+                                       const double xp, const double yp, const double tolerance) const;
+        
          
 
 

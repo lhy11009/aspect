@@ -114,6 +114,8 @@ namespace aspect
       const double TM=1.673e+03; 
       const double K=1.000e-06;
 
+      const double tolerance = 1e-6;  // tolerance for the algorithm looking for shortest distance
+
       double temperature;
 
 
@@ -145,7 +147,10 @@ namespace aspect
         const double plate_temperature = half_space_cooling(TM, TS, abs(Ro-r), K, Ro*phi/VSUB);
         
         // the depth withing the initial slab
-        const double depth_in_slab = ellipse_spherical_dr(AC, BC, Ro*(phi-PHIC), r+BC-Ro); // distance from focus to slab surface
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
+                                                                        Ro*(phi-PHIC)/AC, (r+BC-Ro)/AC, tolerance); // distance from focus to slab surface
+        const double depth_in_slab = sqrt(ellipse_distance_sqr(AC, BC, Ro*(phi-PHIC), 
+                                                               r+BC-Ro, results.first));
         const double slab_temperature = half_space_cooling(TM, TS, depth_in_slab, K, Ro*phi/VSUB);
 
         // cooling temperature as the smaller of these two
@@ -177,7 +182,10 @@ namespace aspect
         // This have the same expression to depth_in_slab, except that this is actually below the initial slab
 
         // the depth withing the initial slab
-        const double depth_in_slab = ellipse_spherical_dr(AC, BC, Ro*(phi-PHIC), r+BC-Ro); // distance from focus to slab surface
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
+                                                                        Ro*(phi-PHIC)/AC, (r+BC-Ro)/AC, tolerance); // distance from focus to slab surface
+        const double depth_in_slab = sqrt(ellipse_distance_sqr(AC, BC, Ro*(phi-PHIC), 
+                                                               r+BC-Ro, results.first));
 
         // Intermediate temperature on this interface
         const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
@@ -207,7 +215,10 @@ namespace aspect
         
         // This formula includes absolute value just to make sure it is consistent with the previous 'depth_in_slab'
         // the depth out of the initial slab
-        const double depth_out_slab = ellipse_spherical_dr(AC, BC, Ro*(phi-PHIC), r+BC-Ro); // distance from focus to slab surface
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
+                                                                        Ro*(phi-PHIC)/AC, (r+BC-Ro)/AC, tolerance); // distance from focus to slab surface
+        const double depth_out_slab = sqrt(ellipse_distance_sqr(AC, BC, Ro*(phi-PHIC), 
+                                                               r+BC-Ro, results.first));
         
         // a perturbation on the upper surface of the slab
         // This is implemented as tranform from temperature of the overiding plate to surface temperature.
@@ -283,6 +294,64 @@ namespace aspect
       return d;
     }
     
+    
+    template <int dim>
+    double
+    Subduction2T<dim>::
+    ellipse_distance_sqr(const double AC, const double BC, const double xp, 
+                        const double yp, const double theta) const
+    {
+        const double distance_sqr = pow(AC * cos(theta) - xp, 2.0) +
+                                     pow(BC * sin(theta) - yp, 2.0);
+        return distance_sqr;
+    }
+    
+    
+    template <int dim>
+    double
+    Subduction2T<dim>::
+    ellipse_distance_sqr_div(const double AC, const double BC, const double xp, 
+                                    const double yp, const double theta) const
+    {
+        const double distance_sqr_div = (BC*BC - AC*AC) * sin(2.0*theta)
+                                        + 2.0 * AC * xp * sin(theta) 
+                                        - 2.0 * BC * yp * cos(theta);
+        return distance_sqr_div;
+    }
+    
+
+    template <int dim>
+    std::pair<double, int> 
+    Subduction2T<dim>::
+    ellipse_distance_sqr_shortest1(const double AC, const double BC,
+                                   const double xp, const double yp, const double tolerance) const
+    {
+        double theta0 = 0.0;
+        double theta1 = M_PI / 2.0;
+        double distance_sqr_div2 = ellipse_distance_sqr_div(AC, BC, xp, 
+                                                           yp, theta0);
+        
+        int i = 0;
+        while(abs(distance_sqr_div2 / (AC * AC)) > tolerance)
+        {
+           double theta2 = (theta0 + theta1) / 2.0; 
+           distance_sqr_div2 = ellipse_distance_sqr_div(AC, BC, xp, 
+                                                        yp, theta2);
+            if(distance_sqr_div2 > 0.0)
+                theta1 = theta2;
+            else if(distance_sqr_div2 < 0.0)
+                theta0 = theta2;
+            else
+            {
+                // 0.0, break and return
+                theta0 = theta2;
+                break;
+            }
+            i++;
+        }
+        // return both the result and the number of iteration 
+        return std::make_pair(theta0, i);
+    }
 
     template <int dim>
     double
