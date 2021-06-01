@@ -1,0 +1,334 @@
+# Basic Parameter File as Starting Point for 2D-Slab Model.
+# 2D, Dimensional, Boussinesq
+# Subduction Initial conditions, composite rheology with weak corners, etc..
+
+#set Additional shared libraries = /home/billen/AspectProjects/MyModules/build/libbillen_subduction.so
+
+# Dimension, end-time (years) and output directory
+set Dimension                              = 2
+set Use years in output instead of seconds = true
+set Start time                             = 0
+set End time                               = 40.0e6 # 40 million years
+set Output directory                       = output
+#set Resume computation 			   = false # set to true to restart from checkpoint
+
+set Additional shared libraries = ./subduction_temperature2d/libprescribed_temperature.so
+
+#subsection Checkpointing
+#   set Steps between checkpoint            = 100  # about 2 my if v=5 cm/yr
+#end
+
+# General Parameters for setting the reference temperature and pressure state
+set Pressure normalization                 = surface
+set Surface pressure                       = 0  
+set Adiabatic surface temperature 	   = 273 
+
+# Which solver to use (switch to Nonlinear for non-linear rheology).
+set Nonlinear solver scheme                = single Advection, single Stokes
+
+# terminate when reach certain time step, for debugging use
+subsection Termination criteria
+  set Termination criteria = end step
+  set End step = 1
+end
+
+# Default values are 1e-12,1e-12 and 1e-7
+subsection Solver parameters
+  set Composition solver tolerance         = 1e-12  # default 1e-12
+  set Temperature solver tolerance         = 1e-12  # default 1e-12
+ 
+  subsection Stokes solver parameters
+    set Linear solver tolerance            = 1e-7  # default 1e-7
+  end
+end
+
+# Chooses whether to use DG and limiter for composition and/or temperature.
+subsection Discretization
+   set Composition polynomial degree = 2
+   set Stokes velocity polynomial degree = 2
+   set Temperature polynomial degree = 2
+   # set Use discontinuous temperature discretization = true 
+   set Use discontinuous composition discretization = true 
+   subsection Stabilization parameters
+      set Use limiter for discontinuous composition solution = true 
+      # set Use limiter for discontinuous temperature solution = true 
+      set Global composition maximum = 1, 1, 1, 1
+      set Global composition minimum = 0, 0, 0, 0
+      # set Global temperature maximum = 1.7e+03
+      # set Global temperature minimum = 2.7e+02 
+   end
+end
+
+# FORM OF THE EQUATIONS TO USE
+# - can set this as the formulation:
+# set Formulation = Boussinesq approximation
+# Or can choose explicitly (will do this, so its clearer what to change later)
+# - reference density profile will then use value for this given by the material model
+# For the "simple" model this will be constant
+subsection Formulation
+  set Formulation = custom
+  set Mass conservation = incompressible
+  set Temperature equation = reference density profile
+end
+
+# GEOMETRY AND MODEL SIZE
+# Chunk Model
+# Approximately 10000km on surface
+subsection Geometry model
+  set Model name = chunk
+
+  subsection Chunk
+    set Chunk inner radius = 3.481e6
+    set Chunk outer radius = 6.371e6
+    set Chunk maximum longitude = 61.0
+    set Chunk minimum longitude = 0.0
+  end
+end
+
+# MESH INFORMATION
+# For mesh with depth of 2890 km (y-rep = 1), then level 1+4 =5 gives maximum element size of ~180 km.
+# (2890/s^(n-1)). 6 more initial adaptive refinement levels gets us to level 11 (2.82 km)
+# Function will refine to level 9+1 = 10, so ~5.6 km
+# Set Run postprocessors on initial refinement = true to have output at model start
+# set Skip solvers on initial refinement = true to skip solvers while doning refinement
+# Original XTR=2.2e6, change to 0 to make sure subduction at the middle
+
+subsection Mesh refinement
+  set Initial global refinement                = 4
+  set Minimum refinement level		       = 4
+  set Initial adaptive refinement              = 6
+  set Time steps between mesh refinement       = 10
+  set Strategy                                 = minimum refinement function, composition approximate gradient,\
+						 viscosity, strain rate
+  set Refinement fraction 		       = 0.80
+  set Coarsening fraction		       = 0.20
+  set Refinement criteria merge operation       = plus
+  set Run postprocessors on initial refinement = true
+  set Skip solvers on initial refinement = false
+  subsection Minimum refinement function
+    set Coordinate system   = spherical
+    set Variable names      = r,phi,t
+    set Function constants = Ro=6.371e6, PHIC=0.628319, LITH=1.0e5, SM=2.7e5, RC=4e5
+    set Function expression = (t<1e5 ? ( (Ro-r<LITH) || ((phi>=PHIC) && ((Ro-r)<=SM+30e3) \
+                             && (sqrt((Ro*(phi-PHIC))^2+((Ro-r)-RC)^2)<=RC+LITH) \
+                              && (sqrt((Ro*(phi-PHIC))^2+((Ro-r)-RC)^2)>=RC-LITH)) ? 9 : 0) : 0)
+  end
+end
+
+# VELOCITY BOUNDARY CONDITIONS
+# Free-slip on all sides (tangential velocity V-perp=0, dV/dn=0)
+
+subsection Boundary velocity model
+  set Tangential velocity boundary indicators = west, east, bottom, top
+end
+
+# INITIAL TEMPERATURE  
+# Simple half-space cooling model across the whole box for initial tests
+# Note temperature is in KELVIN (T=273 at the surface)
+# trench is at 36 degree, 0.628319 - 36 degree
+# subduction plate velocity - VSUB=1.58549e-09 - 5cm/yr - 80Myr at trench
+# overiding plate age - AGEOP=1.26144e15 s - 40Myr
+subsection Initial temperature model
+   set Model name = function
+
+   subsection Function
+      set Coordinate system = spherical
+      set Variable names = r, phi
+      set Function constants = Ro=6.371e6, PHIC=0.628319, PHIM=1.06465,\
+          RC=4.000e+05, DR=2.000e+04, ST=2.000e+05, SM=2.700e+05, VSUB=1.58549e-09, \
+          AGEOP=1.26144e15, TS=2.730e+02, TM=1.673e+03, K=1.000e-06
+      set Function expression = ((phi<=0.0) ? TM : \
+          ((phi<=PHIC)&&(phi>0)) ? \
+            (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*Ro*phi/VSUB))))) : \
+          (((Ro-r)<=ST)&&(Ro*phi<=Ro*PHIC+min(RC,sqrt(abs(2*RC*(Ro-r)-(Ro-r)^2))))&&(phi>PHIC)) ? \
+             min(TS+(TM-TS)*(1-erfc((RC+DR*abs(Ro-r)/SM-sqrt((Ro*(phi-PHIC))^2+((Ro-r)-RC)^2))/(2*sqrt(K*Ro*phi/VSUB)))), \
+             TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*Ro*phi/VSUB))))) :  \
+          (((Ro-r)>ST)&&((Ro-r)<=SM)&&(Ro*phi<=Ro*PHIC+min(RC,sqrt(abs(2*RC*(Ro-r)-(Ro-r)^2))))) ? \
+             TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST)+(TM-(TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST)))*  \
+             (1-erfc((RC+DR*abs(Ro-r)/SM-sqrt((Ro*(phi-PHIC))^2+(abs(Ro-r)-RC)^2))/(2*sqrt(K*Ro*phi/VSUB)))) : \
+          (PHIM-phi>0) ? TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*AGEOP)))) : TM )
+
+   end
+end
+
+# TEMPERATURE/FLUX BOUNDARY CONDITIONS
+# Set boundary types and values for temperature
+# Default is zero-flux, so here need to set top and bottom to fixed temperature
+# Top T=273 K, Bottom T=1673 K
+# Left Flux = 0, Right Flux = 0  (even though this say "Left temperature")
+
+subsection Boundary temperature model
+  set Fixed temperature boundary indicators = bottom, top
+  set List of model names = spherical constant
+
+  subsection Spherical constant
+    set Inner temperature = 1673
+    set Outer temperature    = 273
+  end
+end
+
+# TYPE AND NUMBER OF COMPOSITIONAL FIELDS 
+# Composition model has 5 components: subducting plate crust, harzburgite;
+# overriding plate crust, harzburgite, and the mantle.
+subsection Compositional fields
+	set Number of fields = 4
+	set Names of fields = spcrust,spharz,opcrust,opharz
+	set Compositional field methods = field,field,field,field
+end
+
+# INITIAL COMPOSITION
+# ?? I'm not sure what model operators does. 
+# model names/operators: 1 for each field or just list 1 if same for all.
+# XSC is Ro*pi/180.0
+subsection Initial composition model
+   set List of model names = function
+   set List of model operators = add
+	
+   subsection Function
+      set Coordinate system = spherical
+      set Variable names = r, phi
+      set Function constants = PHIC=0.628319, Ro=6.371e6, RC=4.000e+05, \
+                ST=2.000e+05, DCS=7.500e+03, DHS=3.520e+04, DCO=7.500e+03, DHO=3.520e+04
+      set Function expression = (((phi<PHIC)&&(Ro-r<=DCS)) ? 1.0 : \
+                (((phi>=PHIC)&&(Ro-r<=ST)&&(phi*Ro<=PHIC*Ro+min(RC,sqrt(abs(2.0*RC*(Ro-r)-(Ro-r)^2.0)))) && \
+                   (RC-sqrt(abs(((phi-PHIC)*Ro)^2.0+((Ro-r)-RC)^2.0))<=DCS) ) ? 1 : 0)); \
+                (((phi<PHIC)&&(Ro-r>DCS)&&(Ro-r<=DHS)) ? 1.0 : \
+                (((phi>=PHIC)&&(Ro-r<=ST)&&(phi*Ro<=PHIC*Ro+min(RC,sqrt(abs(2.0*RC*(Ro-r)-(Ro-r)^2.0)))) \
+                   &&(RC-sqrt(abs(((phi-PHIC)*Ro)^2.0+((Ro-r)-RC)^2.0))>DCS) \
+                   &&(RC-sqrt(abs(((phi-PHIC)*Ro)^2.0+((Ro-r)-RC)^2.0))<=DHS))? 1.0 : 0));\
+                (((Ro-r<=DCO)&&(phi*Ro>PHIC*Ro+min(RC,sqrt(abs(2.0*RC*(Ro-r)-(Ro-r)^2.0))))) ? 1.0 : 0);\
+                (((Ro-r>DCO)&&(Ro-r<=DHO)&&(phi*Ro>PHIC*Ro+min(RC,sqrt(abs(2.0*RC*(Ro-r)-(Ro-r)^2.0))))) ? 1.0 : 0)
+    end		 
+end
+
+# COMPOSITION BOUNDARY CONDITIONS
+# Default is insulating on all sides. This is what we want for now.
+# In future models can set this to use the initial condition to define the BC.
+subsection Boundary composition model
+   set Fixed composition boundary indicators = west,east
+   set List of model names = initial composition
+   subsection Initial composition
+      set Minimal composition = 0  # not sure if these are actually needed, seems like this should be a list
+      set Maximal composition = 1 
+   end
+end
+
+
+# BASIC DIMENSIONAL *MATERIAL* MODEL FOR BOUSSINESQ APPROXIMATION
+# Material Properties
+# Reference density 3300. Units: kg/m^3.
+# The value of the specific heat 1250. Units: J/kg/K.
+# The reference temperature 273. Units: K.
+# The value of the thermal conductivity 4.125. Units: W/m/K.
+# The value of the thermal expansion coefficient 2e-5. Units: 1/K.
+# The value of the constant viscosity. 1e20 Units: kg/m/s = Pa-s. (used?)
+# Note, rho-ref=3300 with Tref=1673, will give rho=3390 at T=0
+
+# Material model     
+subsection Material model
+#  set Model name = billen subduction
+  set Model name = visco plastic
+  set Material averaging = harmonic average # makes material properties constant within elements
+
+#  subsection Billen Subduction
+   subsection Visco Plastic
+
+    set Reference temperature = 273
+    set Reference viscosity = 1e20
+
+#    set Temperature adiabat for viscosity = 0.0003  # 0.3 K/km
+
+    set Minimum strain rate = 1.e-20    # for yield stress calculation
+    set Reference strain rate = 1.e-15  # for first time step
+
+    set Minimum viscosity = 1e19    # 1e18
+    set Maximum viscosity = 1e24    # 1e24
+
+#    set Phase transition depths = background:660e3
+#    set Phase transition widths = background:1e3
+#    set Phase transition temperature = background:
+#    set Phase transition Clapeyron slopes = background:-2.0e6
+
+    # 5 Compositions                 Mantle, SPCrust, SPHarz, OPCrust, OPHarz  
+    set Thermal diffusivities = 1.0e-6, 1.0e-6, 1.0e-6, 1.0e-6,1.0e-6  
+    set Heat capacities       = background:1250, spcrust:1250, spharz:1250, opcrust:1250, opharz:1250 
+    set Densities             = background:3300, spcrust:3000, spharz:3235, opcrust:3000, opharz:3235 
+    set Thermal expansivities = background:3.1e-5, spcrust:3.1e-5, spharz:3.1e-5, opcrust:3.1e-5, opharz:3.1e-5 
+
+    set Viscosity averaging scheme = harmonic
+
+    set Viscous flow law = diffusion   # composite
+    set Yield mechanism = drucker
+#    set Maximum yield stress = 500e6
+
+    set Grain size = 8.2e-3
+
+# Set SPcrust viscosity to constant value of 1e20
+    # Dry olivine flow law                             Mantle,  SPCrust,     SPHarz,  OPCrust,     OPHarz  
+	# set Names of fields = spcrust,spharz,opcrust,opharz
+    set Prefactors for diffusion creep           =  background:8.571e-16, spcrust:5.000e-20, spharz:8.571e-16, opcrust:8.571e-16, opharz:8.571e-16 
+    set Grain size exponents for diffusion creep =  background:3.0, spcrust:0.0, spharz:3.0, opcrust:3.0, opharz:3.0  
+    set Activation energies for diffusion creep  =  background:335.0e3, spcrust:0.0, spharz:335.0e3, opcrust:335.0e3, opharz:335.0e3    
+    set Activation volumes for diffusion creep   =  background:4.0e-6, spcrust:0.0, spharz:4.0e-6, opcrust:4.0e-6, opharz:4.0e-6     
+
+    set Prefactors for dislocation creep          = background:6.859e-15, spcrust:6.859e-15, spharz:6.859e-15, opcrust:6.859e-15, opharz:6.859e-15 
+    set Stress exponents for dislocation creep    = background:3.5, spcrust:3.5, spharz:3.5, opcrust:3.5, opharz:3.5 
+    set Activation energies for dislocation creep = background:480.0e3, spcrust:480.0e3, spharz:480.0e3, opcrust:480.0e3, opharz:480.0e3 
+    set Activation volumes for dislocation creep  = background:11.0e-6, spcrust:11.0e-6, spharz:11.0e-6, opcrust:11.0e-6, opharz:11.0e-6  
+
+    set Angles of internal friction =                   25.0,     25.00,     25.00,     25.00,     25.00
+    set Cohesions                   =                   10.e6,     10.e6,     10.e6,     10.e6,     10.e6 
+    # Reset corner viscosity
+    set Reset corner viscosity = true
+    set Reset corner viscosity width = 275e3
+    set Reset corner viscosity depth = 145e3
+    set Reset corner viscosity constant = 1e20
+  end
+end
+
+# GRAVITY
+# By default, ascii data follows PREM model
+
+subsection Gravity model
+  set Model name = ascii data
+end
+
+# INFORMATION ON OUTPUT TO BE CREATED
+# Depth average, Number of Zones are zones divided vertically to get average, 10 is default
+#                Time between graphical output = 0 means output at every step
+subsection Postprocess
+  set List of postprocessors = visualization, velocity statistics, temperature statistics, depth average
+
+  subsection Depth average
+    set Number of zones = 50    
+    set Output format = txt
+    set Time between graphical output = 0
+  end
+
+  subsection Visualization
+    set List of output variables      = density, viscosity
+    set Output format                 = vtu
+    set Time between graphical output = 0.25e6
+    set Number of grouped files       = 0
+  end
+end
+
+## Turn prescribed temperature on
+set Prescribe internal temperatures = true
+
+subsection Prescribed temperatures
+  subsection Indicator function
+    set Coordinate system = spherical
+    set Variable names = r, phi
+    set Function constants = Depth=1.45e5, Width=2.75e5, Ro=6.371e6, PHIM=1.065
+    set Function expression = (((r>Ro-Depth)&&((r*phi<Width)||(r*(PHIM-phi)<Width))) ? 1:0)
+  end
+  subsection Temperature function
+    set Coordinate system = spherical
+    set Variable names = r, phi
+    set Function constants = Depth=1.45e5, Width=2.75e5, Ro=6.371e6, PHIM=1.065,\
+                             AGEOP=1.26144e15, TS=2.730e+02, TM=1.673e+03, K=1.000e-06, VSUB=1.58549e-09
+    set Function expression = ((r*(PHIM-phi)<Width) ? TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*AGEOP)))):\
+                              (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*Ro*phi/VSUB))))))
+  end
+end
