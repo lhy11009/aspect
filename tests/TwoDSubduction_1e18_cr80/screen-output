@@ -1,0 +1,43 @@
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+Loading shared library <../subduction_temperature2d/libsubduction_temperature2d.so>
+Loading shared library <../prescribe_field/libprescribed_temperature.so>
+
+
+   Loading Ascii data initial file /home/lochy/softwares/aspect/data/initial-temperature/ascii-data/test/box_2d_Vs_YT16.txt.
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Number of active cells: 2,048 (on 6 levels)
+Number of degrees of freedom: 101,028 (16,770+2,145+8,385+18,432+18,432+18,432+18,432)
+
+*** Timestep 0:  t=0 years
+   Solving temperature system... 0 iterations.
+   Solving spcrust system ... 1 iterations.
+   Solving spharz system ... 1 iterations.
+   Solving opcrust system ... 1 iterations.
+   Solving opharz system ... 1 iterations.
+   Initial Newton Stokes residual = 2.63102e+14, v = 2.63102e+14, p = 0
+
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+0 iterations.
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 1: 1, norm of the rhs: 2.63102e+14
+
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_1e18_cr80/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 1641 K, 1673 K
+     Writing depth average:    output-TwoDSubduction_1e18_cr80/depth_average
+     Writing particle output:  output-TwoDSubduction_1e18_cr80/particles/particles-00000
+
+Termination requested by criterion: end time
+
+
++----------------------------------------------+------------+------------+
++----------------------------------+-----------+------------+------------+
++----------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
