@@ -1,0 +1,176 @@
+############### Global parameters
+# We use a 2d setup. Since it takes some time for
+# the model to reach a steady state we set the 
+# end time to approximately 15 billion years. 
+
+set Dimension = 2
+
+set Start time                             = 0
+set End time                               = 0 # 5e17 # use the first value in test, the second in benchmark
+set Use years in output instead of seconds = false
+set Additional shared libraries = $ASPECT_SOURCE_DIR/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so
+
+
+
+subsection Geometry model
+  set Model name = box
+
+  subsection Box
+    set X extent = 1000000
+    set Y extent = 1000000
+  end
+end
+
+
+subsection Gravity model
+  set Model name = vertical
+  subsection Vertical
+    set Magnitude = 10.0
+  end
+end
+
+
+subsection Heating model
+  # As we only want to look at the effects of latent heating, we disable all
+  # the other heating terms. 
+  set List of model names =  latent heat
+end
+
+
+############### Boundary conditions
+# We only fix the temperature at the upper boundary, the other boundaries
+# are isolating.
+subsection Boundary temperature model
+  set Fixed temperature boundary indicators = top
+  set List of model names = box
+
+  subsection Box
+    set Top temperature = 1000
+  end
+end
+
+# To guarantuee a steady downward flow, we fix the velocity
+# at the top and bottom, and set it to free slip on the sides. 
+subsection Boundary velocity model
+  set Prescribed velocity boundary indicators = bottom:function, top:function
+  set Tangential velocity boundary indicators = left, right
+
+  subsection Function
+    set Function expression = 0;-2.1422e-11
+    set Variable names      = x,y
+  end
+end
+
+subsection Initial temperature model
+  set Model name = function
+  subsection Function
+    set Function expression = 1.0e3
+    set Variable names      = x,y
+  end
+end
+
+# an addiitonal compositional field: comp1
+# todo
+subsection Compositional fields
+    set Number of fields = 1
+    set Names of fields = comp1
+    set Compositional field methods = field
+end
+
+# initial compositon set as the right half(x > 5e5)
+# todo
+subsection Initial composition model
+    set List of model names = function
+    set List of model operators = add
+    subsection Function
+        set Coordinate system = cartesian
+        set Variable names = x, y
+        set Function constants = Xmid = 5e5
+        set Function expression = (x < Xmid) ? 0.3 : 0.7
+    end
+end
+
+subsection Material model
+  set Model name = visco plastic twod
+  subsection Visco Plastic TwoD
+    # If the temperature is equal to the phase transition temperature, the 
+    # phase transition will occur at the phase transition depth. However, 
+    # if the temperature deviates from this value, the Clapeyron slope 
+    # determines how much the pressure (and depth) of the phase boundary
+    # changes. Here, the phase transition will be in the middle of the box
+    # for T=T1. 
+    # two compositions, four phases, todo
+    set Phase transition depths                        = background:200000|500000, comp1:200000|500000
+    set Phase transition temperatures                  = background:1000|1000, comp1:1000|1000
+    set Phase transition Clapeyron slopes              = background:0.0|1e7, comp1:0.0|1e7
+
+    # We set the width of the phase transition to 5 km. You may want to 
+    # change this parameter to see how latent heating depends on the width
+    # of the phase transition. 
+    set Phase transition widths                        = background:500|5000, comp1:500|5000
+    
+    # The change of density across the phase transition. Together with the
+    # Clapeyron slope, this is what determines the entropy change.
+    set Densities = background: 3400.0|3401.0|3515.6, comp1:3400.0|3401.0|3515.6    # reference density = 3400.0, density jump = 115.6
+
+    set Heat capacities = 1000.0
+    set Reference temperature                          = 1000
+    set Thermal diffusivities = 7.0e-7  # thermal conductivity = 2.38
+
+    # We set the thermal expansion amd the compressibility to zero, so that 
+    # all temperature (and density) changes are caused by advection, diffusion 
+    # and latent heating. 
+    set Thermal expansivities = 0.0
+    # set Compressibility                                = 0.0
+
+    # Viscosity is constant. 
+    set Viscous flow law = diffusion
+    set Prefactors for diffusion creep = 5.924170616113744e-23  # viscosity = 8.44e21
+    set Grain size exponents for diffusion creep = 0.0
+    set Activation energies for diffusion creep = 0.0
+    set Activation volumes for diffusion creep = 0.0
+  end
+end
+
+
+subsection Mesh refinement
+  set Initial adaptive refinement        = 0 
+  set Initial global refinement          = 7 
+  set Time steps between mesh refinement = 0
+end
+
+
+subsection Discretization
+  subsection Stabilization parameters
+    # The exponent $\alpha$ in the entropy viscosity stabilization. Units:
+    # None.
+    set alpha = 2
+
+    # The $\beta$ factor in the artificial viscosity stabilization. An
+    # appropriate value for 2d is 0.052 and 0.078 for 3d. Units: None.
+    set beta  = 0.078
+
+    # The $c_R$ factor in the entropy viscosity stabilization. Units: None.
+    set cR    = 0.5   # default: 0.11
+  end
+end
+
+
+subsection Postprocess
+  set List of postprocessors = visualization, velocity statistics, heating statistics
+
+  subsection Visualization
+    set Number of grouped files       = 0
+    set Output format                 = vtu
+
+    # We are only interested in the last timestep (when the system hast reached
+    # a steady state). For following the development of the system or checking
+    # if the solution already reached steady state, this parameter can be set 
+    # to a smaller value.
+    set Time between graphical output = 5e16
+    set List of output variables      = density
+  end
+end
+
+set Output directory = output-TwoDSubduction_latent_heat_c2p4
+

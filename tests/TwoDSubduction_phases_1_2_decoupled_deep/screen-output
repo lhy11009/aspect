@@ -1,0 +1,40 @@
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 74,008 (20,402+2,601+10,201+10,201+10,201+10,201+10,201)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Solving spcrust system ... 0 iterations.
+   Solving spharz system ... 0 iterations.
+   Solving opcrust system ... 0 iterations.
+   Solving opharz system ... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+0 iterations.
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 1
+
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_phases_1_2_decoupled_deep/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3300 kg/m^3, 1.81e+21 Pa s, 2.112e+15 kg
+
+
+
++----------------------------------------------+------------+------------+
++----------------------------------+-----------+------------+------------+
++----------------------------------+-----------+------------+------------+
+
+Termination requested by criterion: end time
+
+
++----------------------------------------------+------------+------------+
++----------------------------------+-----------+------------+------------+
++----------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
