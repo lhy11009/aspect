@@ -4,6 +4,7 @@
 Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/subduction_temperature2d/libsubduction_temperature2d.so>
 Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/prescribe_field/libprescribed_temperature.so>
 Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
+Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/slab2d_statistics/libslab2d_statistics.so>
 
 
    Loading Ascii data initial file /home/lochy/softwares/aspect/data/initial-temperature/ascii-data/test/box_2d_Vs_YT16.txt.
@@ -27,11 +28,12 @@ Number of degrees of freedom: 101,028 (16,770+2,145+8,385+18,432+18,432+18,432+1
 
 
    Postprocessing:
-     Writing graphical output: output-TwoDSubduction_1e18_cr80/solution/solution-00000
+     Writing graphical output: output-TwoDSubduction_1e18_cr80_slab_statistics/solution/solution-00000
      RMS, max velocity:        0 m/year, 0 m/year
      Temperature min/avg/max:  273 K, 1641 K, 1673 K
-     Writing depth average:    output-TwoDSubduction_1e18_cr80/depth_average
-     Writing particle output:  output-TwoDSubduction_1e18_cr80/particles/particles-00000
+     Writing depth average:    output-TwoDSubduction_1e18_cr80_slab_statistics/depth_average
+     Writing particle output:  output-TwoDSubduction_1e18_cr80_slab_statistics/particles/particles-00000
+     Slab Statistics volume:   2.11e+10
 
 Termination requested by criterion: end time
 
