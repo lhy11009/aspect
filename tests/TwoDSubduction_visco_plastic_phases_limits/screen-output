@@ -1,0 +1,27 @@
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Number of active cells: 400 (on 2 levels)
+Number of degrees of freedom: 5,484 (3,362+441+1,681)
+
+*** Timestep 0:  t=0 seconds, dt=0 seconds
+   Solving temperature system... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 46+0 iterations.
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_visco_plastic_phases_limits/solution/solution-00000
+
+Termination requested by criterion: end time
+
+
++----------------------------------------------+------------+------------+
++----------------------------------+-----------+------------+------------+
++----------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
