@@ -26,7 +26,7 @@
 #include <deal.II/fe/fe_values.h>
 #include <math.h>
 #include <algorithm>
-#include "isosurfaces.h"
+#include "isosurfaces_TwoD.h"
 
 namespace aspect
 {
@@ -35,7 +35,7 @@ namespace aspect
     namespace Internal
     {
       bool
-      Isosurface::are_all_values_in_range(const std::vector<double> &values) const
+      IsosurfaceTwoD::are_all_values_in_range(const std::vector<double> &values) const
       {
         // This assumes that all the vectors in isosurfaces already have the
         // same length.
@@ -146,12 +146,12 @@ namespace aspect
 
     template <int dim>
     void
-    Isosurfaces<dim>::update ()
+    IsosurfacesTwoD<dim>::update ()
     { }
 
     template <int dim>
     void
-    Isosurfaces<dim>::tag_additional_cells () const
+    IsosurfacesTwoD<dim>::tag_additional_cells () const
     {
       if (this->get_dof_handler().n_locally_owned_dofs() == 0)
         return;
@@ -180,7 +180,7 @@ namespace aspect
 
               for (unsigned int i_quad=0; i_quad<quadrature.size(); ++i_quad)
                 {
-                  for (auto &isosurface : isosurfaces)
+                  for (auto &isosurface : isosurfaces_twod)
                     {
                       // setup the vector to check
                       std::vector<double> values(isosurface.min_values.size());
@@ -290,12 +290,12 @@ namespace aspect
 
     template <int dim>
     void
-    Isosurfaces<dim>::
+    IsosurfacesTwoD<dim>::
     declare_parameters (ParameterHandler &prm)
     {
       prm.enter_subsection("Mesh refinement");
       {
-        prm.enter_subsection("Isosurfaces");
+        prm.enter_subsection("IsosurfacesTwoD");
         {
           prm.declare_entry ("Isosurfaces", "depth",
                              Patterns::Anything(),
@@ -329,7 +329,7 @@ namespace aspect
 
     template <int dim>
     void
-    Isosurfaces<dim>::parse_parameters (ParameterHandler &prm)
+    IsosurfacesTwoD<dim>::parse_parameters (ParameterHandler &prm)
     {
       prm.enter_subsection("Mesh refinement");
       {
@@ -338,7 +338,7 @@ namespace aspect
         const unsigned int maximum_refinement_level = this->get_parameters().initial_global_refinement + this->get_parameters().initial_adaptive_refinement;
 
         const std::vector<std::string> &compositions = this->introspection().get_composition_names();
-        prm.enter_subsection("Isosurfaces");
+        prm.enter_subsection("IsosurfacesTwoD");
         {
           // Split the list by comma delimited components.
           const std::vector<std::string> isosurface_entries = dealii::Utilities::split_string_list(prm.get("Isosurfaces"), ';');
@@ -346,7 +346,7 @@ namespace aspect
           for (auto &isosurface_entry : isosurface_entries)
             {
               ++isosurface_entry_number;
-              aspect::MeshRefinement::Internal::Isosurface isosurface;
+              aspect::MeshRefinement::Internal::IsosurfaceTwoD isosurface_twod;
               std::vector<aspect::MeshRefinement::Internal::Property> properties;
               std::vector<double> min_value_inputs;
               std::vector<double> max_value_inputs;
@@ -357,9 +357,9 @@ namespace aspect
                                      + " contains  only " +  std::to_string(field_entries.size()) + " entries: " + isosurface_entry + "."));
 
               // convert a potential min, min+1, min + 1, min+10, max, max-1, etc. to actual integers.
-              isosurface.min_refinement = Internal::min_max_string_to_int(field_entries[0], minimum_refinement_level, maximum_refinement_level);
-              isosurface.max_refinement = Internal::min_max_string_to_int(field_entries[1], minimum_refinement_level, maximum_refinement_level);
-              AssertThrow(isosurface.min_refinement <= isosurface.max_refinement,
+              isosurface_twod.min_refinement = Internal::min_max_string_to_int(field_entries[0], minimum_refinement_level, maximum_refinement_level);
+              isosurface_twod.max_refinement = Internal::min_max_string_to_int(field_entries[1], minimum_refinement_level, maximum_refinement_level);
+              AssertThrow(isosurface_twod.min_refinement <= isosurface_twod.max_refinement,
                           ExcMessage("The provided maximum refinement level has to be larger than the minimum refinement level."));
               for (auto field_entry = field_entries.begin()+2; field_entry != field_entries.end(); ++field_entry)
                 {
@@ -379,10 +379,10 @@ namespace aspect
                   AssertThrow(min_value_inputs.back() < max_value_inputs.back(),
                               ExcMessage("The provided maximum refinement level has to be larger than the provided minimum refinement level."));
                 }
-              isosurface.min_values = min_value_inputs;
-              isosurface.max_values = max_value_inputs;
-              isosurface.properties = properties;
-              isosurfaces.push_back(isosurface);
+              isosurface_twod.min_values = min_value_inputs;
+              isosurface_twod.max_values = max_value_inputs;
+              isosurface_twod.properties = properties;
+              isosurfaces_twod.push_back(isosurface_twod);
             }
             //todo
             minimum_depth_for_temperature = prm.get_double("Minimum depth for temperature");
@@ -399,8 +399,8 @@ namespace aspect
 {
   namespace MeshRefinement
   {
-    ASPECT_REGISTER_MESH_REFINEMENT_CRITERION(Isosurfaces,
-                                              "isosurfaces",
+    ASPECT_REGISTER_MESH_REFINEMENT_CRITERION(IsosurfacesTwoD,
+                                              "isosurfaces_twod",
                                               "A mesh refinement criterion that computes "
                                               "refinement indicators between two iso-surfaces of "
                                               "specific field entries(e.g. temperature, compsitions)."
