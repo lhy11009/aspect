@@ -68,7 +68,7 @@ namespace aspect
           unsigned int index;
       };
 
-      struct Isosurface
+      struct IsosurfaceTwoD
       {
         public:
           /**
@@ -100,7 +100,7 @@ namespace aspect
      * @ingroup MeshRefinement
      */
     template <int dim>
-    class Isosurfaces : public Interface<dim>,
+    class IsosurfacesTwoD : public Interface<dim>,
       public SimulatorAccess<dim>
     {
       public:
@@ -137,7 +137,7 @@ namespace aspect
         /**
          * A vector of the isosurfaces used by this class.
          */
-        std::vector<Internal::Isosurface> isosurfaces;
+        std::vector<Internal::IsosurfaceTwoD> isosurfaces_twod;
 
         /**
          * todo
