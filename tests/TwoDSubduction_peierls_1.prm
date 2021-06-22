@@ -1,0 +1,129 @@
+# Copy of visco_plastic.prm, but include a phase transition for the EoS
+
+set Dimension                              = 2
+set Start time                             = 0
+set End time                               = 0
+set Use years in output instead of seconds = true
+set Nonlinear solver scheme                = single Advection, iterated Stokes
+set Max nonlinear iterations               = 1
+set Timing output frequency                = 1
+
+# model geometry
+subsection Geometry model
+  set Model name = box
+  subsection Box
+    set X repetitions = 50
+    set Y repetitions = 50
+    set X extent      = 800e3
+    set Y extent      = 800e3
+  end
+end
+
+# Mesh refinement specifications 
+subsection Mesh refinement
+  set Initial adaptive refinement        = 0
+  set Initial global refinement          = 0
+  set Time steps between mesh refinement = 0
+end
+
+# Velocity on boundaries characterized by functions
+subsection Boundary velocity model
+  set Prescribed velocity boundary indicators = bottom y: function, top y: function, left x: function, right x: function
+  subsection Function
+    set Variable names      = x,y
+    set Function constants  = m=0.0005, year=1
+    set Function expression = if (x<50e3 , -1*m/year, 1*m/year); if (y<50e3 , 1*m/year, -1*m/year);
+  end
+end
+
+
+# Temperature boundary and initial conditions
+subsection Boundary temperature model
+  set Fixed temperature boundary indicators   = left, right
+  set List of model names = box
+  subsection Box
+    set Left temperature   = 273
+    set Right temperature  = 2000
+  end
+end
+subsection Initial temperature model
+  set Model name = function
+  subsection Function
+    set Coordinate system = cartesian
+    set Variable names = x, y
+    set Function constants = XMAX=800e3, Tl=273.0, Tr=2000.0
+    set Function expression = Tl * (x - XMAX)/(-XMAX) + Tr * x / XMAX
+  end
+end
+
+
+# value for material model
+# change thermal expansivity to 0.0
+subsection Material model
+    set Model name = visco plastic
+    set Material averaging = harmonic average only viscosity
+    subsection Visco Plastic
+      set Reference temperature = 273
+      set Maximum viscosity = 1e24
+      set Densities = 3300.0
+      set Thermal diffusivities = 1.0e-6
+      set Thermal expansivities = 0.0
+      set Heat capacities = 1250.0
+      set Grain size = 0.67e-02
+      
+      # rheology   
+      set Viscosity averaging scheme = harmonic
+      set Include Peierls creep = true    # Change to true for restart
+    	set Viscous flow law = composite     # change to composite for restart
+      set Reference viscosity = 1e20
+      set Minimum viscosity = 1e18  # change to 1e18 on restart
+      # diffusion creep  
+      set Prefactors for diffusion creep = 8.5714e-16
+      set Grain size exponents for diffusion creep = 3.0e+00
+      set Activation energies for diffusion creep = 3.35e+05
+      set Activation volumes for diffusion creep = 7.0e-06
+      # dislocation creep	
+      set Prefactors for dislocation creep = 6.85918e-15
+      set Stress exponents for dislocation creep = 3.0e+00
+      set Activation energies for dislocation creep = 4.80e+05
+      set Activation volumes for dislocation creep = 15.0e-06
+      # Parameters for Mei Low Temperature Plasticity
+      set Peierls creep flow law = viscosity approximation
+      set Peierls fitting parameters = 0.17
+      set Peierls glide parameters p = 0.5
+      set Peierls glide parameters q = 1.0
+      set Stress exponents for Peierls creep = 2.0
+      set Peierls stresses = 5.9e9
+      set Prefactors for Peierls creep = 1.4e-19
+      set Activation energies for Peierls creep = 3.20e+05
+      set Activation volumes for Peierls creep = 0.0
+
+    end
+end
+
+
+# Gravity model
+subsection Gravity model
+  set Model name = vertical
+  subsection Vertical
+    set Magnitude = 10.0
+  end
+end
+
+# Post processing
+subsection Postprocess
+  set List of postprocessors = visualization, material statistics
+
+  subsection Visualization
+    set List of output variables = material properties
+    set Output format = vtu
+    set Time between graphical output = 0.1e6
+  end
+end
+
+subsection Solver parameters
+  subsection Stokes solver parameters
+    set Number of cheap Stokes solver steps = 0
+    set Linear solver tolerance = 1.0
+  end
+end
