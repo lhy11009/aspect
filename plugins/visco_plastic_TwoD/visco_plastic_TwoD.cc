@@ -279,9 +279,14 @@ namespace aspect
                                                                                phase_function.n_phase_transitions_for_each_composition());
           
           // record the diffusion viscosities for output
+          // add by volume fractions
           if (add_viscosities_out != nullptr)
           {
-            add_viscosities_out->diffusion_viscosities[i] = viscosity_diffusion;
+            if (j==0)
+              add_viscosities_out->diffusion_viscosities[i] = 0.0;  // initialize
+            add_viscosities_out->diffusion_viscosities[i] += volume_fractions[j] * log(viscosity_diffusion);
+            if (j == volume_fractions.size() - 1)
+              add_viscosities_out->diffusion_viscosities[i] = exp(add_viscosities_out->diffusion_viscosities[i]);
           }
 
           // Step 1b: compute viscosity from dislocation creep law
@@ -290,9 +295,14 @@ namespace aspect
                                                                                    phase_function.n_phase_transitions_for_each_composition());
           
           // record the dislocation viscosities for output
+          // add by volume fractions
           if (add_viscosities_out != nullptr)
           {
-            add_viscosities_out->dislocation_viscosities[i] = viscosity_dislocation;
+            if (j==0)
+              add_viscosities_out->dislocation_viscosities[i] = 0.0;  // initialize
+            add_viscosities_out->dislocation_viscosities[i] += volume_fractions[j] * log(viscosity_dislocation);
+            if (j == volume_fractions.size() - 1)
+              add_viscosities_out->dislocation_viscosities[i] = exp(add_viscosities_out->dislocation_viscosities[i]);
           }
 
           // Step 1c: select what form of viscosity to use (diffusion, dislocation, fk, or composite)
