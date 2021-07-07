@@ -1,10 +1,10 @@
-# Copy of visco_plastic.prm, but include a phase transition for the EoS
+# This activate the peierls rheology with dislocation and diffusion creep rheology in the model of visco plastic twod
 
 set Dimension                              = 2
 set Start time                             = 0
 set End time                               = 0
 set Use years in output instead of seconds = true
-set Timing output frequency                = 1
+set Additional shared libraries = $ASPECT_SOURCE_DIR/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so
 
 # model geometry
 subsection Geometry model
@@ -58,7 +58,7 @@ end
 # value for material model
 # change thermal expansivity to 0.0
 subsection Material model
-    set Model name = visco plastic
+    set Model name = visco plastic twod
     set Material averaging = harmonic average only viscosity
     subsection Visco Plastic
       set Reference temperature = 273
@@ -122,6 +122,6 @@ end
 subsection Solver parameters
   subsection Stokes solver parameters
     set Number of cheap Stokes solver steps = 0
-    set Linear solver tolerance = 0.999
+    set Linear solver tolerance = 1.0
   end
 end
