@@ -60,6 +60,8 @@ namespace aspect
             creep_parameters.glide_parameter_q = glide_parameters_q[composition];
             creep_parameters.fitting_parameter = fitting_parameters[composition];
             creep_parameters.stress_cutoff = stress_cutoffs[composition];
+            creep_parameters.shear_modulus = shear_moduluses[composition];
+            creep_parameters.shear_modulus_derivative = shear_modulus_derivatives[composition];
           }
         else
           {
@@ -83,6 +85,10 @@ namespace aspect
                                                  fitting_parameters, composition);
             creep_parameters.stress_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phases_per_composition,
                                              stress_cutoffs, composition);
+            creep_parameters.shear_modulus = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phases_per_composition,
+                                                 shear_moduluses, composition);
+            creep_parameters.shear_modulus_derivative = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phases_per_composition,
+                                                 shear_modulus_derivatives, composition);
           }
         return creep_parameters;
       }
@@ -105,6 +111,7 @@ namespace aspect
          * Details of this derivation can be found in the following document:
          * https://ucdavis.app.box.com/s/cl5mwhkjeabol4otrdukfcdwfvg9me4w/file/705438695737
          * The formulation for the viscosity is:
+         *  sigma_p = sigma_0 * (1 + G' * P / G_0)
          *   stress_term * arrhenius_term * strain_rate_term, where
          * stress_term      = (0.5 * gamma * sigma_p) / (A * ((gamma * sigma_p)^n)^(1/(s+n)))
          * arrhenius_term   = exp(( (E + P * V) / (R * T)) * (1 - gamma^p)^q / (s + n) )
@@ -126,13 +133,14 @@ namespace aspect
 
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phases_per_composition);
 
+        const double peierls_stress = p.peierls_stress * (1.0 + p.shear_modulus_derivative * pressure / p.shear_modulus);
         const double s = ( (p.activation_energy + pressure * p.activation_volume) / (constants::gas_constant * temperature)) *
                          p.glide_parameter_p * p.glide_parameter_q *
                          std::pow((1. - std::pow(p.fitting_parameter, p.glide_parameter_p)),(p.glide_parameter_q - 1.)) *
                          std::pow(p.fitting_parameter, p.glide_parameter_p);
 
-        const double stress_term = 0.5 * (p.fitting_parameter * p.peierls_stress) /
-                                   std::pow((p.prefactor * std::pow(p.fitting_parameter * p.peierls_stress,p.stress_exponent)),( 1. / (s + p.stress_exponent)));
+        const double stress_term = 0.5 * (p.fitting_parameter * peierls_stress) /
+                                   std::pow((p.prefactor * std::pow(p.fitting_parameter * peierls_stress,p.stress_exponent)),( 1. / (s + p.stress_exponent)));
 
         const double arrhenius_term = std::exp( ((p.activation_energy + pressure * p.activation_volume) / (constants::gas_constant * temperature)) *
                                                 (std::pow((1. - std::pow(p.fitting_parameter,p.glide_parameter_p)),p.glide_parameter_q)) /
@@ -282,7 +290,7 @@ namespace aspect
         * d = std::pow(1. - c, q)
         * s = b*p*q*c*d/(1. - c)
         * arrhenius = std::exp(-b*d)
-        *
+        * peierls_stress = peierls_stress_0 * (1 + shear_modulus_pressure_derivative * pressure / shear_modulus)
         * edot_ii = A * std::pow(stress, s + n) * std::pow(gamma*peierls_stress, -s) * arrhenius
         * deriv = edot_ii / stress * (s + n)
         */
@@ -293,8 +301,8 @@ namespace aspect
         const double d = std::pow(1. - c, p.glide_parameter_q);
         const double s = b*p.glide_parameter_p*p.glide_parameter_q*c*d/(1. - c);
         const double arrhenius = std::exp(-b*d);
-
-        const double edot_ii = p.prefactor * std::pow(stress, s + p.stress_exponent) * std::pow(p.fitting_parameter*p.peierls_stress, -s) * arrhenius;
+        const double peierls_stress = p.peierls_stress * (1.0 + p.shear_modulus_derivative * pressure / p.shear_modulus);
+        const double edot_ii = p.prefactor * std::pow(stress, s + p.stress_exponent) * std::pow(p.fitting_parameter*peierls_stress, -s) * arrhenius;
         const double deriv = edot_ii / stress * (s + p.stress_exponent);
 
         return std::make_pair(edot_ii, deriv);
@@ -467,6 +475,18 @@ namespace aspect
                            Patterns::Anything(),
                            "List of the Stress thresholds below which the strain rate is solved for as a quadratic "
                            "function of stress to aid with convergence when stress exponent n=0. Units: \\si{\\pascal}");
+        prm.declare_entry ("Peierls shear modulus", "7.74e10",
+                           Patterns::Anything(),
+                           "List of shear modulus for Peierls creep $G_0$ for pressure dependence of Peierls stresses"
+                           "for background material and compositional fields, for a total of N+1 values, where N is the"
+                           "number of compositional fields. If only one value is given, then all use the same value."
+                           "Units: pascal");
+        prm.declare_entry ("Peierls shear modulus derivative", "0.0",
+                           Patterns::Anything(),
+                           "List of pressure derivative of shear modulus for Peierls creep $\\Dot{G}$ for pressure"
+                           "dependence of Peierls stresses for background material and compositional fields,"
+                           "for a total of N+1 values, where N is the number of compositional fields."
+                           "If only one value is given, then all use the same value. Units: none");
 
       }
 
@@ -556,6 +576,20 @@ namespace aspect
                                                               "Cutoff stresses for Peierls creep",
                                                               true,
                                                               expected_n_phases_per_composition);
+
+        shear_moduluses = Utilities::parse_map_to_double_array(prm.get("Peierls shear modulus"),
+                                                                  list_of_composition_names,
+                                                                  has_background_field,
+                                                                  "Peierls shear modulus",
+                                                                  true,
+                                                                  expected_n_phases_per_composition);
+
+        shear_modulus_derivatives = Utilities::parse_map_to_double_array(prm.get("Peierls shear modulus derivative"),
+                                                                  list_of_composition_names,
+                                                                  has_background_field,
+                                                                  "Peierls shear modulus derivative",
+                                                                  true,
+                                                                  expected_n_phases_per_composition);
       }
     }
   }

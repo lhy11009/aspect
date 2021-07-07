@@ -51,6 +51,8 @@ namespace aspect
         double glide_parameter_q;
         double fitting_parameter;
         double stress_cutoff;
+        double shear_modulus;
+        double shear_modulus_derivative;
       };
 
       /**
@@ -226,6 +228,16 @@ namespace aspect
           std::vector<double> glide_parameters_q;
 
           std::vector<double> stress_cutoffs;
+
+          /**
+           * List of the second Peierls shear modulus
+           */
+          std::vector<double> shear_moduluses;
+          
+          /**
+           * List of the second Peierls shear modulus
+           */
+          std::vector<double> shear_modulus_derivatives;
 
           /**
            * Parameters governing the iteration for the exact
