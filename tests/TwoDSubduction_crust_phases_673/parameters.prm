@@ -15,7 +15,7 @@
 # without having to re-compile all of ASPECT. See the section of the manual
 # discussing writing extensions for more information on how to compile
 # additional files into a shared library.
-set Additional shared libraries                = /home/lochy/softwares/aspect/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so # default: 
+set Additional shared libraries                = /home/lochy/softwares/aspect/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so # default: 
 
 # In order to make the problem in the first time step easier to solve, we need
 # a reasonable guess for the temperature and pressure. To obtain it, we use an
@@ -2984,7 +2984,8 @@ subsection Heating model
     # The specific rate of heating due to radioactive decay (or other bulk
     # sources you may want to describe). This parameter corresponds to the
     # variable $H$ in the temperature equation stated in the manual, and the
-    # heating term is $ho H$. Units: W/kg.
+    # heating term is $
+ho H$. Units: W/kg.
     set Radiogenic heating rate = 0.
   end
 
