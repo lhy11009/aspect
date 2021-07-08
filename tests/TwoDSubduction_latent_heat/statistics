@@ -13,4 +13,4 @@
 # 13: Max. velocity (m/s)
 # 14: Average latent heat rate (W/kg)
 # 15: Total latent heat rate (W)
-0 0.000000000000e+00 0.000000000000e+00 16384 148739 66049 0 42 44 44 output-TwoDSubduction_latent_heat/solution/solution-00000 2.14220005e-11 2.14314166e-11 2.04121925e-12 7.05812792e+03 
+0 0.000000000000e+00 0.000000000000e+00 16384 148739 66049 0 42 44 44 output-TwoDSubduction_latent_heat/solution/solution-00000 2.14220005e-11 2.14314187e-11 2.04121927e-12 7.05812801e+03 

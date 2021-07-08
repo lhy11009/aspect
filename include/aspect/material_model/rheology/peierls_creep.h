@@ -50,6 +50,8 @@ namespace aspect
         double glide_parameter_p;
         double glide_parameter_q;
         double fitting_parameter;
+        double shear_modulus;
+        double shear_modulus_derivative;
       };
 
       /**
@@ -224,6 +226,16 @@ namespace aspect
            * to dislocation glide (q).
            */
           std::vector<double> glide_parameters_q;
+
+          /**
+           * List of the second Peierls shear modulus
+           */
+          std::vector<double> shear_moduluses;
+          
+          /**
+           * List of the second Peierls shear modulus
+           */
+          std::vector<double> shear_modulus_derivatives;
 
           /**
            * Parameters governing the iteration for the exact

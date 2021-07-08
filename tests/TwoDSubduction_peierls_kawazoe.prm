@@ -97,6 +97,8 @@ subsection Material model
       set Prefactors for Peierls creep = 1.4e-19
       set Activation energies for Peierls creep = 3.20e+05
       set Activation volumes for Peierls creep = 0.0
+      set Peierls shear modulus = 7.74e10  # these two parameters are from  From Kawazoe et al. PEPI 2009 and parameters from Liu et al., GRL 2005 
+      set Peierls shear modulus derivative = 1.61
 
     end
 end
