@@ -52,6 +52,16 @@ namespace aspect
       }
     }
 
+    // Todo: add initialize function
+    template <int dim>
+    void
+    ViscoPlasticTwoD<dim>::initialize()
+    {
+      /* initialize eos for lookup tables*/
+      if (use_lookup_table)
+        equation_of_state_lookup.initialize();
+    }
+
     template <int dim>
     bool
     ViscoPlasticTwoD<dim>::
@@ -629,6 +639,7 @@ namespace aspect
 
       EquationOfStateOutputs<dim> eos_outputs (this->n_compositional_fields()+1);
       EquationOfStateOutputs<dim> eos_outputs_all_phases (this->n_compositional_fields()+1+phase_function.n_phase_transitions());
+      EquationOfStateOutputs<dim> eos_outputs_lookup (equation_of_state_lookup.number_of_lookups());  // look up table
 
       std::vector<double> average_elastic_shear_moduli (in.n_evaluation_points());
 
@@ -757,6 +768,23 @@ namespace aspect
             out.entropy_derivative_pressure[i] = entropy_gradient_pressure;
             out.entropy_derivative_temperature[i] = entropy_gradient_temperature;
           }
+          
+          // Todo: rewrite previous results if we use a lookup table
+          // have to be implement after the averages among phases.
+          if (use_lookup_table)
+          {
+              AssertThrow(volume_fractions.size() == equation_of_state_lookup.number_of_lookups(),
+                          ExcMessage("Each composition has to have it's own lookup table"));
+              // Evaluate the equation of state properties at the current evaluation point
+              equation_of_state_lookup.evaluate(in, i, eos_outputs_lookup);
+    
+              // The density and isothermal compressibility are both volume-averaged
+              out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs_lookup.densities, MaterialUtilities::arithmetic);
+              out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs_lookup.compressibilities, MaterialUtilities::arithmetic);
+              out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs_lookup.entropy_derivative_pressure, MaterialUtilities::arithmetic);
+              out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs_lookup.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+          }
+
 
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding
           bool plastic_yielding = false;
@@ -799,6 +827,7 @@ namespace aspect
                     out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim> >())
                 compute_viscosity_derivatives(i, volume_fractions, calculate_viscosities.first, in, out, phase_function_values);
             }
+
 
           // Now compute changes in the compositional fields (i.e. the accumulated strain).
           for (unsigned int c=0; c<in.composition[i].size(); ++c)
@@ -1069,6 +1098,15 @@ namespace aspect
           prm.leave_subsection();
           // declare parameters for eclogite_decoupled_viscosity
           EclogiteDecoupledViscosity<dim>::declare_parameters(prm);
+          // Todo: declare parameters for lookup
+          // Table lookup parameters
+          prm.declare_entry ("Lookup table", "false", Patterns::Bool(),
+                             "Whether to use lookup tables for compositions and phases");
+          prm.enter_subsection ("Lookup table");
+          {
+            EquationOfState::ThermodynamicTableLookup<dim>::declare_parameters(prm);
+          }
+          prm.leave_subsection();
         }
         prm.leave_subsection();
       }
@@ -1260,6 +1298,17 @@ namespace aspect
           prm.leave_subsection();
           // parse for Decoupling eclogite viscousity
           eclogite_decoupled_viscosity.parse_parameters(prm);
+
+          // Todo: parse options for lookup
+          use_lookup_table = prm.get_bool("Lookup table");
+          equation_of_state_lookup.initialize_simulator (this->get_simulator());
+          prm.enter_subsection ("Lookup table");
+          {
+            equation_of_state_lookup.parse_parameters(prm);
+          }
+          prm.leave_subsection();
+
+          // Todo: initiate lookup
         }
         prm.leave_subsection();
       }

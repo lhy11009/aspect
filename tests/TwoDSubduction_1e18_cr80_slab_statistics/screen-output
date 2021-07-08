@@ -1,10 +1,10 @@
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
-Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/subduction_temperature2d/libsubduction_temperature2d.so>
-Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/prescribe_field/libprescribed_temperature.so>
-Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
-Loading shared library </home/lochy/softwares/aspect/build_master_TwoD/slab2d_statistics/libslab2d_statistics.so>
+Loading shared library </home/lochy/softwares/aspect/build_plugins/subduction_temperature2d/libsubduction_temperature2d.so>
+Loading shared library </home/lochy/softwares/aspect/build_plugins/prescribe_field/libprescribed_temperature.so>
+Loading shared library </home/lochy/softwares/aspect/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
+Loading shared library </home/lochy/softwares/aspect/build_plugins/slab2d_statistics/libslab2d_statistics.so>
 
 
    Loading Ascii data initial file /home/lochy/softwares/aspect/data/initial-temperature/ascii-data/test/box_2d_Vs_YT16.txt.
