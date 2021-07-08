@@ -8,7 +8,7 @@ set Dimension = 2
 set Start time                             = 0
 set End time                               = 0 # 5e17 # use the first value in test, the second in benchmark
 set Use years in output instead of seconds = false
-set Additional shared libraries = $ASPECT_SOURCE_DIR/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so
+set Additional shared libraries = $ASPECT_SOURCE_DIR/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so
 
 
 

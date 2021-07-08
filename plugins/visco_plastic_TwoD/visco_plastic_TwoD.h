@@ -33,6 +33,7 @@
 #include <aspect/material_model/equation_of_state/multicomponent_incompressible.h>
 #include <aspect/material_model/rheology/elasticity.h>
 #include <aspect/utilities.h>
+#include <aspect/material_model/equation_of_state/thermodynamic_table_lookup.h>
 
 #include<deal.II/fe/component_mask.h>
 #include<deal.II/base/parsed_function.h>
@@ -292,6 +293,12 @@ namespace aspect
     class ViscoPlasticTwoD : public MaterialModel::Interface<dim>, public ::aspect::SimulatorAccess<dim>
     {
       public:
+        /**
+         * Initialization function. Loads the material data and sets up
+         * pointers.
+         */
+        void
+        initialize () override;
 
         void evaluate(const MaterialModel::MaterialModelInputs<dim> &in,
                       MaterialModel::MaterialModelOutputs<dim> &out) const override;
@@ -362,6 +369,10 @@ namespace aspect
         std::vector<double> thermal_conductivities;
 
         EquationOfState::MulticomponentIncompressible<dim> equation_of_state;
+
+        // todo: add eos for lookup
+        bool use_lookup_table;
+        EquationOfState::ThermodynamicTableLookup<dim> equation_of_state_lookup;
 
         /**
          * Enumeration for selecting which viscosity averaging scheme to use.
