@@ -7,7 +7,7 @@ set Use years in output instead of seconds = true
 set Nonlinear solver scheme                = single Advection, iterated Stokes
 set Max nonlinear iterations               = 1
 set Timing output frequency                = 1
-set Additional shared libraries = $ASPECT_SOURCE_DIR/build_master_TwoD/visco_plastic_TwoD/libvisco_plastic_TwoD.so
+set Additional shared libraries = $ASPECT_SOURCE_DIR/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so
 
 # model geometry
 subsection Geometry model
