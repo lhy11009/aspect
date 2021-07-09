@@ -370,8 +370,9 @@ namespace aspect
 
         EquationOfState::MulticomponentIncompressible<dim> equation_of_state;
 
-        // todo: add eos for lookup
+        // eos for lookup
         bool use_lookup_table;
+        std::vector<int> material_lookup_indexes;
         EquationOfState::ThermodynamicTableLookup<dim> equation_of_state_lookup;
 
         /**
