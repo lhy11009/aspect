@@ -5,16 +5,17 @@ Loading shared library </home/lochy/softwares/aspect/build_plugins/visco_plastic
 
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
-Number of active cells: 400 (on 2 levels)
-Number of degrees of freedom: 5,484 (3,362+441+1,681)
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 33,204 (20,402+2,601+10,201)
 
-*** Timestep 0:  t=0 seconds, dt=0 seconds
+*** Timestep 0:  t=0 years, dt=0 years
    Solving temperature system... 0 iterations.
    Rebuilding Stokes preconditioner...
-   Solving Stokes system... 183+0 iterations.
+   Solving Stokes system... 0+0 iterations.
 
    Postprocessing:
-     Writing graphical output: output-TwoDSubduction_visco_plastic_phases_limits_off/solution/solution-00000
+     Writing graphical output:                          output-TwoDSubduction_peierls_1/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3203 kg/m^3, 2.151e+26 Pa s, 2.05e+15 kg
 
 Termination requested by criterion: end time
 

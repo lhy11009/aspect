@@ -9,4 +9,4 @@
 # 9: Velocity iterations in Stokes preconditioner
 # 10: Schur complement iterations in Stokes preconditioner
 # 11: Visualization file name
-0 0.000000000000e+00 0.000000000000e+00 400 3803 1681 0 45 47 46 output-TwoDSubduction_visco_plastic_phases_limits/solution/solution-00000 
+0 0.000000000000e+00 0.000000000000e+00 400 3803 1681 0 49 52 51 output-TwoDSubduction_visco_plastic_phases_limits/solution/solution-00000 
