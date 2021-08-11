@@ -690,15 +690,17 @@ namespace aspect
           // overite eos_outputs if there is a lookup table
           if (use_lookup_table)
           {
-            for(unsigned int j=0; j < material_lookup_indexes.size(); j++){
+            for(unsigned int j=0; j < volume_fractions.size(); j++){
               unsigned int index = material_lookup_indexes[j]; // fill in the volume fractions with these indexes
-              AssertThrow(index < volume_fractions.size(),
-                          ExcMessage("Each composition has to have it's own lookup table"));
-              eos_outputs.densities[index] = eos_outputs_lookup[i].densities[j];
-              eos_outputs.compressibilities[index] = eos_outputs_lookup[i].compressibilities[j];
-              eos_outputs.thermal_expansion_coefficients[index] = eos_outputs_lookup[i].thermal_expansion_coefficients[j];
-              eos_outputs.specific_heat_capacities[index] = eos_outputs_lookup[i].specific_heat_capacities[j];
-              // TODO: include specific heat & expansivity with no 'latent_heat' option
+              if (index >= 0 && index < eos_outputs_lookup[i].densities.size())
+              {
+                // for other compositions, we assign -1 to it's material_lookup_index
+                eos_outputs.densities[j] = eos_outputs_lookup[i].densities[index];
+                eos_outputs.compressibilities[j] = eos_outputs_lookup[i].compressibilities[index];
+                eos_outputs.thermal_expansion_coefficients[j] = eos_outputs_lookup[i].thermal_expansion_coefficients[index];
+                eos_outputs.specific_heat_capacities[j] = eos_outputs_lookup[i].specific_heat_capacities[index];
+                // TODO: include specific heat & expansivity with no 'latent_heat' option
+              }
             }
           }
 
@@ -1309,8 +1311,8 @@ namespace aspect
           {
             equation_of_state_lookup.parse_parameters(prm);
             material_lookup_indexes          = Utilities::string_to_int(Utilities::split_string_list(prm.get ("Material lookup indexes")));
-            AssertThrow(material_lookup_indexes.size() == equation_of_state_lookup.number_of_lookups(),
-                        ExcMessage("Size of lookup indexes has to match "));
+            AssertThrow(material_lookup_indexes.size() == n_fields,
+                        ExcMessage("Size of lookup indexes has to match number of fields + 1 "));
           }
           prm.leave_subsection();
         }
