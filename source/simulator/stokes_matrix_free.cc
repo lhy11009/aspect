@@ -49,7 +49,6 @@ namespace aspect
 {
   namespace internal
   {
-
     /**
      * Here we define the function(s) to make no normal flux boundary constraints for
      * MG levels.
@@ -2840,6 +2839,10 @@ namespace aspect
             {
               AffineConstraints<double> user_level_constraints;
               user_level_constraints.reinit(relevant_dofs);
+
+              sim.setup_nullspace_constraints(user_level_constraints,
+                                              dof_handler_v,
+                                              level);
 
               internal::TangentialBoundaryFunctions::compute_no_normal_flux_constraints_shell(dof_handler_v,
                                                                                               mg_constrained_dofs_A_block,
