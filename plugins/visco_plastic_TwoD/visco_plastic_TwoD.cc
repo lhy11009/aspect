@@ -1311,6 +1311,7 @@ namespace aspect
           {
             equation_of_state_lookup.parse_parameters(prm);
             material_lookup_indexes          = Utilities::string_to_int(Utilities::split_string_list(prm.get ("Material lookup indexes")));
+            if (use_lookup_table)
             AssertThrow(material_lookup_indexes.size() == n_fields,
                         ExcMessage("Size of lookup indexes has to match number of fields + 1 "));
           }
