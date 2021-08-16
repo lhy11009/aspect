@@ -75,39 +75,22 @@ namespace aspect
       const double r = spherical_coordinates[0];
       const double phi = spherical_coordinates[1];
       double temperature;
-      if(Ro-r < SM)
+      if (extended_boussinesq)
       {
-        temperature = slab_model(r, phi);
-        // for extended boussinesq, I use this along with "adiabatic" temperature profile
-        if (extended_boussinesq == true)
-          temperature = std::max(0.0001, temperature - adiabatic_surface_temperature_gradient * (Ro - r));
+        if(Ro-r < SM)
+        {
+          const Point<dim> surface_point = this->get_geometry_model().representative_point(0.0);
+          temperature = slab_model(r, phi) - this->get_adiabatic_conditions().temperature(surface_point);
+        }
+        else
+        {
+          temperature = 0.0;
+        }
       }
-      else
-      {
-        // temperature = katrina_mantle_temperature(r);
-        // temperature = 0.0;
-        temperature = adiabatic_surface_temperature;
-      }
-      if (extended_boussinesq == false)
+      else // this is manually defined
         temperature = temperature_substract_adiabatic(r, temperature);
       return temperature;
     }
-
-    /**
-     * consist model temperature with mantle phase transition
-    */
-    /*
-    template <int dim>
-    double
-    Subduction2T<dim>::
-    below_lith_model (const double r, 
-                      const double mantle_temperature, 
-                      const double lith_depth,
-                      const std::vector<double>& phases_below_lith_depth,
-                      const std::vector<double>& phases_below_lith_temperature) const
-    {
-    }
-    */
     
     template <int dim>
     double
@@ -124,7 +107,8 @@ namespace aspect
       const double VSUB=1.58549e-09;
       const double AGEOP=1.26144e15;
       const double TS=2.730e+02;
-      const double TM=1.673e+03; 
+      const Point<dim> surface_point = this->get_geometry_model().representative_point(0.0);
+      const double TM = this->get_adiabatic_conditions().temperature(surface_point);
       const double K=1.000e-06;
 
       const double tolerance = 1e-6;  // tolerance for the algorithm looking for shortest distance
