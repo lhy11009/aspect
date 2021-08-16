@@ -1,0 +1,12 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of nonlinear iterations
+# 8: Minimal temperature (K)
+# 9: Average temperature (K)
+# 10: Maximal temperature (K)
+# 11: Average nondimensional temperature (K)
+0 0.000000000000e+00 0.000000000000e+00 8192 74691 33153 0 2.73000000e+02 2.30048617e+03 3.52069747e+03 6.28288245e-01 
