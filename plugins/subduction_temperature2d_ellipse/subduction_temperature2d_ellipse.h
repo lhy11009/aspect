@@ -108,94 +108,18 @@ namespace aspect
 
 
         /**
-         * todo
          * method of slab boudnary
          */
-        // method_for_slab_boundary;
-        // todo
+        double outer_radius;
         double thermal_boundary_width_factor_in;
         double thermal_boundary_width_factor_out;
         double adiabatic_surface_temperature;
-        double adiabatic_surface_temperature_gradient;
+        // todo
+        double depth_of_lith;
+        double depth_of_slab;
 
         // if using extended boussinesq approximation
         bool extended_boussinesq;
-    };
-    
-    /**
-     * A class that implements adiabatic initial conditions for the
-     * temperature field and, optional, upper and lower thermal boundary
-     * layers calculated using the half-space cooling model. The age of the
-     * boundary layers are input parameters.
-     *
-     * @ingroup InitialTemperatures
-     */
-    template <int dim>
-    class Adiabatic1 : public Interface<dim>, public ::aspect::SimulatorAccess<dim>
-    {
-      public:
-        /**
-         * Return the initial temperature as a function of position.
-         */
-        double initial_temperature (const Point<dim> &position) const override;
-
-        /**
-         * Declare the parameters this class takes through input files.
-         */
-        static
-        void
-        declare_parameters (ParameterHandler &prm);
-
-        /**
-         * Read the parameters this class declares from the parameter file.
-         */
-        void
-        parse_parameters (ParameterHandler &prm) override;
-
-      private:
-        /**
-         * Age of the upper thermal boundary layer at the surface of the
-         * model. If set to zero, no boundary layer will be present in the
-         * model.
-         */
-        double age_top_boundary_layer;
-        /* Age of the lower thermal boundary layer. */
-        double age_bottom_boundary_layer;
-
-        /**
-         * Radius (in m) of the initial temperature perturbation at the bottom
-         * of the model domain.
-         */
-        double radius;
-        /**
-         * Amplitude (in K) of the initial temperature perturbation at the
-         * bottom of the model domain.
-         */
-        double amplitude;
-        /*
-         * Position of the initial temperature perturbation (in the
-         * center or at the boundary of the model domain).
-         */
-        std::string perturbation_position;
-
-        /*
-         * Deviation from adiabaticity in a subadiabatic mantle
-         * temperature profile. 0 for an adiabatic temperature
-         * profile.
-         */
-        double subadiabaticity;
-
-        /**
-         * A function object representing the compositional fields that will
-         * be used as a reference profile for calculating the thermal
-         * diffusivity. The function depends only on depth.
-         */
-        std::unique_ptr<Functions::ParsedFunction<1> > function;
-        
-        /**
-         * adiabatic surface temperature
-         */ 
-        double adiabatic_surface_temperature;
     };
   }
 
@@ -240,6 +164,9 @@ namespace aspect
         parse_parameters (ParameterHandler &prm) override;
 
       private:
+        //todo
+        double outer_radius;
+        double depth_of_slab;
     };
   }
 }

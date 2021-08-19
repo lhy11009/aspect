@@ -55,7 +55,6 @@ namespace aspect
     initial_temperature (const Point<dim> &position) const
     {
       const bool extended_boussinesq = false;
-      const double SM=2.700e+05;
       const double Ro=6.371e6;
       std::vector<double> phases_below_lith_depth(3, 0.0);
       std::vector<double> phases_below_lith_temperature(3, 0.0);
@@ -69,7 +68,7 @@ namespace aspect
       const double r = polar_position[0];
       const double phi = polar_position[1];
       double temperature;
-      if(Ro-r < SM) 
+      if(Ro-r < depth_of_lith) 
         temperature = slab_model(r, phi);
       else
       {
@@ -105,8 +104,6 @@ namespace aspect
       const double PHIC=0.628319;
       const double PHIM=1.06465;
       const double RC=4.000e+05;
-      const double ST=2.000e+05;
-      const double SM=2.700e+05;
       const double VSUB=1.58549e-09;
       const double AGEOP=1.26144e15;
       const double TS=2.730e+02;
@@ -162,7 +159,7 @@ namespace aspect
         temperature = cooling_temperature + perturbation_temperature;
                 }
       else if (((Ro-r)>ST)
-               &&((Ro-r)<=SM)
+               &&((Ro-r)<=depth_of_lith)
                &&(Ro*phi<=Ro*PHIC+std::min(RC,sqrt(abs(2*RC*(Ro-r)-pow(Ro-r, 2.0))))))
                {
         // temperature below the slab tip
@@ -173,7 +170,7 @@ namespace aspect
         const double depth_interface = (RC-sqrt(pow(Ro*(phi-PHIC), 2.0)+pow(abs(Ro-r)-RC, 2.0)));
 
         // Intermediate temperature on this interface
-        const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
+        const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(depth_of_lith-ST);
 
         const double cooling_temperature = half_space_cooling(TM, T_interface, depth_interface, K, Ro*phi/VSUB);
         
@@ -217,12 +214,12 @@ namespace aspect
             perturbation_temperature = (TS - over_plate_temperature)
                                         * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab_out)) / 2.0;
           }
-          else if ((Ro-r)<SM)
+          else if ((Ro-r)<depth_of_lith)
           {
             // Surface temperature is taken as the average of an intermediate temperature
             // and temperature of overiding plate.
             // Intermediate temperature on this interface
-            const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(SM-ST);
+            const double T_interface = TS+(TM-TS)*(abs(Ro-r)-ST)/(depth_of_lith-ST);
 
             perturbation_temperature = (T_interface - over_plate_temperature)
                                         * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab_out)) / 2.0;
