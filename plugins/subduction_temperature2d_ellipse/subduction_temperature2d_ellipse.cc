@@ -90,13 +90,12 @@ namespace aspect
     Subduction2T<dim>::
     slab_model (const double r, const double phi) const
     {
-      const double PHIC=0.628319;
-      const double PHIM=1.06465;
-      const double AC=2.000e+05;
-      const double BC=4.000e+05;
-      const double VSUB=1.58549e-09;
-      const double AGEOP=1.26144e15;
-      const double TS=2.730e+02;
+      // todo
+      const double tr_rad= trench_longitude * M_PI / 180.0;
+      const double max_rad= maximum_longtitude * M_PI / 180.0;
+      const double year = 3600 * 24 * 365.0;
+      const double v_sub_s = v_sub_plate / year;
+      const double age_op_s = age_op_plate * year;
       const Point<dim> surface_point = this->get_geometry_model().representative_point(0.0);
       const double TM = this->get_adiabatic_conditions().temperature(surface_point);
       const double K=1.000e-06;
@@ -107,12 +106,12 @@ namespace aspect
 
 
       // a thickness of thermal boundary on the upper slab boundary
-      const double Ht_slab_in = thermal_boundary_width_factor_in * sqrt(K*BC/VSUB);
-      const double Ht_slab_out = thermal_boundary_width_factor_out * sqrt(K*BC/VSUB);
+      const double Ht_slab_in = thermal_boundary_width_factor_in * sqrt(K*ellipse_r_axis/v_sub_s);
+      const double Ht_slab_out = thermal_boundary_width_factor_out * sqrt(K*ellipse_r_axis/v_sub_s);
 
       // a condition to determine if the point is within the ellipse envelop of
       // the initial slab
-      double m = ellipse_equation_right(AC, BC, outer_radius*(phi-PHIC), r+BC-outer_radius);
+      double m = ellipse_equation_right(ellipse_phi_axis, ellipse_r_axis, outer_radius*(phi-tr_rad), r+ellipse_r_axis-outer_radius);
       bool is_in_ellipse = (m <= 1);
 
       if (phi<=0.0)
@@ -120,25 +119,25 @@ namespace aspect
         // ghost domain
         temperature = TM;
       }
-      else if ((phi<=PHIC)&&(phi>0))
+      else if ((phi<=tr_rad)&&(phi>0))
       {
         // subducting plate
-        temperature = half_space_cooling(TM, TS, abs(outer_radius-r), K, outer_radius*phi/VSUB);
+        temperature = half_space_cooling(TM, outer_temperature, abs(outer_radius-r), K, outer_radius*phi/v_sub_s);
       }
       else if (((outer_radius-r)<=depth_of_slab)
                 && is_in_ellipse
-                &&(phi>PHIC))
+                &&(phi>tr_rad))
                 {
         // slab
         // temperature of the plate at the same depth
-        const double plate_temperature = half_space_cooling(TM, TS, abs(outer_radius-r), K, outer_radius*phi/VSUB);
+        const double plate_temperature = half_space_cooling(TM, outer_temperature, abs(outer_radius-r), K, outer_radius*phi/v_sub_s);
         
         // the depth withing the initial slab
-        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
-                                                                        outer_radius*(phi-PHIC)/AC, (r+BC-outer_radius)/AC, tolerance); // distance from focus to slab surface
-        const double depth_in_slab = sqrt(ellipse_distance_sqr(AC, BC, outer_radius*(phi-PHIC), 
-                                                               r+BC-outer_radius, results.first));
-        const double slab_temperature = half_space_cooling(TM, TS, depth_in_slab, K, outer_radius*phi/VSUB);
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, ellipse_r_axis/ellipse_phi_axis, 
+                                                                        outer_radius*(phi-tr_rad)/ellipse_phi_axis, (r+ellipse_r_axis-outer_radius)/ellipse_phi_axis, tolerance); // distance from focus to slab surface
+        const double depth_in_slab = sqrt(ellipse_distance_sqr(ellipse_phi_axis, ellipse_r_axis, outer_radius*(phi-tr_rad), 
+                                                               r+ellipse_r_axis-outer_radius, results.first));
+        const double slab_temperature = half_space_cooling(TM, outer_temperature, depth_in_slab, K, outer_radius*phi/v_sub_s);
 
         // cooling temperature as the smaller of these two
 
@@ -146,8 +145,8 @@ namespace aspect
 
         // a perturbation on the upper surface
         // This is implemented as tranform from internal temperature of the slab to surface temperature.
-        // The surface temperature is taken as the average of TS and temperature of overiding plate.
-        const double over_plate_temperature = half_space_cooling(TM, TS, abs(outer_radius-r), K, AGEOP);
+        // The surface temperature is taken as the average of outer_temperature and temperature of overiding plate.
+        const double over_plate_temperature = half_space_cooling(TM, outer_temperature, abs(outer_radius-r), K, age_op_s);
         // method for perturbation
         double perturbation_fucntion_value = sin(M_PI/2.0*depth_in_slab/Ht_slab_in);
         const double perturbation_temperature = (depth_in_slab < Ht_slab_in)?
@@ -169,18 +168,18 @@ namespace aspect
         // This have the same expression to depth_in_slab, except that this is actually below the initial slab
 
         // the depth withing the initial slab
-        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
-                                                                        outer_radius*(phi-PHIC)/AC, (r+BC-outer_radius)/AC, tolerance); // distance from focus to slab surface
-        const double depth_in_slab = sqrt(ellipse_distance_sqr(AC, BC, outer_radius*(phi-PHIC), 
-                                                               r+BC-outer_radius, results.first));
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, ellipse_r_axis/ellipse_phi_axis, 
+                                                                        outer_radius*(phi-tr_rad)/ellipse_phi_axis, (r+ellipse_r_axis-outer_radius)/ellipse_phi_axis, tolerance); // distance from focus to slab surface
+        const double depth_in_slab = sqrt(ellipse_distance_sqr(ellipse_phi_axis, ellipse_r_axis, outer_radius*(phi-tr_rad), 
+                                                               r+ellipse_r_axis-outer_radius, results.first));
 
         // Intermediate temperature on this interface
-        const double T_interface = TS+(TM-TS)*(abs(outer_radius-r)-depth_of_slab)/(depth_of_lith-depth_of_slab);
+        const double T_interface = outer_temperature+(TM-outer_temperature)*(abs(outer_radius-r)-depth_of_slab)/(depth_of_lith-depth_of_slab);
 
-        const double cooling_temperature = half_space_cooling(TM, T_interface, depth_in_slab, K, outer_radius*phi/VSUB);
+        const double cooling_temperature = half_space_cooling(TM, T_interface, depth_in_slab, K, outer_radius*phi/v_sub_s);
         
         // temperature overiding plate
-        const double over_plate_temperature = half_space_cooling(TM, TS, abs(outer_radius-r), K, AGEOP);
+        const double over_plate_temperature = half_space_cooling(TM, outer_temperature, abs(outer_radius-r), K, age_op_s);
         
         // a perturbation on the upper surface
         // a thickness of thermal boundary on top
@@ -195,17 +194,17 @@ namespace aspect
         // Final temperature is the sum of the two parts.
         temperature = cooling_temperature + perturbation_temperature;
                }
-      else if (PHIM-phi>0)
+      else if (max_rad-phi>0)
       {
         // overiding plate
-        const double over_plate_temperature = half_space_cooling(TM, TS, abs(outer_radius-r), K, AGEOP);
+        const double over_plate_temperature = half_space_cooling(TM, outer_temperature, abs(outer_radius-r), K, age_op_s);
         
         // This formula includes absolute value just to make sure it is consistent with the previous 'depth_in_slab'
         // the depth out of the initial slab
-        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
-                                                                        outer_radius*(phi-PHIC)/AC, (r+BC-outer_radius)/AC, tolerance); // distance from focus to slab surface
-        const double depth_out_slab = sqrt(ellipse_distance_sqr(AC, BC, outer_radius*(phi-PHIC), 
-                                                               r+BC-outer_radius, results.first));
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, ellipse_r_axis/ellipse_phi_axis, 
+                                                                        outer_radius*(phi-tr_rad)/ellipse_phi_axis, (r+ellipse_r_axis-outer_radius)/ellipse_phi_axis, tolerance); // distance from focus to slab surface
+        const double depth_out_slab = sqrt(ellipse_distance_sqr(ellipse_phi_axis, ellipse_r_axis, outer_radius*(phi-tr_rad), 
+                                                               r+ellipse_r_axis-outer_radius, results.first));
         
         // a perturbation on the upper surface of the slab
         // This is implemented as tranform from temperature of the overiding plate to surface temperature.
@@ -216,7 +215,7 @@ namespace aspect
           if ((outer_radius-r)<depth_of_slab)
           {
             // Surface temperature is taken as the average of TS and temperature of overiding plate.
-            perturbation_temperature = (TS - over_plate_temperature)
+            perturbation_temperature = (outer_temperature - over_plate_temperature)
                                         * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab_out)) / 2.0;
           }
           else if ((outer_radius-r)<depth_of_lith)
@@ -224,7 +223,7 @@ namespace aspect
             // Surface temperature is taken as the average of an intermediate temperature
             // and temperature of overiding plate.
             // Intermediate temperature on this interface
-            const double T_interface = TS+(TM-TS)*(abs(outer_radius-r)-depth_of_slab)/(depth_of_lith-depth_of_slab);
+            const double T_interface = outer_temperature+(TM-outer_temperature)*(abs(outer_radius-r)-depth_of_slab)/(depth_of_lith-depth_of_slab);
 
             perturbation_temperature = (T_interface - over_plate_temperature)
                                         * (1-sin(M_PI/2.0*depth_out_slab/Ht_slab_out)) / 2.0;
@@ -298,6 +297,17 @@ namespace aspect
                          "\n\n"
                          "For more information, see the section in the manual that discusses "
                          "the general mathematical model.");
+      prm.enter_subsection("Boundary temperature model");
+      {
+          prm.enter_subsection("Spherical constant");
+          {
+            prm.declare_entry ("Outer temperature", "0.",
+                               Patterns::Double (),
+                               "Temperature at the outer boundary (lithosphere water/air). Units: \\si{\\kelvin}.");
+          }
+          prm.leave_subsection();
+      }
+      prm.leave_subsection();
       prm.enter_subsection("Geometry model");
       {
           prm.enter_subsection("Chunk");
@@ -305,6 +315,9 @@ namespace aspect
               prm.declare_entry ("Chunk outer radius", "1.",
                                  Patterns::Double (0.),
                                  "Radius at the top surface of the chunk. Units: \\si{\\meter}.");
+              prm.declare_entry ("Chunk maximum longitude", "1.",
+                                Patterns::Double (-180., 360.), // enables crossing of either hemisphere
+                                "Maximum longitude of the chunk. Units: degrees.");
           }
           prm.leave_subsection();
       }
@@ -331,6 +344,21 @@ namespace aspect
          prm.declare_entry ("Depth of slab", "200e3",
                             Patterns::Double (),
                             "This parameter controls the depth of the slab tip");
+         prm.declare_entry ("Trench longitude", "36.0",
+                            Patterns::Double (),
+                            "This parameter controls the position of trench");
+         prm.declare_entry ("Ellipse phi axis", "2.000e+05",
+                            Patterns::Double (),
+                            "This parameter controls the long axis of ellipse");
+         prm.declare_entry ("Ellipse r axis", "4.000e+05",
+                            Patterns::Double (),
+                            "This parameter controls the short axis of ellipse");
+         prm.declare_entry ("Velocity subducting plate", "0.05",
+                            Patterns::Double (),
+                            "This parameter controls the velocity of the subducting plate (m/year)");
+         prm.declare_entry ("Age overiding plate", "40e6",
+                            Patterns::Double (),
+                            "This parameter controls the age of the overideing plate (year)");
         }
         prm.leave_subsection();
       }
@@ -343,11 +371,22 @@ namespace aspect
     Subduction2T<dim>::parse_parameters (ParameterHandler &prm)
     {
       adiabatic_surface_temperature   = prm.get_double ("Adiabatic surface temperature");
+      prm.enter_subsection("Boundary temperature model");
+      {
+          prm.enter_subsection("Spherical constant");
+          {
+            outer_temperature = prm.get_double ("Outer temperature");
+          }
+          prm.leave_subsection();
+      }
+      prm.leave_subsection();
+      
       prm.enter_subsection("Geometry model");
       {
         prm.enter_subsection("Chunk");
         {
           outer_radius = prm.get_double ("Chunk outer radius");
+          maximum_longtitude = prm.get_double ("Chunk maximum longitude");
         }
         prm.leave_subsection();
       }
@@ -363,6 +402,11 @@ namespace aspect
           // todo
           depth_of_lith = prm.get_double("Depth of lithsphere");
           depth_of_slab = prm.get_double("Depth of slab");
+          trench_longitude = prm.get_double("Trench longitude");
+          ellipse_phi_axis = prm.get_double("Ellipse phi axis");
+          ellipse_r_axis = prm.get_double("Ellipse r axis");
+          v_sub_plate = prm.get_double("Velocity subducting plate");
+          age_op_plate = prm.get_double("Age overiding plate");
         }
         prm.leave_subsection();
 
@@ -392,42 +436,39 @@ namespace aspect
       bool is_spharz = false;
       bool is_opcrust = false;
       bool is_opharz = false;
-      
-      const double DCS = 7.5e3;  // crustal thickness
-      const double DHS = 3.520e4;  // depth of the harzburgite layer
-      const double PHIC = 0.628319; // trench angular position
-      const double AC=2.000e+05; // shape of the ellipse
-      const double BC=4.000e+05;
+
+      // todo 
+      const double tr_rad= trench_longitude * M_PI / 180.0;
       const double tolerance = 1e-6;  // tolerance for the algorithm looking for shortest distance
       
       // a condition to determine if the point is within the ellipse envelop of
       // the initial slab
-      double m = ellipse_equation_right(AC, BC, outer_radius*(phi-PHIC), r+BC-outer_radius);
+      double m = ellipse_equation_right(ellipse_phi_axis, ellipse_r_axis, outer_radius*(phi-tr_rad), r+ellipse_r_axis-outer_radius);
       bool is_in_ellipse = (m <= 1);
       double depth_in_slab = 0.0;
       
       //spcrust
-      is_spcrust = ((phi<PHIC)&&(outer_radius-r<=DCS));
-      bool is_in_slab = (((outer_radius-r)<=depth_of_slab) && is_in_ellipse && (phi>PHIC));
+      is_spcrust = ((phi<tr_rad)&&(outer_radius-r<=crustal_thickness));
+      bool is_in_slab = (((outer_radius-r)<=depth_of_slab) && is_in_ellipse && (phi>tr_rad));
       // compute depth in slab when query point is in the ellipse
       if (is_in_slab)
       {
         // the depth withing the initial slab
-        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, BC/AC, 
-                                                                        outer_radius*(phi-PHIC)/AC, (r+BC-outer_radius)/AC, tolerance); // distance from focus to slab surface
-        depth_in_slab = sqrt(ellipse_distance_sqr(AC, BC, outer_radius*(phi-PHIC), 
-                                                  r+BC-outer_radius, results.first));
+        std::pair<double, int> results = ellipse_distance_sqr_shortest1(1.0, ellipse_r_axis/ellipse_phi_axis, 
+                                                                        outer_radius*(phi-tr_rad)/ellipse_phi_axis, (r+ellipse_r_axis-outer_radius)/ellipse_phi_axis, tolerance); // distance from focus to slab surface
+        depth_in_slab = sqrt(ellipse_distance_sqr(ellipse_phi_axis, ellipse_r_axis, outer_radius*(phi-tr_rad), 
+                                                  r+ellipse_r_axis-outer_radius, results.first));
       }
       is_spcrust = (is_spcrust || 
-                    (is_in_slab && (depth_in_slab <= DCS)));  // crustal slab
+                    (is_in_slab && (depth_in_slab <= crustal_thickness)));  // crustal slab
       //spharz
-      is_spharz = ((phi<PHIC)&&(outer_radius-r>DCS)&&(outer_radius-r<=DHS));
+      is_spharz = ((phi<tr_rad)&&(outer_radius-r>crustal_thickness)&&(outer_radius-r<=harz_thickness));
       is_spharz = (is_spharz || 
-                    (is_in_slab && (depth_in_slab > DCS) && (depth_in_slab <= DHS)));  // harzburgitic slab
+                    (is_in_slab && (depth_in_slab > crustal_thickness) && (depth_in_slab <= harz_thickness)));  // harzburgitic slab
       //opcrust
-      is_opcrust = ((phi>=PHIC)&&(outer_radius-r<=DCS)&&(!is_in_ellipse));
+      is_opcrust = ((phi>=tr_rad)&&(outer_radius-r<=crustal_thickness)&&(!is_in_ellipse));
       //opharz
-      is_opharz = ((phi>=PHIC)&&(outer_radius-r>DCS)&&(outer_radius-r<=DHS)&&(!is_in_ellipse));
+      is_opharz = ((phi>=tr_rad)&&(outer_radius-r>crustal_thickness)&&(outer_radius-r<=harz_thickness)&&(!is_in_ellipse));
 
       // assign composition
       if (is_spcrust && n_comp == 0)
@@ -466,6 +507,21 @@ namespace aspect
           prm.declare_entry ("Depth of slab", "200e3",
                               Patterns::Double (),
                               "This parameter controls the depth of the slab tip");
+          prm.declare_entry ("Trench longitude", "36.0",
+                              Patterns::Double (),
+                              "This parameter controls the position of trench");
+          prm.declare_entry ("Crustal thickness", "7.5e3",
+                              Patterns::Double (),
+                              "This parameter controls the crustal thickness");
+          prm.declare_entry ("Harzburgite thickness", "3.520e4",
+                              Patterns::Double (),
+                              "This parameter controls the harzburgite layer thickness");
+          prm.declare_entry ("Ellipse phi axis", "2.000e+05",
+                             Patterns::Double (),
+                             "This parameter controls the long axis of ellipse");
+          prm.declare_entry ("Ellipse r axis", "4.000e+05",
+                             Patterns::Double (),
+                             "This parameter controls the short axis of ellipse");
 
         }
         prm.leave_subsection();
@@ -493,6 +549,11 @@ namespace aspect
         {
           // todo
           depth_of_slab = prm.get_double("Depth of slab");
+          trench_longitude = prm.get_double("Trench longitude");
+          crustal_thickness = prm.get_double("Crustal thickness");
+          harz_thickness = prm.get_double("Harzburgite thickness");
+          ellipse_phi_axis = prm.get_double("Ellipse phi axis");
+          ellipse_r_axis = prm.get_double("Ellipse r axis");
         }
         prm.leave_subsection();
       }
@@ -502,30 +563,30 @@ namespace aspect
 }
     
 double
-ellipse_equation_right(const double AC, const double BC, const double x, const double y)
+ellipse_equation_right(const double ellipse_phi_axis, const double ellipse_r_axis, const double x, const double y)
 {
   // compute the value on the right side of a ellipse equation
-  double m = sqrt(pow(x/AC, 2.0) + pow(y/BC, 2.0));
+  double m = sqrt(pow(x/ellipse_phi_axis, 2.0) + pow(y/ellipse_r_axis, 2.0));
   return m;
 }
 
 double
-ellipse_spherical_dr(const double AC, const double BC, const double x, const double y)
+ellipse_spherical_dr(const double ellipse_phi_axis, const double ellipse_r_axis, const double x, const double y)
 {
   // distance from focus to slab surface
   double a, b ,c, consf, rpc;
-  if (BC > AC)
+  if (ellipse_r_axis > ellipse_phi_axis)
   {
-    a = BC;
-    b = AC;
+    a = ellipse_r_axis;
+    b = ellipse_phi_axis;
     c = sqrt(a*a - b*b);
     rpc = sqrt(x*x + (y-c)*(y-c));
     consf = (y-c)/rpc; // angle of the focus-intersection with the semi-long axis
   }
   else
   {
-    a = AC;
-    b = BC;
+    a = ellipse_phi_axis;
+    b = ellipse_r_axis;
     c = sqrt(a*a - b*b);
     rpc = sqrt((x-c)*(x-c) + y*y);
     consf = (x-c)/rpc; // angle of the focus-intersection with the semi-long axis
@@ -553,19 +614,19 @@ half_space_cooling (const double internal_temperature,
 
 
 std::pair<double, int> 
-ellipse_distance_sqr_shortest1(const double AC, const double BC,
+ellipse_distance_sqr_shortest1(const double ellipse_phi_axis, const double ellipse_r_axis,
                                const double xp, const double yp, const double tolerance)
 {
     double theta0 = 0.0;
     double theta1 = M_PI / 2.0;
-    double distance_sqr_div2 = ellipse_distance_sqr_div(AC, BC, xp, 
+    double distance_sqr_div2 = ellipse_distance_sqr_div(ellipse_phi_axis, ellipse_r_axis, xp, 
                                                        yp, theta0);
     
     int i = 0;
-    while(abs(distance_sqr_div2 / (AC * AC)) > tolerance)
+    while(abs(distance_sqr_div2 / (ellipse_phi_axis * ellipse_phi_axis)) > tolerance)
     {
        double theta2 = (theta0 + theta1) / 2.0; 
-       distance_sqr_div2 = ellipse_distance_sqr_div(AC, BC, xp, 
+       distance_sqr_div2 = ellipse_distance_sqr_div(ellipse_phi_axis, ellipse_r_axis, xp, 
                                                     yp, theta2);
         if(distance_sqr_div2 > 0.0)
             theta1 = theta2;
@@ -584,22 +645,22 @@ ellipse_distance_sqr_shortest1(const double AC, const double BC,
 }
     
 double
-ellipse_distance_sqr_div(const double AC, const double BC, const double xp, 
+ellipse_distance_sqr_div(const double ellipse_phi_axis, const double ellipse_r_axis, const double xp, 
                                 const double yp, const double theta)
 {
-    const double distance_sqr_div = (BC*BC - AC*AC) * sin(2.0*theta)
-                                    + 2.0 * AC * xp * sin(theta) 
-                                    - 2.0 * BC * yp * cos(theta);
+    const double distance_sqr_div = (ellipse_r_axis*ellipse_r_axis - ellipse_phi_axis*ellipse_phi_axis) * sin(2.0*theta)
+                                    + 2.0 * ellipse_phi_axis * xp * sin(theta) 
+                                    - 2.0 * ellipse_r_axis * yp * cos(theta);
     return distance_sqr_div;
 }
     
     
 double
-ellipse_distance_sqr(const double AC, const double BC, const double xp, 
+ellipse_distance_sqr(const double ellipse_phi_axis, const double ellipse_r_axis, const double xp, 
                     const double yp, const double theta)
 {
-    const double distance_sqr = pow(AC * cos(theta) - xp, 2.0) +
-                                 pow(BC * sin(theta) - yp, 2.0);
+    const double distance_sqr = pow(ellipse_phi_axis * cos(theta) - xp, 2.0) +
+                                 pow(ellipse_r_axis * sin(theta) - yp, 2.0);
     return distance_sqr;
 }
 
