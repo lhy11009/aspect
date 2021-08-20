@@ -117,6 +117,13 @@ namespace aspect
         // todo
         double depth_of_lith;
         double depth_of_slab;
+        double trench_longitude;
+        double maximum_longtitude;
+        double ellipse_phi_axis;
+        double ellipse_r_axis;
+        double v_sub_plate;
+        double age_op_plate;
+        double outer_temperature;
 
         // if using extended boussinesq approximation
         bool extended_boussinesq;
@@ -167,6 +174,11 @@ namespace aspect
         //todo
         double outer_radius;
         double depth_of_slab;
+        double trench_longitude;
+        double crustal_thickness;
+        double harz_thickness;
+        double ellipse_phi_axis;
+        double ellipse_r_axis;
     };
   }
 }
@@ -175,7 +187,7 @@ namespace aspect
  * Calculate temperature from a half-space cooling model
  * We use the internal temperature and the surface temperature so that it is easier to plug in.
  */ 
-double 
+double
 half_space_cooling (const double internal_temperature, 
                     const double surface_temperature,
                     const double depth, 
@@ -184,14 +196,14 @@ half_space_cooling (const double internal_temperature,
         
 
 std::pair<double, int> 
-ellipse_distance_sqr_shortest1(const double AC, const double BC,
+ellipse_distance_sqr_shortest1(const double ellipse_phi_axis, const double ellipse_r_axis,
                                const double xp, const double yp, const double tolerance);
         
 /**
  * compute the distance derivative to theta
  */ 
 double
-ellipse_distance_sqr_div(const double AC, const double BC, const double xp, 
+ellipse_distance_sqr_div(const double ellipse_phi_axis, const double ellipse_r_axis, const double xp, 
                          const double yp, const double theta);
         
         
@@ -199,20 +211,20 @@ ellipse_distance_sqr_div(const double AC, const double BC, const double xp,
  * compute the distance between a point in the ellipse to a point on the surface
  */
 double
-ellipse_distance_sqr(const double AC, const double BC, const double xp, 
+ellipse_distance_sqr(const double ellipse_phi_axis, const double ellipse_r_axis, const double xp, 
                      const double yp, const double theta);
         
 /**
  * get the right side of a ellipse
  */
 double 
-ellipse_equation_right(const double AC, const double BC, const double x, const double y);
+ellipse_equation_right(const double ellipse_phi_axis, const double ellipse_r_axis, const double x, const double y);
 
 /**
  * derive the distance between two points allinged with the ellipse focus
  */
 double
-ellipse_spherical_dr(const double AC, const double BC, const double x, const double y);
+ellipse_spherical_dr(const double ellipse_phi_axis, const double ellipse_r_axis, const double x, const double y);
         
 
 #endif
