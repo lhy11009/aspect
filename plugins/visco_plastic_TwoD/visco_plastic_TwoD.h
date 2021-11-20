@@ -355,8 +355,8 @@ namespace aspect
 
         double min_strain_rate;
         double ref_strain_rate;
-        double min_visc;
-        double max_visc;
+        std::vector<double> min_visc;
+        std::vector<double> max_visc; //Haoyuan: change so as to use non-newtonian rheology
         double ref_visc;
 
         std::vector<double> thermal_diffusivities;
