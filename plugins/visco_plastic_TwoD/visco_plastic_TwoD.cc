@@ -452,9 +452,23 @@ namespace aspect
                 break;
               }
             }
-
+          // todo
           // Step 5: limit the viscosity with specified minimum and maximum bounds
-          composition_viscosities[j] = std::min(std::max(viscosity_yield, min_visc), max_visc);
+          double maximum_viscosity_for_composition = MaterialModel::MaterialUtilities::phase_average_value(
+            re_phase_function_values,
+            phase_function.n_phase_transitions_for_each_composition(),
+            max_visc,
+            j,
+            MaterialModel::MaterialUtilities::PhaseUtilities::logarithmic
+            );
+          double minimum_viscosity_for_composition = MaterialModel::MaterialUtilities::phase_average_value(
+            re_phase_function_values,
+            phase_function.n_phase_transitions_for_each_composition(),
+            min_visc,
+            j,
+            MaterialModel::MaterialUtilities::PhaseUtilities::logarithmic
+            );
+          composition_viscosities[j] = std::min(std::max(viscosity_yield, minimum_viscosity_for_composition), maximum_viscosity_for_composition);
         }
       return std::make_pair (composition_viscosities, composition_yielding);
     }
@@ -933,9 +947,9 @@ namespace aspect
                              "Stabilizes strain dependent viscosity. Units: \\si{\\per\\second}.");
           prm.declare_entry ("Reference strain rate","1.0e-15",Patterns::Double (0.),
                              "Reference strain rate for first time step. Units: \\si{\\per\\second}.");
-          prm.declare_entry ("Minimum viscosity", "1e17", Patterns::Double (0.),
+          prm.declare_entry ("Minimum viscosity", "1e17", Patterns::Anything(),
                              "Lower cutoff for effective viscosity. Units: \\si{\\pascal\\second}.");
-          prm.declare_entry ("Maximum viscosity", "1e28", Patterns::Double (0.),
+          prm.declare_entry ("Maximum viscosity", "1e28", Patterns::Anything(),
                              "Upper cutoff for effective viscosity. Units: \\si{\\pascal\\second}.");
           prm.declare_entry ("Reference viscosity", "1e22", Patterns::Double (0.),
                              "Reference viscosity for nondimensionalization. "
@@ -1142,6 +1156,12 @@ namespace aspect
           // (for the low-pressure phase before any transition).
           for (unsigned int i=0; i<n_phase_transitions_for_each_composition.size(); ++i)
             n_phase_transitions_for_each_composition[i] += 1;
+        
+          // Establish that a background field is required here
+          const bool has_background_field = true;
+
+          // Retrieve the list of composition names
+          const std::vector<std::string> list_of_composition_names = this->introspection().get_composition_names();
 
           // Equation of state parameters
           equation_of_state.initialize_simulator (this->get_simulator());
@@ -1162,8 +1182,22 @@ namespace aspect
           // Reference and minimum/maximum values
           min_strain_rate = prm.get_double("Minimum strain rate");
           ref_strain_rate = prm.get_double("Reference strain rate");
-          min_visc = prm.get_double ("Minimum viscosity");
-          max_visc = prm.get_double ("Maximum viscosity");
+          
+          // todo
+          min_visc = Utilities::parse_map_to_double_array (prm.get("Minimum viscosity"),
+                                                          list_of_composition_names,
+                                                          has_background_field,
+                                                          "Minimum viscosity",
+                                                          true,
+                                                          std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+
+          max_visc = Utilities::parse_map_to_double_array (prm.get("Maximum viscosity"),
+                                                          list_of_composition_names,
+                                                          has_background_field,
+                                                          "Maximum viscosity",
+                                                          true,
+                                                          std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+
           ref_visc = prm.get_double ("Reference viscosity");
 
           thermal_diffusivities = Utilities::possibly_extend_from_1_to_N (Utilities::string_to_double(Utilities::split_string_list(prm.get("Thermal diffusivities"))),
