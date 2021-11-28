@@ -25,6 +25,8 @@
 #include <aspect/simulator_signals.h>
 #include <aspect/utilities.h>
 #include <aspect/geometry_model/interface.h>
+              
+
 
 namespace aspect
 {
@@ -34,6 +36,10 @@ namespace aspect
   bool prescribe_internal_temperatures;
   Utilities::Coordinates::CoordinateSystem coordinate_system_indicator_function;
   Utilities::Coordinates::CoordinateSystem coordinate_system_function;
+  std::string temperature_model;
+  // these are defined for the plate model
+  double top_temperature, subducting_plate_velocity, 
+  overiding_plate_age, x_extent, y_extent, area_width, potential_mantle_temperature;
 
   // Because we do not initially know what dimension we're in, we need
   // function parser objects for both 2d and 3d.
@@ -41,6 +47,47 @@ namespace aspect
   Functions::ParsedFunction<3> prescribed_temperature_indicator_function_3d (1);
   Functions::ParsedFunction<2> prescribed_temperature_function_2d (1);
   Functions::ParsedFunction<3> prescribed_temperature_function_3d (1);
+
+  double plate_model_T(const double c1, const double c2)
+  {
+      // Use plate model to compute the temperature, migrated from the world builder
+      // in order to generate consistent result with the world builder.
+      const double x = c1;
+      const double y = c2;
+      const double thermal_diffusivity = 1e-6;
+      const double thermal_expansion_coefficient = 3e-5;
+      const double gravity_norm = 10.0;
+      const double specific_heat = 1250.0;
+      const double max_depth = 150e3 ; // same with the wb file
+      const int sommation_number = 100; // same as in the World Builder
+      const double distance_ridge = x;
+      const double depth = y_extent - y;
+      const double age = distance_ridge / subducting_plate_velocity;
+      const double bottom_temperature_local =  potential_mantle_temperature *
+                                                std::exp(((thermal_expansion_coefficient* gravity_norm) /
+                                                           specific_heat) * depth);
+  
+      double temperature = top_temperature + (bottom_temperature_local - top_temperature) * (depth / max_depth);
+  
+      for (int i = 1; i<sommation_number+1; ++i)
+        {
+          // suming over the "sommation_number"
+          // use a spreading ridge around the left corner and a constant age around the right corner 
+          if (x < area_width)
+            temperature = temperature + (bottom_temperature_local - top_temperature) *
+                          ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
+                           std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
+                                     std::sqrt(((subducting_plate_velocity*subducting_plate_velocity*max_depth*max_depth) /
+                                                (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * M_PI * M_PI)) *
+                                    ((subducting_plate_velocity * age) / max_depth)));
+          else if (x > x_extent - area_width)
+            temperature = temperature + (bottom_temperature_local - top_temperature) *
+                          ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
+                           std::exp(-1.0 * i * i * M_PI * M_PI * thermal_diffusivity * overiding_plate_age / (max_depth * max_depth)));
+  
+        }
+        return temperature;  
+  }
 
   /**
    * Declare additional parameters.
@@ -59,7 +106,28 @@ namespace aspect
                        "the specified temperature component at the indicated cells "
                        "are constrained."
                       );
-
+    // Declare temperature & Geometry information for the plate model
+    prm.declare_entry("Adiabatic surface temperature", "1673.0",
+                     Patterns::Double (0.),
+                     "Potential temperature"
+                     );
+    prm.enter_subsection ("Geometry");
+    {
+      prm.enter_subsection ("Box");
+      {
+        prm.declare_entry("X extent", "6.7830e+06",
+                          Patterns::Double (0.),
+                          "X Extent of the Box"
+                          );
+        prm.declare_entry("Y extent", "2.8900e6",
+                          Patterns::Double (0.),
+                          "Y Extent of the Box"
+                          );
+      }
+      prm.leave_subsection();
+    }
+    prm.leave_subsection();
+    // Declare variables defined in the "Prescribed temperatures" subsection
     prm.enter_subsection ("Prescribed temperatures");
     {
       prm.enter_subsection ("Indicator function");
@@ -80,6 +148,33 @@ namespace aspect
           Functions::ParsedFunction<3>::declare_parameters (prm, 1);
       }
       prm.leave_subsection ();
+
+      prm.declare_entry("Model name", "function", 
+                        Patterns::Selection ("function|plate model"),
+                        "A selection that determines the model to use "
+                        "for the indicated area."
+                        );
+      // variables used in the plate model
+      prm.enter_subsection ("Plate model");
+      {
+        prm.declare_entry("Subducting plate velocity", "1.5855e-09",
+                          Patterns::Double (0.),
+                          "Velocity of the subducting plate"
+                          );
+        prm.declare_entry("Overiding plate age", "1.2614e+15",
+                          Patterns::Double (0.),
+                          "Velocity of the overiding plate"
+                          );
+        prm.declare_entry("Top temperature", "273.0",
+                          Patterns::Double (0.),
+                          "Temperature of the top boundary"
+                          );
+        prm.declare_entry("Area width", "2.75e5",
+                          Patterns::Double (0.),
+                          "Width of the area"
+                          );
+      }
+      prm.leave_subsection();
 
       prm.enter_subsection ("Temperature function");
       {
@@ -108,6 +203,19 @@ namespace aspect
                         ParameterHandler &prm)
   {
     prescribe_internal_temperatures = prm.get_bool ("Prescribe internal temperatures");
+    // Get temperature & Geometry information for the plate model
+    potential_mantle_temperature = prm.get_double("Adiabatic surface temperature");
+    prm.enter_subsection ("Geometry");
+    {
+      prm.enter_subsection ("Box");
+      {
+        x_extent = prm.get_double("X extent");
+        y_extent = prm.get_double("Y extent");
+      }
+      prm.leave_subsection();
+    }
+    prm.leave_subsection();
+    // Get parameters defined for the Prescribed temperatures plugin
     prm.enter_subsection ("Prescribed temperatures");
     {
       prm.enter_subsection("Indicator function");
@@ -128,6 +236,20 @@ namespace aspect
                       << "\t'" << prm.get("Function expression") << "'";
             throw;
           }
+      }
+      prm.leave_subsection();
+
+      temperature_model = prm.get("Model name");
+      if (temperature_model == "plate model")
+        AssertThrow(dim == 2,
+                    ExcMessage("Plate model only works in 2d right now"));
+      // plate model
+      prm.enter_subsection ("Plate model");
+      {
+        area_width = prm.get_double("Area width");
+        subducting_plate_velocity = prm.get_double("Subducting plate velocity");
+        overiding_plate_age = prm.get_double("Overiding plate age");
+        top_temperature = prm.get_double("Top temperature");
       }
       prm.leave_subsection();
 
@@ -295,9 +417,17 @@ namespace aspect
                             indicator = prescribed_temperature_indicator_function_2d.value
                                         (as_2d(Utilities::convert_array_to_point<dim>(indicator_function_point.get_coordinates())),
                                          0);
-                            u_i       = prescribed_temperature_function_2d.value
-                                        (as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates())),
-                                         0);
+                            if (temperature_model == "function"){
+                              // use the defined function
+                              u_i       = prescribed_temperature_function_2d.value
+                                          (as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates())),
+                                           0);
+                            }
+                            else{
+                              // use the plate model
+                              const Point<2> p = as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates()));
+                              u_i       = plate_model_T(p[0], p[1]);
+                            }
                           }
                         else
                           {
