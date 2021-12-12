@@ -568,6 +568,13 @@ namespace aspect
            */
           double get_transition_slope (const unsigned int phase_index) const;
 
+
+          /**
+           * Return whether to compute latent heat for
+           * phase transition number @p phase_index.
+           */
+          double get_compute_latent_heat(const unsigned int phase_index) const;
+
           /**
            * Return how many phase transitions there are for each composition.
            */
@@ -636,6 +643,11 @@ namespace aspect
            * A method define the composition which uses self-defined way to compute harzburgite phase value
            */
           std::vector<double> manually_method_harzburgite;
+          
+          /**
+           * whether to compute latent heat on phases
+           */
+          std::vector<double> compute_latent_heats;
 
           /**
            * hardwire

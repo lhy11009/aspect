@@ -452,7 +452,6 @@ namespace aspect
                 break;
               }
             }
-          // todo
           // Step 5: limit the viscosity with specified minimum and maximum bounds
           double maximum_viscosity_for_composition = MaterialModel::MaterialUtilities::phase_average_value(
             re_phase_function_values,
@@ -764,6 +763,9 @@ namespace aspect
             if (this->get_adiabatic_conditions().is_initialized() && this->include_latent_heat())
               for (unsigned int phase=0; phase<phase_function.n_phase_transitions(); ++phase)
                 {
+                  // check if we don't want to compute on this phase
+                  if (phase_function.get_compute_latent_heat(phase)<1e-8)
+                    continue;
                   const double depth = this->get_geometry_model().depth(in.position[i]);
                   const double pressure_depth_derivative = gravity_norm*reference_density;
 
@@ -1183,7 +1185,6 @@ namespace aspect
           min_strain_rate = prm.get_double("Minimum strain rate");
           ref_strain_rate = prm.get_double("Reference strain rate");
           
-          // todo
           min_visc = Utilities::parse_map_to_double_array (prm.get("Minimum viscosity"),
                                                           list_of_composition_names,
                                                           has_background_field,

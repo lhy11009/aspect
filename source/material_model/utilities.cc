@@ -1087,8 +1087,6 @@ namespace aspect
         return *n_phase_transitions_per_composition;
       }
 
-
-
       template <int dim>
       double
       PhaseFunction<dim>::
@@ -1097,7 +1095,13 @@ namespace aspect
         return transition_slopes[phase_index];
       }
 
-
+      template <int dim>
+      double
+      PhaseFunction<dim>::
+      get_compute_latent_heat(const unsigned int phase_index) const
+      {
+        return compute_latent_heats[phase_index];
+      }
 
       template <int dim>
       void
@@ -1200,6 +1204,13 @@ namespace aspect
                            "version numbers are like 1.0, 1.1, 1.2 ..."
                            "List must have the same number of entries as Phase transition depths. "
                            "Units: None.");
+        // compute latent heat on phases
+        prm.declare_entry ("Compute latent heat", "1.0",
+                           Patterns::Anything(),
+                           "A list of int, indicating whether to compute latent heat on this phase transition"
+                           "Entries are either 0.0 or 1.0"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
 
         prm.enter_subsection ("Eclogite transition");
         {
@@ -1295,6 +1306,15 @@ namespace aspect
                                                                                list_of_composition_names,
                                                                                has_background_field,
                                                                                "Define transition of harzburgite by depth instead of pressure",
+                                                                               true,
+                                                                               n_phase_transitions_per_composition,
+                                                                               true);
+        
+        // parse the Compute latent heat
+            compute_latent_heats        = Utilities::parse_map_to_double_array (prm.get("Compute latent heat"),
+                                                                               list_of_composition_names,
+                                                                               has_background_field,
+                                                                               "Whether compute latent heat on phases",
                                                                                true,
                                                                                n_phase_transitions_per_composition,
                                                                                true);
