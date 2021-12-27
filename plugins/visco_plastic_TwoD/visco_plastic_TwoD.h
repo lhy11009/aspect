@@ -104,6 +104,13 @@ namespace aspect
          * the current object.
          */
         std::vector<double> diffusion_viscosities;
+        
+        /**
+         * Dislocation viscosities at the evaluation points passed to
+         * the instance of MaterialModel::Interface::evaluate() that fills
+         * the current object.
+         */
+        std::vector<double> peierls_viscosities;
     };
 
     /* hardwire
