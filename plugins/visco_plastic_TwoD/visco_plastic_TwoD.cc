@@ -192,7 +192,8 @@ namespace aspect
       :
       NamedAdditionalMaterialOutputs<dim>(make_additional_viscosity_outputs_names()),
       dislocation_viscosities(n_points, numbers::signaling_nan<double>()),
-      diffusion_viscosities(n_points, numbers::signaling_nan<double>())
+      diffusion_viscosities(n_points, numbers::signaling_nan<double>()),
+      peierls_viscosities(n_points, numbers::signaling_nan<double>())
     {}
 
 
@@ -209,6 +210,9 @@ namespace aspect
           
           case 1:
             return diffusion_viscosities;
+          
+          case 2:
+            return peierls_viscosities;
 
           default:
             AssertThrow(false, ExcInternalError());
@@ -352,6 +356,16 @@ namespace aspect
               const double viscosity_peierls = peierls_creep->compute_viscosity(edot_ii, in.pressure[i], temperature_for_viscosity, j,
                                                                                 re_phase_function_values,
                                                                                 phase_function.n_phase_transitions_for_each_composition());
+              // record the dislocation viscosities for output
+              // add by volume fractions
+              if (add_viscosities_out != nullptr)
+              {
+                if (j==0)
+                  add_viscosities_out->peierls_viscosities[i] = 0.0;  // initialize
+                add_viscosities_out->peierls_viscosities[i] += volume_fractions[j] * log(viscosity_peierls);
+                if (j == volume_fractions.size() - 1)
+                  add_viscosities_out->peierls_viscosities[i] = exp(add_viscosities_out->peierls_viscosities[i]);
+              }
               viscosity_pre_yield = (viscosity_pre_yield * viscosity_peierls) / (viscosity_pre_yield + viscosity_peierls);
             }
 
