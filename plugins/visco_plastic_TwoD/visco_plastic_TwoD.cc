@@ -48,6 +48,7 @@ namespace aspect
         std::vector<std::string> names;
         names.emplace_back("dislocation_viscosity");
         names.emplace_back("diffusion_viscosity");
+        names.emplace_back("peierls_viscosity");
         return names;
       }
     }
