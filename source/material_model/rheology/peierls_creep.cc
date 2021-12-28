@@ -50,7 +50,6 @@ namespace aspect
         PeierlsCreepParameters creep_parameters;
         if (phase_function_values == std::vector<double>())
           {
-	    std::cout << "No phases" << std::endl;
             // no phases
             creep_parameters.prefactor = prefactors[composition];
             creep_parameters.stress_exponent = stress_exponents[composition];
@@ -66,7 +65,6 @@ namespace aspect
           }
         else
           {
-	    std::cout << "Have phases" << std::endl;
             // Average among phases. This averaging is not strictly correct, but
             // it will not matter much if the parameters are similar across transitions.
             creep_parameters.prefactor = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
