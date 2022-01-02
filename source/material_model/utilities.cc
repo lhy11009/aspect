@@ -921,9 +921,13 @@ namespace aspect
             {
               for (unsigned int i=0; i<volume_fractions.size(); ++i)
                 {
-                  AssertThrow(parameter_values[i] > 0,
-                              ExcMessage ("All parameter values must be greater than 0 for harmonic averaging!"));
-                  averaged_parameter += volume_fractions[i]/(parameter_values[i]);
+                  //AssertThrow(parameter_values[i] > 0,
+                  //            ExcMessage ("All parameter values must be greater than 0 for harmonic averaging!"));
+                  // todo
+                  if (parameter_values[i] < 0){
+                    std::cout << "Warning: Utilities: average_value: there is a negative value of parameters" << std::endl;
+                  }
+                  averaged_parameter += volume_fractions[i]/(std::max(parameter_values[i], 1e-8));
                 }
               averaged_parameter = 1.0/averaged_parameter;
               break;
