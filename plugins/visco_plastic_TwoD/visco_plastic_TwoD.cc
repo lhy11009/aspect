@@ -778,9 +778,7 @@ namespace aspect
             if (this->get_adiabatic_conditions().is_initialized() && this->include_latent_heat())
               for (unsigned int phase=0; phase<phase_function.n_phase_transitions(); ++phase)
                 {
-                  // check if we don't want to compute on this phase
-                  if (phase_function.get_compute_latent_heat(phase)<1e-8)
-                    continue;
+                  const double entropy_scaling = phase_function.get_compute_latent_heat(phase); // use this factor to scale the computed value
                   const double depth = this->get_geometry_model().depth(in.position[i]);
                   const double pressure_depth_derivative = gravity_norm*reference_density;
 
@@ -810,7 +808,7 @@ namespace aspect
                   int parameter_value_index = phase + composition_index; // match index in phase function to parameters
                   double density_jump = eos_outputs_all_phases.densities[parameter_value_index + 1]
                                         - eos_outputs_all_phases.densities[parameter_value_index];
-                  double entropy_change = clapeyron_slope * density_jump / (rho * rho) * volume_fractions[composition_index];
+                  double entropy_change = entropy_scaling * clapeyron_slope * density_jump / (rho * rho) * volume_fractions[composition_index];
                   // we need DeltaS * DX/Dpressure_deviation for the pressure derivative
                   // and - DeltaS * DX/Dpressure_deviation * gamma for the temperature derivative
                   entropy_gradient_pressure += PhaseFunctionDerivative * entropy_change;
