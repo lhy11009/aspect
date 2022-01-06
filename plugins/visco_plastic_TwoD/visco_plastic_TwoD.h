@@ -420,19 +420,22 @@ namespace aspect
                                           const ViscosityScheme &viscous_type,
                                           const YieldScheme &yield_type,
                                           const std::vector<double> &phase_function_values = std::vector<double>(),
+                                          const std::vector<unsigned int> &n_phases_per_composition = std::vector<unsigned int>(),
                                           TwoDAdditionalViscosityOutputs<dim> *add_viscosities_out = nullptr) const;
 
-
-        /**
-         * A function that fills the plastic additional output in the
-         * MaterialModelOutputs object that is handed over, if it exists.
-         * Does nothing otherwise.
-         */
-        void fill_plastic_outputs (const unsigned int point_index,
-                                   const std::vector<double> &volume_fractions,
-                                   const bool plastic_yielding,
-                                   const MaterialModel::MaterialModelInputs<dim> &in,
-                                   MaterialModel::MaterialModelOutputs<dim> &out) const;
+          
+          /**
+           * A function that fills the plastic additional output in the
+           * MaterialModelOutputs object that is handed over, if it exists.
+           * Does nothing otherwise.
+           */
+          void fill_plastic_outputs (const unsigned int point_index,
+                                     const std::vector<double> &volume_fractions,
+                                     const bool plastic_yielding,
+                                     const MaterialModel::MaterialModelInputs<dim> &in,
+                                     MaterialModel::MaterialModelOutputs<dim> &out,
+                                     const std::vector<double> &phase_function_values = std::vector<double>(),
+                                     const std::vector<unsigned int> &n_phases_per_composition = std::vector<unsigned int>()) const;
 
         /**
          * A function that fills the viscosity derivatives in the
@@ -444,7 +447,8 @@ namespace aspect
                                            const std::vector<double> &composition_viscosities,
                                            const MaterialModel::MaterialModelInputs<dim> &in,
                                            MaterialModel::MaterialModelOutputs<dim> &out,
-                                           const std::vector<double> &phase_function_values = std::vector<double>()) const;
+                                           const std::vector<double> &phase_function_values = std::vector<double>(),
+                                          const std::vector<unsigned int> &n_phases_per_composition = std::vector<unsigned int>())const;
 
         /**
          * A function that resets the values of viscosity in specified region with specified value.
@@ -512,11 +516,6 @@ namespace aspect
          * Objects for computing plastic stresses, viscosities, and additional outputs
          */
         Rheology::DruckerPrager<dim> drucker_prager_plasticity;
-
-        /*
-         * Input parameters for the drucker prager plasticity.
-         */
-        Rheology::DruckerPragerParameters drucker_prager_parameters;
 
         /**
          * Object that handles phase transitions.
