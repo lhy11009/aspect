@@ -1,8 +1,8 @@
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
-Loading shared library <../subduction_temperature2d/libsubduction_temperature2d.so>
-Loading shared library <../prescribe_field/libprescribed_temperature.so>
+Loading shared library </home/lochy/softwares/aspect/build_plugins/subduction_temperature2d/libsubduction_temperature2d.so>
+Loading shared library </home/lochy/softwares/aspect/build_plugins/prescribe_field/libprescribed_temperature.so>
 
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
