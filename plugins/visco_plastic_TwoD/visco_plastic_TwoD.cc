@@ -1148,7 +1148,7 @@ namespace aspect
           // declare parameters for eclogite_decoupled_viscosity
           EclogiteDecoupledViscosity<dim>::declare_parameters(prm);
           // Table lookup parameters
-          prm.declare_entry ("Lookup table", "false", Patterns::Bool(),
+          prm.declare_entry ("Use lookup table", "false", Patterns::Bool(),
                              "Whether to use lookup tables for compositions and phases");
           prm.enter_subsection ("Lookup table");
           {
@@ -1372,7 +1372,7 @@ namespace aspect
           eclogite_decoupled_viscosity.parse_parameters(prm);
 
           // parse options for lookup
-          use_lookup_table = prm.get_bool("Lookup table");
+          use_lookup_table = prm.get_bool("Use lookup table");
           equation_of_state_lookup.initialize_simulator (this->get_simulator());
           prm.enter_subsection ("Lookup table");
           {
