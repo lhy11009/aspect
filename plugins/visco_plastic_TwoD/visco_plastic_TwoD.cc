@@ -205,7 +205,7 @@ namespace aspect
     std::vector<double>
     TwoDAdditionalViscosityOutputs<dim>::get_nth_output(const unsigned int idx) const
     {
-      AssertIndexRange (idx, 2);
+      AssertIndexRange (idx, 3);
       switch (idx)
         {
           case 0:
@@ -372,6 +372,14 @@ namespace aspect
               }
               viscosity_pre_yield = (viscosity_pre_yield * viscosity_peierls) / (viscosity_pre_yield + viscosity_peierls);
             }
+	  else
+	  {
+              if (add_viscosities_out != nullptr)
+              {
+                if (j==0)
+                  add_viscosities_out->peierls_viscosities[i] = 1e31;  // if this is never used, initialize with a big value
+	      }
+	  }
 
 
           // Step 1d: multiply the viscosity by a constant (default value is 1)
