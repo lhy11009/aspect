@@ -881,7 +881,7 @@ namespace aspect
               // Compute viscosity derivatives if they are requested
               if (MaterialModel::MaterialModelDerivatives<dim> *derivatives =
                     out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim> >())
-                compute_viscosity_derivatives(i, volume_fractions, calculate_viscosities.first, in, out, phase_function_values);
+                compute_viscosity_derivatives(i, volume_fractions, calculate_viscosities.first, in, out, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
             }
 
 
