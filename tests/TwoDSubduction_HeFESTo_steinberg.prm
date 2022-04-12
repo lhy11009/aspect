@@ -58,7 +58,7 @@ end
 subsection Material model
   set Model name = visco plastic twod
   subsection Visco Plastic TwoD
-    set Lookup table = true
+    set Use lookup table = true
     subsection Lookup table
       set Data directory                                = $ASPECT_SOURCE_DIR/data/material-model/steinberger/
       set Material file names                           = pyr-ringwood88.txt
