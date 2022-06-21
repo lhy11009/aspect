@@ -180,6 +180,7 @@ namespace aspect
 
               for (unsigned int i_quad=0; i_quad<quadrature.size(); ++i_quad)
                 {
+                  unsigned idx = 0;
                   for (auto &isosurface : isosurfaces_twod)
                     {
                       // setup the vector to check
@@ -256,6 +257,26 @@ namespace aspect
                               coarsen = true;
                             }
                         }
+                        if (coarsen_subducted_crust && idx == coarsen_subducted_crust_index && isosurface.are_all_values_in_range(values))
+                        {
+                          const Point<dim> i_point = fe_values.quadrature_point(i_quad);
+                          const double depth = this->get_geometry_model().depth(i_point);
+                          if (depth > coarsen_subducted_crust_depth)
+                          {
+                            // perform the coarsening if
+                            // a. the coarsen subducted crust is turned on
+                            // b. this is the sp_crust isosurface
+                            // c. depth is bigger than the cutoff value
+                            if (cell->level() >= isosurface.max_refinement - 1){
+                              refine = false;
+                              clear_refine = true;
+                              coarsen = true;
+                              clear_coarsen = false;
+                            }
+                            // todo_refine
+                          }
+                        }
+                        idx++;
                     }
                 }
                 
@@ -321,6 +342,17 @@ namespace aspect
           prm.declare_entry ("Minimum depth for temperature", "70e3",
                              Patterns::Double(),
                              "A minimum depth for temperature method to take effects");
+          // todo_refine
+          prm.declare_entry ("Coarsen subducted crust", "false",
+                             Patterns::Bool(),
+                             "Whether we want to coarsen the subducted crust");
+          prm.declare_entry ("Coarsen subducted depth", "300e3",
+                             Patterns::Double(),
+                             "The depth below which to coarsen the subducted crust");
+          prm.declare_entry ("Coarsen subducted isosurface index", "0",
+                             Patterns::Integer(),
+                             "The index of the isosurface of the crustal layer to coarsen");
+          
         }
         prm.leave_subsection();
       }
@@ -384,8 +416,11 @@ namespace aspect
               isosurface_twod.properties = properties;
               isosurfaces_twod.push_back(isosurface_twod);
             }
-            //todo
             minimum_depth_for_temperature = prm.get_double("Minimum depth for temperature");
+            //todo_refine
+            coarsen_subducted_crust = prm.get_bool("Coarsen subducted crust");
+            coarsen_subducted_crust_depth = prm.get_bool("Coarsen subducted depth");
+            coarsen_subducted_crust_index = prm.get_integer("Coarsen subducted index");
         }
         prm.leave_subsection();
       }
