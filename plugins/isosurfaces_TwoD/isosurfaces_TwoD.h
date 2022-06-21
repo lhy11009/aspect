@@ -140,10 +140,17 @@ namespace aspect
         std::vector<Internal::IsosurfaceTwoD> isosurfaces_twod;
 
         /**
-         * todo
          * A depth to refine by temperature below this depth
          */
         double minimum_depth_for_temperature;
+
+        /**
+         * todo_refinement
+        * Whether to coarse the deeper subducted crust
+        */
+        bool coarsen_subducted_crust;
+        double coarsen_subducted_crust_depth;
+        unsigned coarsen_subducted_crust_index;
 
     };
   }
