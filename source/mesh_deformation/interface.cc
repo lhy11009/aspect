@@ -1059,14 +1059,22 @@ namespace aspect
             {
               AffineConstraints<double> user_level_constraints;
               user_level_constraints.reinit(relevant_dofs);
-
-              internal::TangentialBoundaryFunctions::compute_no_normal_flux_constraints_shell(mesh_deformation_dof_handler,
-                                                                                              mg_constrained_dofs,
-                                                                                              mapping,
-                                                                                              level,
-                                                                                              0,
-                                                                                              no_flux_boundary,
-                                                                                              user_level_constraints);
+              if (no_flux_boundary.size() == 1)
+                internal::TangentialBoundaryFunctions::compute_no_normal_flux_constraints_shell(mesh_deformation_dof_handler,
+                                                                                                mg_constrained_dofs,
+                                                                                                mapping,
+                                                                                                level,
+                                                                                                0,
+                                                                                                no_flux_boundary,
+                                                                                                user_level_constraints);
+              else
+                internal::TangentialBoundaryFunctions::compute_no_normal_flux_constraints_on_level(mesh_deformation_dof_handler,
+                    mg_constrained_dofs,
+                    mapping,
+                    level,
+                    0,
+                    no_flux_boundary,
+                    user_level_constraints);
               user_level_constraints.close();
               mg_constrained_dofs.add_user_constraints(level,user_level_constraints);
 
