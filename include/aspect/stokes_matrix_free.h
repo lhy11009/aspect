@@ -56,66 +56,6 @@ namespace aspect
   {
     namespace TangentialBoundaryFunctions
     {
-      /**
-       * A structure that stores the dim DoF indices that correspond to a
-       * vector-valued quantity at a single support point.
-       */
-      template <int dim>
-      struct VectorDoFTuple
-      {
-        types::global_dof_index dof_indices[dim];
-
-        VectorDoFTuple()
-        {
-          for (unsigned int i = 0; i < dim; ++i)
-            dof_indices[i] = numbers::invalid_dof_index;
-        }
-        VectorDoFTuple(std::array<types::global_dof_index,dim> dof_ids)
-        {
-          for (unsigned int i = 0; i < dim; ++i)
-            dof_indices[i] = dof_ids[i];
-        }
-
-
-        bool
-        operator<(const VectorDoFTuple<dim> &other) const
-        {
-          for (unsigned int i = 0; i < dim; ++i)
-            if (dof_indices[i] < other.dof_indices[i])
-              return true;
-            else if (dof_indices[i] > other.dof_indices[i])
-              return false;
-          return false;
-        }
-
-        bool
-        operator==(const VectorDoFTuple<dim> &other) const
-        {
-          for (unsigned int i = 0; i < dim; ++i)
-            if (dof_indices[i] != other.dof_indices[i])
-              return false;
-
-          return true;
-        }
-
-        bool
-        operator!=(const VectorDoFTuple<dim> &other) const
-        {
-          return !(*this == other);
-        }
-      };
-
-
-      template <int dim>
-      std::ostream &
-      operator<<(std::ostream &out, const VectorDoFTuple<dim> &vdt)
-      {
-        for (unsigned int d = 0; d < dim; ++d)
-          out << vdt.dof_indices[d] << (d < dim - 1 ? " " : "");
-        return out;
-      }
-
-
       template <int dim>
       void compute_no_normal_flux_constraints_box (const DoFHandler<dim>    &dof,
                                                    const types::boundary_id  bid,
@@ -127,14 +67,6 @@ namespace aspect
                      const Tensor<1, dim> &constraining_vector,
                      AffineConstraints<double> &constraints,
                      const double inhomogeneity = 0);
-
-      template <int dim>
-      void
-      add_tangentiality_constraints(
-        const VectorDoFTuple<dim> &dof_indices,
-        const Tensor<1, dim>      &tangent_vector,
-        AffineConstraints<double> &constraints,
-        const Vector<double>      &b_values = Vector<double>(dim));
 
       template <int dim, int spacedim>
       void compute_no_normal_flux_constraints_shell(const DoFHandler<dim,spacedim> &dof_handler,

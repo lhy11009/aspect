@@ -224,8 +224,70 @@ namespace aspect
       }
 
 
+
       /**
-       * Add the constraint $(\vec u-\vec u_\Gamma) \| \vec t$ to the list of
+       * copied from dealii: A structure that stores the dim DoF indices that
+       * correspond to a vector-valued quantity at a single support point.
+       */
+      template <int dim>
+      struct VectorDoFTuple
+      {
+        types::global_dof_index dof_indices[dim];
+
+        VectorDoFTuple()
+        {
+          for (unsigned int i = 0; i < dim; ++i)
+            dof_indices[i] = numbers::invalid_dof_index;
+        }
+        VectorDoFTuple(const std::array<types::global_dof_index,dim> &dof_ids)
+        {
+          for (unsigned int i = 0; i < dim; ++i)
+            dof_indices[i] = dof_ids[i];
+        }
+
+
+        bool
+        operator<(const VectorDoFTuple<dim> &other) const
+        {
+          for (unsigned int i = 0; i < dim; ++i)
+            if (dof_indices[i] < other.dof_indices[i])
+              return true;
+            else if (dof_indices[i] > other.dof_indices[i])
+              return false;
+          return false;
+        }
+
+        bool
+        operator==(const VectorDoFTuple<dim> &other) const
+        {
+          for (unsigned int i = 0; i < dim; ++i)
+            if (dof_indices[i] != other.dof_indices[i])
+              return false;
+
+          return true;
+        }
+
+        bool
+        operator!=(const VectorDoFTuple<dim> &other) const
+        {
+          return !(*this == other);
+        }
+      };
+
+
+      template <int dim>
+      std::ostream &
+      operator<<(std::ostream &out, const VectorDoFTuple<dim> &vdt)
+      {
+        for (unsigned int d = 0; d < dim; ++d)
+          out << vdt.dof_indices[d] << (d < dim - 1 ? " " : "");
+        return out;
+      }
+
+
+
+      /**
+       * Copied from dealii: Add the constraint $(\vec u-\vec u_\Gamma) \| \vec t$ to the list of
        * constraints. In 2d, this is a single constraint, in 3d these are two
        * constraints.
        *
@@ -241,7 +303,7 @@ namespace aspect
         const VectorDoFTuple<dim> &dof_indices,
         const Tensor<1, dim>      &tangent_vector,
         AffineConstraints<double> &constraints,
-        const Vector<double>      &b_values)
+        const Vector<double>      &b_values = Vector<double>(dim))
       {
         // choose the DoF that has the
         // largest component in the
@@ -371,6 +433,8 @@ namespace aspect
                 }
       }
 
+
+
       template <int dim, int spacedim>
       void compute_no_normal_flux_constraints_on_level(const DoFHandler<dim, spacedim> &dof_handler,
                                                        const MGConstrainedDoFs &mg_constrained_dofs,
@@ -380,18 +444,9 @@ namespace aspect
                                                        const std::set<types::boundary_id> &boundary_ids,
                                                        AffineConstraints<double> &constraints)
       {
-        // TODO: This is a simplification of compute_no_normal_flux_constraints() from deal.II.
-        // The differences are:
-        // - It works on a specific level so we can ignore hanging nodes
-        // - We use the normal vector given by the manifold (instead of averaging surface vectors)
-        //
-        // This should go into deal.II at some point, but it is too specific right now.
-
-        // three cases:
-        // 1. one manifold normal vector for each vector dofs, compute_no_normal_flux_constraints_shell
-        // 2. dim manifold normal vector for each vector dofs, set each components to zero
-        // 3. dim -1 = 2 manifold normal vector for each vector dofs (dim = 3), v*n1 = 0, v*n2 = 0
-
+        // Copied from deal.ii. Only changed active_cell_iterator to cell_iterator in DoFToNormalsMap,
+        // CellToNormalsMap, CellContributions, remove the inhomogeneity, and use manifold to get
+        // the normal vectors.
         const IndexSet &refinement_edge_indices = mg_constrained_dofs.get_refinement_edge_indices(level);
 
         const auto &fe = dof_handler.get_fe();
@@ -800,6 +855,8 @@ namespace aspect
               }
           }
       }
+
+
 
       template <int dim>
       void compute_no_normal_flux_constraints_box (const DoFHandler<dim>    &dof,
@@ -3334,6 +3391,11 @@ namespace aspect
             {
               AffineConstraints<double> user_level_constraints;
               user_level_constraints.reinit(relevant_dofs);
+              // if there is only one boundary using the tangential velocity,
+              // we won't have cycle in the constraints, so we can use the
+              // more efficient function: compute_no_normal_flux_constraints_shell.
+              // If more than one, we may have cycle in the constraints, so we use
+              // compute_no_normal_flux_constraints_on_level, which is more complicated.
               if (no_flux_boundary.size() == 1)
                 internal::TangentialBoundaryFunctions::compute_no_normal_flux_constraints_shell(dof_handler_v,
                                                                                                 mg_constrained_dofs_A_block,

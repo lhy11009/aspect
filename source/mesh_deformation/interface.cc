@@ -1059,6 +1059,11 @@ namespace aspect
             {
               AffineConstraints<double> user_level_constraints;
               user_level_constraints.reinit(relevant_dofs);
+              // if there is only one boundary using the tangential velocity,
+              // we won't have cycle in the constraints, so we can use the
+              // more efficient function: compute_no_normal_flux_constraints_shell.
+              // If more than one, we may have cycle in the constraints, so we use
+              // compute_no_normal_flux_constraints_on_level, which is more complicated.
               if (no_flux_boundary.size() == 1)
                 internal::TangentialBoundaryFunctions::compute_no_normal_flux_constraints_shell(mesh_deformation_dof_handler,
                                                                                                 mg_constrained_dofs,
