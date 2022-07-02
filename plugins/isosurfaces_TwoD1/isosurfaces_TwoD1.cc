@@ -237,14 +237,13 @@ namespace aspect
                               coarsen = true;
                             }
                         }
-                      
-                      if (depth > coarsen_lm_depth && (cell->level() > maximum_refinement_level - coarsen_lm_level)){
-                        // if the cell locates in the lower mantle, coarsen it to a level maximum_refinement_level - coarsen_lm_level
-                        clear_coarsen = false;
-                        refine = false;
-                        clear_refine = true;
-                        coarsen = true;
-                      }
+                    }
+                    if (depth > coarsen_lm_depth && (cell->level() > maximum_refinement_level - coarsen_lm_level)){
+                      // if the cell locates in the lower mantle, coarsen it to a level maximum_refinement_level - coarsen_lm_level
+                      clear_coarsen = false;
+                      refine = false;
+                      clear_refine = true;
+                      coarsen = true;
                     }
                 }
 
