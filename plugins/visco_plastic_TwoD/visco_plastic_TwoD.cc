@@ -942,13 +942,6 @@ namespace aspect
 
     }
 
-    template <int dim>
-    double
-    ViscoPlasticTwoD<dim>::
-    reference_viscosity () const
-    {
-      return ref_visc;
-    }
 
     template <int dim>
     bool

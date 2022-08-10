@@ -322,7 +322,6 @@ namespace aspect
          */
         bool is_compressible () const override;
 
-        double reference_viscosity () const override;
 
         static
         void
