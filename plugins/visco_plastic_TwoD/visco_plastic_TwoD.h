@@ -21,6 +21,7 @@
 #ifndef _aspect_material_model_visco_plastic_h
 #define _aspect_material_model_visco_plastic_h
 
+#include <aspect/global.h>
 #include <aspect/material_model/interface.h>
 #include <aspect/material_model/rheology/strain_dependent.h>
 #include <aspect/simulator_access.h>
@@ -152,6 +153,56 @@ namespace aspect
         double decoupled_depth;
         double decoupled_depth_width;
     };
+    
+    /* hardwire
+      todo_particle
+    */
+    template <int dim>
+    class SzEmbededFault{
+      public:
+        // declare
+        // parse
+        /**
+         * Declare the parameters this class takes through input files.
+         * Note that this class does not declare its own subsection,
+         * i.e. the parameters will be declared in the subsection that
+         * was active before calling this function.
+         */
+        static
+        void
+        declare_parameters (ParameterHandler &prm);
+
+        /**
+         * Read the parameters this class declares from the parameter file.
+         * Note that this class does not declare its own subsection,
+         * i.e. the parameters will be parsed from the subsection that
+         * was active before calling this function.
+         */
+        void
+        parse_parameters (ParameterHandler &prm);
+       
+        
+        /**
+         * Whether to apply the embeded fault method
+         */
+        bool sz_from_embeded_fault;
+
+        // index of shear zone composition
+        unsigned sz_index;
+
+        // cutoff depth of shear zone
+        double sz_depth;
+
+        // minimum width of shear zone
+        double sz_thickness_min;
+
+        // maximum width of shear zone 
+        double sz_thickness_max;
+
+        // depth of the buried particles in the harzburgite layer
+        double particle_bury_depth;
+    };
+        
 
     /**
      * A material model combining viscous and plastic deformation, with
@@ -457,6 +508,7 @@ namespace aspect
                                           std::vector<double> &viscosities,
                                           const MaterialModel::MaterialModelInputs<dim> &in) const;
 
+
         /**
          * A function that react the composition fields in mor region
          * If reaction_mor is false, this is skipped.
@@ -536,6 +588,10 @@ namespace aspect
          */
         bool reset_viscosity;
 
+
+
+
+
         /**
          * A function object representing the temperature used to reset viscosity
          */
@@ -570,6 +626,19 @@ namespace aspect
 
         // hardwire decoupled eclogite viscosity transition
         EclogiteDecoupledViscosity<dim> eclogite_decoupled_viscosity;
+        
+        //todo_particles 
+        // hardwire shear zone composition from particles
+        SzEmbededFault<dim> sz_embeded_fault;
+        
+        /**
+         * A function that resets the values of viscosity in specified region of shear zone to be determined by particles.
+         * If sz_viscosity_from_particles is false, this is skipped.
+         */
+        void reset_shear_zone_composition_from_particle(const unsigned int point_index,
+                                       std::vector<std::vector<double> > &reaction_terms,
+                                       ReactionRateOutputs<dim> *reaction_rate_out,
+                                       const MaterialModel::MaterialModelInputs<dim> &in) const;
     };
 
   }

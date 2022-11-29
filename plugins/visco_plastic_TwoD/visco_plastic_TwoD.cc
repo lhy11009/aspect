@@ -26,6 +26,9 @@
 #include <aspect/adiabatic_conditions/interface.h>
 #include <aspect/gravity_model/interface.h>
 #include <aspect/material_model/rheology/drucker_prager.h>
+#include <aspect/postprocess/particles.h>
+#include <aspect/particle/property/interface.h>
+#include <aspect/particle/world.h>
 #include "visco_plastic_TwoD.h"
 
 namespace aspect
@@ -740,7 +743,7 @@ namespace aspect
           {
             for(unsigned int j=0; j < volume_fractions.size(); j++){
               unsigned int index = material_lookup_indexes[j]; // fill in the volume fractions with these indexes
-              if (index >= 0 && index < eos_outputs_lookup[i].densities.size())
+              if (index < eos_outputs_lookup[i].densities.size())
               {
                 // for other compositions, we assign -1 to it's material_lookup_index
                 eos_outputs.densities[j] = eos_outputs_lookup[i].densities[index];
@@ -838,6 +841,7 @@ namespace aspect
             out.entropy_derivative_pressure[i] = entropy_gradient_pressure;
             out.entropy_derivative_temperature[i] = entropy_gradient_temperature;
           }
+
           
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding
           bool plastic_yielding = false;
@@ -927,6 +931,17 @@ namespace aspect
           for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
             {
               reset_calculated_viscosities(i, out.viscosities, in);
+            }
+        }
+      
+      // If sz_viscosity_from_particles is set to true, reset compsoition for the shear zone
+      // todo_particle
+      if (sz_embeded_fault.sz_from_embeded_fault)
+        {
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim>>();
+              reset_shear_zone_composition_from_particle(i, out.reaction_terms, reaction_rate_out, in);
             }
         }
 
@@ -1089,6 +1104,10 @@ namespace aspect
           // Reset Viscosity for some part as the last step of computing viscosity
           prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
                              "Reset viscosity");
+          
+          // todo_particles
+          // shear zone from the embeded fault method and particles
+          SzEmbededFault<dim>::declare_parameters(prm);
 
           // Add a variable: fix_unrealistic_compositions
           prm.declare_entry ("Fix unrealistic compositions", "false", Patterns::Bool(),
@@ -1318,6 +1337,11 @@ namespace aspect
                          ExcMessage("If adiabatic heating is enabled you should not add another adiabatic gradient"
                                     "to the temperature for computing the viscosity, because the ambient"
                                     "temperature profile already includes the adiabatic gradient."));
+          
+          // Reset shear zone viscosity from particles
+          // todo_particles
+          // parse for embeded fault for the shear zone
+          sz_embeded_fault.parse_parameters(prm);
 
           // Reset viscosity for some part as the last step of computing viscosity
           reset_viscosity = prm.get_bool("Reset viscosity");
@@ -1437,6 +1461,102 @@ namespace aspect
         }
     }
 
+
+    // todo_particle 
+    template <int dim>
+    void
+    ViscoPlasticTwoD<dim>::reset_shear_zone_composition_from_particle(const unsigned int i,
+                                                 std::vector<std::vector<double> > &reaction_terms,
+                                                 ReactionRateOutputs<dim> *reaction_rate_out,
+                                                 const MaterialModel::MaterialModelInputs<dim> &in) const
+    {
+      // get value of composition
+      const std::vector<double> &composition = in.composition[i];
+      // convert to coordinate system used by the function
+      auto &pos = in.position[i];
+      const double depth = this->get_geometry_model().depth(in.position[i]);
+      bool do_reaction = false;
+      // determine the region of interest and change values in reaction_terms
+      if ((depth < sz_embeded_fault.sz_depth) &&
+          (this->get_postprocess_manager().template
+          has_matching_postprocessor<const Postprocess::Particles<dim>>()))
+      {
+          double min_dist = 1000e3; // minimum distance between this query point and the particles
+          double p_min_depth = 0.0; // depth of the particle with the minimum distance to the query point
+          double dist;
+          bool is_first = true;
+          const Postprocess::Particles<dim> &particle_postprocessor = this->get_postprocess_manager().template get_matching_postprocessor<Postprocess::Particles<dim>>();
+          const dealii::Particles::ParticleHandler<dim> &particle_handler = particle_postprocessor.get_particle_world().get_particle_handler();
+          typename dealii::Particles::ParticleHandler<dim>::particle_iterator particle = particle_handler.begin();
+          for (unsigned int ip=0; particle != particle_handler.end(); ++particle, ++ip)
+          {
+            const Point<dim> & p_pos = particle->get_location();
+            if (is_first)
+            {
+                min_dist = pos.distance(p_pos);
+                p_min_depth = this->get_geometry_model().depth(p_pos);
+                is_first = false;
+            }
+            else
+            {
+                dist = pos.distance(p_pos);
+                if (dist < min_dist){
+                  min_dist = dist;
+                  p_min_depth = this->get_geometry_model().depth(p_pos);
+                }
+            }
+            //std::cerr << "x: " << p_pos[0] << ", y: " << p_pos[1] << ", dist: " << pos.distance(p_pos) << std::endl;  // debug
+          }
+          // reaction the composition if conditions are met
+          if (min_dist > sz_embeded_fault.particle_bury_depth && 
+              min_dist < (sz_embeded_fault.sz_thickness_min + sz_embeded_fault.particle_bury_depth) &&
+              depth < p_min_depth)
+          {
+            // thus the point is on the shear zone and within the lower limit of thickness
+            do_reaction = true;
+            // std::cerr << "x: " << pos[0] << ", y: " << pos[1] << ", dist: " << min_dist << std::endl;  // debug
+            // if the distance < the minimum distance for shear zone:
+            //reset it's compositon to shear zone composition
+            for (unsigned c=0; c<this->n_compositional_fields(); ++c){
+              if (c == sz_embeded_fault.sz_index){
+                reaction_terms[i][c] = 1.0 - composition[c];
+              }
+              else {
+                reaction_terms[i][c] = - composition[c];
+              }
+            }
+          }
+          else if (min_dist > (sz_embeded_fault.sz_thickness_max + sz_embeded_fault.particle_bury_depth)
+                   && depth < p_min_depth)
+          {
+            // thus the point is on the shear zone and outside of the upper limit of thickness
+            do_reaction = true;
+            // if the distance < the minimum distance for shear zone:
+            //reset it's compositon to background
+            for (unsigned c=0; c<this->n_compositional_fields(); ++c){
+              reaction_terms[i][c] = - composition[c];
+            }
+          }
+       }
+      if (do_reaction){ 
+          for (unsigned c=0; c<this->n_compositional_fields(); ++c)
+          {
+              // Fill reaction rate outputs instead of the reaction terms if we use operator splitting
+              // (and then set the latter to zero).
+              if (this->get_parameters().use_operator_splitting)
+                {
+                  if (reaction_rate_out != nullptr)
+                    reaction_rate_out->reaction_rates[i][c] = (this->get_timestep_number() > 0
+                                                               ?
+                                                               reaction_terms[i][c] / this->get_timestep()
+                                                               :
+                                                               0.0);
+                  reaction_terms[i][c] = 0.0;
+                }
+          }
+      }
+    }
+
     template <int dim>
     void
     ViscoPlasticTwoD<dim>::reaction_mor_compositions(const unsigned int i,
@@ -1460,6 +1580,7 @@ namespace aspect
       for (unsigned c=0; c<this->n_compositional_fields(); ++c)
         {
           double delta_C = 0.0;
+          bool do_reaction = false; // if conditions are met, reset this to true
 
           // determine whether to reset composition in the mor region
           bool condition = false;
@@ -1484,22 +1605,27 @@ namespace aspect
                 {
                   delta_C = - composition[c];
                 }
+              do_reaction = true;
             }
           else if ( fix_unrealistic_compositions && composition[c] < 0.0)
             {
               // take care of unrealistic negative values
               delta_C = - composition[c];
+              do_reaction = true;
             }
           else if ( fix_unrealistic_compositions && composition[c] > 1.0)
             {
               // take care of unrealistic values bigger than 1.0
               delta_C = 1.0 - composition[c];
+              do_reaction = true;
             }
-          reaction_terms[i][c] = delta_C;
+          if (do_reaction){
+            reaction_terms[i][c] = delta_C;
+          }
 
           // Fill reaction rate outputs instead of the reaction terms if we use operator splitting
           // (and then set the latter to zero).
-          if (this->get_parameters().use_operator_splitting)
+          if (this->get_parameters().use_operator_splitting && do_reaction)
             {
               if (reaction_rate_out != nullptr)
                 reaction_rate_out->reaction_rates[i][c] = (this->get_timestep_number() > 0
@@ -1532,6 +1658,30 @@ namespace aspect
         prm.leave_subsection();
 
     }
+          
+    //hardwire
+    // todo_particle
+    template <int dim>
+    void
+    SzEmbededFault<dim>::declare_parameters (ParameterHandler &prm)
+    {
+      prm.declare_entry("Sz from embeded fault", "false", Patterns::Bool(),
+                      "Sz from embeded fault");
+        prm.enter_subsection ("Sz embeded fault");
+        {
+          prm.declare_entry ("Sz composition index", "0", Patterns::Integer(),
+                             "index of the compostion for the shear zone");
+          prm.declare_entry ("Sz thickness minimum", "7.5e3", Patterns::Double(),
+                             "mimimum thickness of the shear zone");
+          prm.declare_entry ("Sz thickness maximum", "15e3", Patterns::Double(),
+                             "maximum thickness of the shear zone");
+          prm.declare_entry ("Sz depth", "150e3", Patterns::Double(),
+                             "cutoff depth of shear zone");
+          prm.declare_entry ("Sz particle bury depth", "5e3", Patterns::Double(),
+                             "Buried depth of the particles in the harzburgite layer");
+        }
+        prm.leave_subsection();
+    }
     
     //parse parameters
     template <int dim>
@@ -1543,6 +1693,24 @@ namespace aspect
         {
           decoupled_depth = Utilities::string_to_double(prm.get("Decoupled depth"));
           decoupled_depth_width = Utilities::string_to_double(prm.get("Decoupled depth width"));
+        }
+        prm.leave_subsection();
+    }
+    
+    // todo_particle
+    // parse parameters for the embeded-fault shear zone
+    template <int dim>
+    void
+    SzEmbededFault<dim>::parse_parameters (ParameterHandler &prm)
+    {
+        sz_from_embeded_fault = prm.get_bool("Sz from embeded fault");
+        prm.enter_subsection ("Sz embeded fault");
+        {
+          sz_index =  Utilities::string_to_int(prm.get("Sz composition index"));
+          sz_depth =  Utilities::string_to_double(prm.get("Sz depth"));
+          sz_thickness_min =  Utilities::string_to_double(prm.get("Sz thickness minimum"));
+          sz_thickness_max =  Utilities::string_to_double(prm.get("Sz thickness maximum"));
+          particle_bury_depth =  Utilities::string_to_double(prm.get("Sz particle bury depth"));
         }
         prm.leave_subsection();
     }
