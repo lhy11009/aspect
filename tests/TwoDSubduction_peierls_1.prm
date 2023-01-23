@@ -60,7 +60,7 @@ end
 subsection Material model
     set Model name = visco plastic twod
     set Material averaging = harmonic average only viscosity
-    subsection Visco Plastic
+    subsection Visco Plastic TwoD
       set Reference temperature = 273
       set Maximum viscosity = 1e24
       set Densities = 3300.0
@@ -113,7 +113,7 @@ subsection Postprocess
   set List of postprocessors = visualization, material statistics
 
   subsection Visualization
-    set List of output variables = material properties
+    set List of output variables = material properties, named additional outputs
     set Output format = vtu
     set Time between graphical output = 0.1e6
   end

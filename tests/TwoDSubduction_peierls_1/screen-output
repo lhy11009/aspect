@@ -14,8 +14,8 @@ Number of degrees of freedom: 33,204 (20,402+2,601+10,201)
    Solving Stokes system... 0+0 iterations.
 
    Postprocessing:
-     Writing graphical output:                          output-TwoDSubduction_peierls_1/solution/solution-00000
-     Average density / Average viscosity / Total mass:  3203 kg/m^3, 2.151e+26 Pa s, 2.05e+15 kg
+     Writing graphical output:                          output-TwoDSubduction_peierls_1_debug/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3300 kg/m^3, 2.927e+23 Pa s, 2.112e+15 kg
 
 Termination requested by criterion: end time
 

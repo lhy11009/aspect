@@ -96,7 +96,7 @@
           "min depth": -10000.0,
           "max depth": 150000.0,
           "spreading velocity": 0.035,
-          "ridge coordinates": [
+          "ridge coordinates": [[
             [
               29.67761299531811,
               -5.0
@@ -105,7 +105,7 @@
               29.67761299531811,
               5.0
             ]
-          ]
+          ]]
         }
       ],
       "composition models": [
@@ -156,7 +156,7 @@
           "min depth": -10000.0,
           "max depth": 150000.0,
           "spreading velocity": 0.05,
-          "ridge coordinates": [
+          "ridge coordinates": [[
             [
               0,
               -5.0
@@ -165,7 +165,7 @@
               0,
               5.0
             ]
-          ]
+          ]]
         }
       ],
       "composition models": [
@@ -256,7 +256,7 @@
           "thermal conductivity": 3.3,
           "adiabatic heating": true,
           "plate velocity": 0.05,
-          "ridge coordinates": [
+          "ridge coordinates": [[
             [
               0,
               -5.0
@@ -265,7 +265,7 @@
               0,
               5.0
             ]
-          ],
+          ]],
           "coupling depth": 50000.0,
           "shallow dip": 60.0,
           "taper distance": 100000.0,
