@@ -1371,24 +1371,6 @@ namespace aspect
                            "List must have the same number of entries as Phase transition depths. "
                            "Units: None.");
 
-        prm.enter_subsection ("Eclogite transition");
-        {
-          // declare A value for the eclogite transition temperature
-          prm.declare_entry ("Temperature for eclogite transition", "973.0", Patterns::Double (),
-                             "The temperature for crustal phase transition");
-          prm.declare_entry ("Temperature width for eclogite transition", "75.0", Patterns::Double (),
-                             "The width of temperature for crustal phase transition");
-          prm.declare_entry ("Pressure for eclogite transition", "1.5e9", Patterns::Double (),
-                             "The pressure for crustal phase transition");
-          prm.declare_entry ("Pressure width for eclogite transition", "0.5e9", Patterns::Double (),
-                             "The width of pressure for crustal phase transition");
-          prm.declare_entry ("Max pressure for eclogite transition", "5e9", Patterns::Double (),
-                             "The maximum pressure for crustal phase transition."
-                             "This helps to force the transition in very cold region");
-          prm.declare_entry ("Max pressure width for eclogite transition", "0.5e9", Patterns::Double (),
-                             "The width of maximum pressure for crustal phase transition.");
-        }
-        prm.leave_subsection();
         // declare parameters for eclogite_transition
         EclogiteTransition<dim>::declare_parameters(prm);
       }
@@ -1557,11 +1539,16 @@ namespace aspect
                              "The pressure for crustal phase transition");
           prm.declare_entry ("Pressure width for eclogite transition", "0.5e9", Patterns::Double (),
                              "The width of pressure for crustal phase transition");
+          prm.declare_entry ("Pressure slope for eclogite transition", "0.0", Patterns::Double (),
+                             "The pressure slope for crustal phase transition");
           prm.declare_entry ("Max pressure for eclogite transition", "5e9", Patterns::Double (),
                              "The maximum pressure for crustal phase transition."
                              "This helps to force the transition in very cold region");
           prm.declare_entry ("Max pressure width for eclogite transition", "0.5e9", Patterns::Double (),
                              "The width of maximum pressure for crustal phase transition.");
+          prm.declare_entry ("Average phase functions for eclogite transition",
+                             "true", Patterns::Bool (),
+                             "If the phase functions from the pressure and temperature boundaries are averaged for eclogite transition");
         }
         prm.leave_subsection();
       }
@@ -1576,9 +1563,11 @@ namespace aspect
           crust_eclogite_transition_T_width     =  Utilities::string_to_double(prm.get("Temperature width for eclogite transition"));
           crust_eclogite_transition_T_slope     =  Utilities::string_to_double(prm.get("Temperature slope for eclogite transition"));
           crust_eclogite_transition_P     =  Utilities::string_to_double(prm.get("Pressure for eclogite transition"));
+          crust_eclogite_transition_P_slope     =  Utilities::string_to_double(prm.get("Pressure slope for eclogite transition"));
           crust_eclogite_transition_P_width     =  Utilities::string_to_double(prm.get("Pressure width for eclogite transition"));
           crust_eclogite_transition_max_P = Utilities::string_to_double(prm.get("Max pressure for eclogite transition"));
           crust_eclogite_transition_max_P_width = Utilities::string_to_double(prm.get("Max pressure width for eclogite transition"));
+          crust_eclogite_transition_PT_average = prm.get_bool("Average phase functions for eclogite transition");
         }
         prm.leave_subsection();
       }
@@ -1838,9 +1827,11 @@ namespace aspect
         while ( abs(manually_method_crust[in.phase_index - phase_index_crust - 1] - version) < 1e-8)
             phase_index_crust++;
         // find a region in a phase diagram
+        // define the boundary by pressure
         const double W0 = crust_eclogite_transition_P_width;
         const double P0 = crust_eclogite_transition_P + W0; // Pa
-        std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, W0, 0.0, false, false, false);
+        std::pair<bool, double> result0 = compute_point_to_line(in, 1150.0, P0, W0,
+                                                                crust_eclogite_transition_P_slope, false, false, false);
         
         // define ecologite transition by temperature
         // add a slope
@@ -1884,7 +1875,13 @@ namespace aspect
           // crustal eclogite transition
           // double deviation = (result0.second/W0 + result1.second/W1) / 2.0;
           // deviation = std::max(result2.second/W2, deviation);
-          double deviation = average_deviation(result0.second/W0, std::max(result1.second/W1, result2.second/W2), 2.0);
+          double deviation;
+          if (crust_eclogite_transition_PT_average){
+              deviation = average_deviation(result0.second/W0, std::max(result1.second/W1, result2.second/W2), 2.0);
+          }
+          else{
+              deviation = std::min(result0.second/W0, std::max(result1.second/W1, result2.second/W2));
+          }
           if (phase_index_crust == 0)
           {
               function_value = 0.5*(1.0 + std::tanh(deviation));
