@@ -85,9 +85,9 @@ namespace aspect
                                                  fitting_parameters, composition);
             creep_parameters.stress_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                              stress_cutoffs, composition);
-            creep_parameters.shear_modulus = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phases_per_composition,
+            creep_parameters.shear_modulus = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                                  shear_moduluses, composition);
-            creep_parameters.shear_modulus_derivative = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phases_per_composition,
+            creep_parameters.shear_modulus_derivative = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                                  shear_modulus_derivatives, composition);
           }
 		
