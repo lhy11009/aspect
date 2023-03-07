@@ -25,6 +25,7 @@
 #include <aspect/newton.h>
 #include <aspect/adiabatic_conditions/interface.h>
 #include <aspect/gravity_model/interface.h>
+#include <aspect/material_model/rheology/drucker_prager.h>
 #include "visco_plastic_TwoD.h"
 
 namespace aspect
@@ -146,7 +147,8 @@ namespace aspect
 
       const std::pair<std::vector<double>, std::vector<bool>> calculate_viscosities =
                                                              calculate_isostrain_viscosities(in, 0, volume_fractions, viscous_flow_law,
-                                                                 yield_mechanism, phase_function_values);
+                                                                 yield_mechanism, phase_function_values,
+                                                                 phase_function.n_phase_transitions_for_each_composition());
 
       std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(), volume_fractions.end());
       const bool plastic_yielding = calculate_viscosities.second[std::distance(volume_fractions.begin(), max_composition)];
@@ -233,6 +235,7 @@ namespace aspect
                                      const ViscosityScheme &viscous_type,
                                      const YieldScheme &yield_type,
                                      const std::vector<double> &phase_function_values,
+                                     const std::vector<unsigned int> &n_phases_per_composition,
                                      TwoDAdditionalViscosityOutputs<dim> *add_viscosities_out) const
     {
       // Initialize or fill variables used to calculate viscosities
@@ -421,8 +424,11 @@ namespace aspect
           const std::array<double, 3> weakening_factors = strain_rheology.compute_strain_weakening_factors(j, in.composition[i]);
 
           // Step 3b: calculate weakened friction, cohesion, and pre-yield viscosity
-          const double current_cohesion = drucker_prager_parameters.cohesions[j] * weakening_factors[0];
-          const double current_friction = drucker_prager_parameters.angles_internal_friction[j] * weakening_factors[1];
+
+          const Rheology::DruckerPragerParameters drucker_prager_parameters = drucker_prager_plasticity.compute_drucker_prager_parameters(j, phase_function_values,
+                                                                                                  n_phases_per_composition);
+          const double current_cohesion = drucker_prager_parameters.cohesion * weakening_factors[0];
+          const double current_friction = drucker_prager_parameters.angle_internal_friction * weakening_factors[1];
           viscosity_pre_yield *= weakening_factors[2];
 
           // Step 4: plastic yielding
@@ -495,7 +501,9 @@ namespace aspect
                          const std::vector<double> &volume_fractions,
                          const bool plastic_yielding,
                          const MaterialModel::MaterialModelInputs<dim> &in,
-                         MaterialModel::MaterialModelOutputs<dim> &out) const
+                         MaterialModel::MaterialModelOutputs<dim> &out,
+                         const std::vector<double> &phase_function_values,
+                        const std::vector<unsigned int> &n_phases_per_composition) const
     {
       PlasticTwoDAdditionalOutputs<dim> *plastic_out = out.template get_additional_output<PlasticTwoDAdditionalOutputs<dim> >();
 
@@ -510,9 +518,11 @@ namespace aspect
             {
               // Calculate the strain weakening factors and weakened values
               const std::array<double, 3> weakening_factors = strain_rheology.compute_strain_weakening_factors(j, in.composition[i]);
-              plastic_out->cohesions[i]   += volume_fractions[j] * (drucker_prager_parameters.cohesions[j] * weakening_factors[0]);
+              const Rheology::DruckerPragerParameters drucker_prager_parameters = drucker_prager_plasticity.compute_drucker_prager_parameters(j, phase_function_values,
+                                                                                  n_phases_per_composition);
+              plastic_out->cohesions[i]   += volume_fractions[j] * (drucker_prager_parameters.cohesion * weakening_factors[0]);
               // Also convert radians to degrees
-              plastic_out->friction_angles[i] += 180.0/numbers::PI * volume_fractions[j] * (drucker_prager_parameters.angles_internal_friction[j] * weakening_factors[1]);
+              plastic_out->friction_angles[i] += 180.0/numbers::PI * volume_fractions[j] * (drucker_prager_parameters.angle_internal_friction * weakening_factors[1]);
             }
         }
     }
@@ -527,7 +537,9 @@ namespace aspect
                                   const std::vector<double> &composition_viscosities,
                                   const MaterialModel::MaterialModelInputs<dim> &in,
                                   MaterialModel::MaterialModelOutputs<dim> &out,
-                                  const std::vector<double> &phase_function_values) const
+                                  const std::vector<double> &phase_function_values,
+                                  const std::vector<unsigned int> &n_phases_per_composition
+                                  ) const
     {
       MaterialModel::MaterialModelDerivatives<dim> *derivatives =
         out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim> >();
@@ -562,7 +574,7 @@ namespace aspect
               std::vector<double> eta_component =
                 calculate_isostrain_viscosities(in_derivatives, i, volume_fractions,
                                                 viscous_flow_law, yield_mechanism,
-                                                phase_function_values).first;
+                                                phase_function_values, n_phases_per_composition).first;
 
               // For each composition of the independent component, compute the derivative.
               for (unsigned int composition_index = 0; composition_index < eta_component.size(); ++composition_index)
@@ -592,7 +604,7 @@ namespace aspect
           const std::vector<double> viscosity_difference =
             calculate_isostrain_viscosities(in_derivatives, i, volume_fractions,
                                             viscous_flow_law, yield_mechanism,
-                                            phase_function_values).first;
+                                            phase_function_values, n_phases_per_composition).first;
 
           for (unsigned int composition_index = 0; composition_index < viscosity_difference.size(); ++composition_index)
             {
@@ -834,12 +846,15 @@ namespace aspect
               {
                 // change for output dislocation creep viscosity
                 calculate_viscosities = calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
-                                                                        yield_mechanism, phase_function_values, add_viscosities_out);
+                                                                        yield_mechanism, phase_function_values,
+                                                                        phase_function.n_phase_transitions_for_each_composition(), add_viscosities_out);
               }
               else
               {
                 calculate_viscosities = calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
-                                                                        yield_mechanism, phase_function_values);
+                                                                        yield_mechanism, 
+                                                                        phase_function_values,
+                                                                        phase_function.n_phase_transitions_for_each_composition());
               }
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
@@ -870,7 +885,8 @@ namespace aspect
           strain_rheology.fill_reaction_outputs(in, i, min_strain_rate, plastic_yielding, out);
 
           // Fill plastic outputs if they exist.
-          fill_plastic_outputs(i,volume_fractions,plastic_yielding,in,out);
+          fill_plastic_outputs(i,volume_fractions,plastic_yielding,in,out,\
+          phase_function_values, phase_function.n_phase_transitions_for_each_composition());
 
           if (use_elasticity)
             {
@@ -1181,7 +1197,7 @@ namespace aspect
           // Equation of state parameters
           equation_of_state.initialize_simulator (this->get_simulator());
           equation_of_state.parse_parameters (prm,
-                                              std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+                                              std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
 
           strain_rheology.initialize_simulator (this->get_simulator());
           strain_rheology.parse_parameters(prm);
@@ -1203,14 +1219,14 @@ namespace aspect
                                                           has_background_field,
                                                           "Minimum viscosity",
                                                           true,
-                                                          std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+                                                          std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
 
           max_visc = Utilities::parse_map_to_double_array (prm.get("Maximum viscosity"),
                                                           list_of_composition_names,
                                                           has_background_field,
                                                           "Maximum viscosity",
                                                           true,
-                                                          std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+                                                          std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
 
           ref_visc = prm.get_double ("Reference viscosity");
 
@@ -1255,16 +1271,16 @@ namespace aspect
           // Rheological parameters
           // Diffusion creep parameters
           diffusion_creep.initialize_simulator (this->get_simulator());
-          diffusion_creep.parse_parameters(prm, std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+          diffusion_creep.parse_parameters(prm, std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
 
           // Dislocation creep parameters
           dislocation_creep.initialize_simulator (this->get_simulator());
-          dislocation_creep.parse_parameters(prm, std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+          dislocation_creep.parse_parameters(prm, std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
 
           // Frank Kamenetskii viscosity parameters
           if (viscous_flow_law == frank_kamenetskii)
             {
-              frank_kamenetskii_rheology = std_cxx14::make_unique<Rheology::FrankKamenetskii<dim>>();
+              frank_kamenetskii_rheology = std::make_unique<Rheology::FrankKamenetskii<dim>>();
               frank_kamenetskii_rheology->initialize_simulator (this->get_simulator());
               frank_kamenetskii_rheology->parse_parameters(prm);
             }
@@ -1273,9 +1289,9 @@ namespace aspect
           use_peierls_creep = prm.get_bool ("Include Peierls creep");
           if (use_peierls_creep)
             {
-              peierls_creep = std_cxx14::make_unique<Rheology::PeierlsCreep<dim>>();
+              peierls_creep = std::make_unique<Rheology::PeierlsCreep<dim>>();
               peierls_creep->initialize_simulator (this->get_simulator());
-              peierls_creep->parse_parameters(prm, std::make_shared<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
+              peierls_creep->parse_parameters(prm, std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition));
             }
 
           // Constant viscosity prefactor parameters
@@ -1283,8 +1299,11 @@ namespace aspect
           constant_viscosity_prefactors.parse_parameters(prm);
 
           // Plasticity parameters
-          drucker_prager_parameters = drucker_prager_plasticity.parse_parameters(this->n_compositional_fields()+1,
-                                                                                 prm);
+          drucker_prager_plasticity.initialize_simulator (this->get_simulator());
+          drucker_prager_plasticity.parse_parameters(
+            prm, 
+            std::make_unique<std::vector<unsigned int>>(n_phase_transitions_for_each_composition)
+            );
 
           // Stress limiter parameter
           exponents_stress_limiter  = Utilities::possibly_extend_from_1_to_N (Utilities::string_to_double(Utilities::split_string_list(prm.get("Stress limiter exponents"))),
@@ -1385,7 +1404,7 @@ namespace aspect
         {
           const unsigned int n_points = out.n_evaluation_points();
           out.additional_outputs.push_back(
-            std_cxx14::make_unique<MaterialModel::PlasticTwoDAdditionalOutputs<dim>> (n_points));
+            std::make_unique<MaterialModel::PlasticTwoDAdditionalOutputs<dim>> (n_points));
         }
       if (use_elasticity)
         elastic_rheology.create_elastic_outputs(out);
@@ -1394,7 +1413,7 @@ namespace aspect
         {
           const unsigned int n_points = out.n_evaluation_points();
           out.additional_outputs.push_back(
-            std_cxx14::make_unique<MaterialModel::TwoDAdditionalViscosityOutputs<dim>> (n_points));
+            std::make_unique<MaterialModel::TwoDAdditionalViscosityOutputs<dim>> (n_points));
         }
     }
 
