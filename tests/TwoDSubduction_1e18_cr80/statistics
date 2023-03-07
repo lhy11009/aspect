@@ -1,0 +1,26 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Iterations for temperature solver
+# 10: Iterations for composition solver 1
+# 11: Iterations for composition solver 2
+# 12: Iterations for composition solver 3
+# 13: Iterations for composition solver 4
+# 14: Iterations for Stokes solver
+# 15: Velocity iterations in Stokes preconditioner
+# 16: Schur complement iterations in Stokes preconditioner
+# 17: Visualization file name
+# 18: RMS velocity (m/year)
+# 19: Max. velocity (m/year)
+# 20: Minimal temperature (K)
+# 21: Average temperature (K)
+# 22: Maximal temperature (K)
+# 23: Average nondimensional temperature (K)
+# 24: Number of advected particles
+# 25: Particle file name
+0 0.000000000000e+00 0.000000000000e+00 2048 18915 8385 73728 1 0 1 1 1 1 4294967295 0 0 output-TwoDSubduction_1e18_cr80/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 1.64084760e+03 1.67300000e+03 9.77033997e-01 1000 output-TwoDSubduction_1e18_cr80/particles/particles-00000 
