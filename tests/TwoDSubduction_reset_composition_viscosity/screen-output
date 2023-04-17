@@ -1,0 +1,62 @@
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/prescribe_field/libprescribed_temperature.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/isosurfaces_TwoD1/libisosurfaces_TwoD1.so>
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Number of active cells: 80 (on 3 levels)
+Number of degrees of freedom: 4,092 (738+105+369+720+720+720+720)
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output: output-TwoDSubduction_reset_composition_viscosity/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2154 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_reset_composition_viscosity/depth_average
+
+Number of active cells: 140 (on 4 levels)
+Number of degrees of freedom: 7,239 (1,342+186+671+1,260+1,260+1,260+1,260)
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output: output-TwoDSubduction_reset_composition_viscosity/solution/solution-00001
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2189 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_reset_composition_viscosity/depth_average
+
+Number of active cells: 173 (on 5 levels)
+Number of degrees of freedom: 8,976 (1,678+231+839+1,557+1,557+1,557+1,557)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output: output-TwoDSubduction_reset_composition_viscosity/solution/solution-00002
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2192 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_reset_composition_viscosity/depth_average
+
+Termination requested by criterion: end time
+
+
++---------------------------------------------+------------+------------+
++---------------------------------+-----------+------------+------------+
++---------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------

@@ -508,6 +508,15 @@ namespace aspect
                                           std::vector<double> &viscosities,
                                           const MaterialModel::MaterialModelInputs<dim> &in) const;
 
+        // todo_c_visc 
+        /**
+         * A function that fisrt check the index of the main composition and resets the values
+         * of viscosity in specified region with specified value.
+         * If reset_viscosity is false, this is skipped.
+         */
+        void reset_calculated_composition_viscosities(const unsigned int point_index,
+                                          std::vector<double> &viscosities,
+                                          const MaterialModel::MaterialModelInputs<dim> &in) const;
 
         /**
          * A function that react the composition fields in mor region
@@ -602,6 +611,29 @@ namespace aspect
          * choices are depth, cartesian and spherical.
          */
         Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
+
+        // todo_c_visc, reset composition_viscosity 
+        /**
+         * Whether to reset viscosity for some part as the last step of computing viscosity
+         */
+        bool reset_composition_viscosity;
+
+        /**
+        * The index of the composition to reset
+        **/
+        unsigned reset_composition_viscosity_volume_fractions_index;
+
+        /**
+         * The coordinate representation to evaluate the function to reset viscosity. Possible
+         * choices are depth, cartesian and spherical as well as the index of the max composition
+        */
+        Functions::ParsedFunction<dim> reset_composition_viscosity_function;
+        
+        /**
+         * The coordinate representation to evaluate the function to reset viscosity. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem reset_composition_viscosity_function_coordinate_system;
 
         /*
         * Whether this is chemical reaction at the mor

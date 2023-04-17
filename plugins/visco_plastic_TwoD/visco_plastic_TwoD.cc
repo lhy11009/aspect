@@ -933,6 +933,17 @@ namespace aspect
               reset_calculated_viscosities(i, out.viscosities, in);
             }
         }
+
+      // todo_c_visc 
+      // If reset_composition_viscosity is set to true, reset viscosity for the composition with
+      // the maximum composition index
+      if (reset_composition_viscosity)
+        {
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              reset_calculated_composition_viscosities(i, out.viscosities, in);
+            }
+        }
       
       // If sz_viscosity_from_particles is set to true, reset compsoition for the shear zone
       // todo_particle
@@ -1177,6 +1188,40 @@ namespace aspect
             EquationOfState::ThermodynamicTableLookup<dim>::declare_parameters(prm);
           }
           prm.leave_subsection();
+
+          //todo_c_visc 
+          // Reset Viscosity for some part based on the maximum composition as the last step of computing viscosity
+          prm.declare_entry ("Reset composition viscosity", "false", Patterns::Bool(),
+                             "Reset composition viscosity");
+          
+          prm.enter_subsection("Reset composition viscosity function");
+          {
+            /**
+             * Choose the coordinates to evaluate the Reset viscosity
+             * function. The function can be declared in dependence of depth,
+             * cartesian coordinates or spherical coordinates. Note that the order
+             * of spherical coordinates is r,phi,theta and not r,theta,phi, since
+             * this allows for dimension independent expressions.
+             */
+            prm.declare_entry ("Coordinate system", "cartesian",
+                               Patterns::Selection ("cartesian|spherical|depth"),
+                               "A selection that determines the assumed coordinate "
+                               "system for the function variables. Allowed values "
+                               "are `cartesian', `spherical', and `depth'. `spherical' coordinates "
+                               "are interpreted as r,phi or r,phi,theta in 2D/3D "
+                               "respectively with theta being the polar angle. `depth' "
+                               "will create a function, in which only the first "
+                               "parameter is non-zero, which is interpreted to "
+                               "be the depth of the point.");
+        
+            prm.declare_entry ("Max volume fraction index", "0", Patterns::Integer (0),
+                                "The index of the max volume fraction including the backgroud (index 0)" 
+                                "On this composition field the viscosity is going to be reset with the"
+                                "given function.");
+
+            Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
+          }
+          prm.leave_subsection();
         }
         prm.leave_subsection();
       }
@@ -1393,6 +1438,7 @@ namespace aspect
               throw;
             }
           prm.leave_subsection();
+
           // parse for Decoupling eclogite viscousity
           eclogite_decoupled_viscosity.parse_parameters(prm);
 
@@ -1407,6 +1453,33 @@ namespace aspect
             AssertThrow(material_lookup_indexes.size() == n_fields,
                         ExcMessage("Size of lookup indexes has to match number of fields + 1 "));
           }
+          prm.leave_subsection();
+
+          // todo_c_visc 
+          // Reset viscosity for some part as the last step of computing viscosity
+          reset_composition_viscosity = prm.get_bool("Reset composition viscosity");
+          
+            // A function for reset viscosity on certain composition for some part as the last step of computing viscosity
+          prm.enter_subsection("Reset composition viscosity function");
+          {
+            reset_composition_viscosity_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
+          
+            reset_composition_viscosity_volume_fractions_index = prm.get_integer("Max volume fraction index");
+          }
+          try
+            {
+              reset_composition_viscosity_function.parse_parameters (prm);
+            }
+          catch (...)
+            {
+              std::cerr << "ERROR: FunctionParser failed to parse\n"
+                        << "\t'Reset viscosity.Function'\n"
+                        << "with expression\n"
+                        << "\t'" << prm.get("Function expression") << "'"
+                        << "More information about the cause of the parse error \n"
+                        << "is shown below.\n";
+              throw;
+            }
           prm.leave_subsection();
         }
         prm.leave_subsection();
@@ -1459,6 +1532,30 @@ namespace aspect
         {
           viscosities[i] = new_viscosity;
         }
+    }
+    
+    // todo_c_visc 
+    template <int dim>
+    void
+    ViscoPlasticTwoD<dim>::reset_calculated_composition_viscosities( const unsigned int i,
+                                                     std::vector<double> &viscosities,
+                                                     const MaterialModel::MaterialModelInputs<dim> &in) const
+    {
+
+      // get value of new viscosity from function
+      // use negative value as invalid value
+      const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[i], get_volumetric_composition_mask());
+      if (std::distance(volume_fractions.begin(), std::max_element(volume_fractions.begin(),volume_fractions.end())) == reset_composition_viscosity_volume_fractions_index)
+      {
+        // convert to coordinate system used by the function
+        Utilities::NaturalCoordinate<dim> point =
+          this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], reset_viscosity_function_coordinate_system );
+        const float new_viscosity = reset_composition_viscosity_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
+        if (new_viscosity > 0.0)
+          {
+            viscosities[i] = new_viscosity;
+          }
+      }
     }
 
 
