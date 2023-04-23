@@ -816,6 +816,15 @@ namespace aspect
                       solver_control_cheap.last_step():
                       0) << '+' << std::flush;
 
+
+            //todo_solver
+            if (parameters.skip_expensive_stokes_solver)
+            {
+              //tell stokes to succeed by skipping the expensive stokes
+              pcout << "skip expensive stokes by user choice" << std::endl;
+            }
+            else
+            {
             // use the value defined by the user
             // OR
             // at least a restart length of 100 for melt models
@@ -872,6 +881,7 @@ namespace aspect
                                                 mpi_communicator,
                                                 parameters.output_directory+"solver_history.txt");
               }
+            }
           }
 
         // signal successful solver

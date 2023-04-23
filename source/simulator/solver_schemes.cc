@@ -563,6 +563,13 @@ namespace aspect
           }
         catch (...)
           {
+            if (parameters.skip_expensive_stokes_solver)
+            {
+              //tell stokes to succeed by skipping the expensive stokes
+              pcout << "    skip expensive stokes by user choice" << std::endl;
+            }
+	    else
+            {
             // start the solve over again and try with a stabilized version
             pcout << "failed, trying again with stabilization" << std::endl;
             newton_handler->parameters.preconditioner_stabilization = Newton::Parameters::Stabilization::SPD;
@@ -616,6 +623,7 @@ namespace aspect
               build_stokes_preconditioner();
 
             dcr.stokes_residuals = solve_stokes();
+	    }
           }
       }
 

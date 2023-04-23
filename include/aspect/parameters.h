@@ -498,6 +498,7 @@ namespace aspect
     bool                           use_full_A_block_preconditioner;
     double                         linear_solver_S_block_tolerance;
     unsigned int                   stokes_gmres_restart_length;
+    bool                           skip_expensive_stokes_solver;
 
     // subsection: AMG parameters
     std::string                    AMG_smoother_type;
