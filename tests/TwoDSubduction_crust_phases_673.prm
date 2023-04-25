@@ -21,7 +21,7 @@ subsection Geometry model
   end
 end
 
-# Mesh refinement specifications 
+# Mesh refinement specifications
 subsection Mesh refinement
   set Initial adaptive refinement        = 0
   set Initial global refinement          = 0
@@ -76,7 +76,7 @@ end
 
 # value for material model
 # change thermal expansivity to 0.0
-subsection Material model 
+subsection Material model
     set Model name = visco plastic twod
     subsection Visco Plastic TwoD
         set Reference temperature = 273

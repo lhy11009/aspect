@@ -496,7 +496,7 @@ namespace aspect
                            "in the preconditioning used in the GMRES solver. The exact definition of "
                            "this block preconditioner for the Stokes equation can be found in "
                            "\\cite{KHB12}.");
-        
+
         prm.declare_entry ("Skip expensive stokes solver", "false",
                            Patterns::Bool(),
                            "Skip the expensive stokes solver, even if the cheap ones fail");

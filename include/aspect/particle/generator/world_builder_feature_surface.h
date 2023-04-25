@@ -78,10 +78,10 @@ namespace aspect
            * Number of particles to create on the slab surface
            */
           types::particle_index n_particles_on_slab;
-          
+
           /**
           * The name of the geometry model
-          */ 
+          */
           std::string geometry_model_name;
 
           /**
@@ -99,7 +99,7 @@ namespace aspect
           * The Maximum radius to generate particles
           */
           double maximum_radius;
-          
+
           /**
           * The Minimum radius to generate particles
           */
@@ -118,12 +118,12 @@ namespace aspect
           * chunk geometry: theta coordinate
           */
           double search_length;
-          
+
           /**
           * The maximum step of search
           */
           int search_max_step;
-          
+
           /**
           * The start point of the search
           * box geometry: x coordinate

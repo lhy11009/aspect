@@ -10,12 +10,12 @@ set Surface pressure = 0
 set Adiabatic surface temperature = 1573.0
 set Prescribe internal temperatures = true
 set Resume computation = false
-set Nonlinear solver scheme = no Advection, no Stokes
+set Nonlinear solver scheme = single Advection, iterated defect correction Stokes
 set CFL number = 0.8
-set Max nonlinear iterations = 100
+set Max nonlinear iterations = 1
 set Max nonlinear iterations in pre-refinement = 0
 set Nonlinear solver tolerance = 1e-6
-set World builder file = $ASPECT_SOURCE_DIR/tests/TwoDSubduction_reset_composition_viscosity.wb
+set World builder file = $ASPECT_SOURCE_DIR/tests/TwoDSubduction_skip_expensive_stokes.wb
 
 subsection Discretization
     set Composition polynomial degree = 2
@@ -32,21 +32,15 @@ end
 
 subsection Solver parameters
     subsection Newton solver parameters
-        set Max pre-Newton nonlinear iterations = 20
-        set Nonlinear Newton solver switch tolerance = 1e-3
-        set Max Newton line search iterations = 0
-        set Maximum linear Stokes solver tolerance = 0.9
-        set Use Newton residual scaling method = true
         set Use Newton failsafe = true
-        set Stabilization preconditioner = SPD
-        set Stabilization velocity block = SPD
-        set Use Eisenstat Walker method for Picard iterations = true
     end
     subsection Stokes solver parameters
-        set Maximum number of expensive Stokes solver steps = 5000
-        set Number of cheap Stokes solver steps = 500
+        set Stokes solver type = block GMG
+        set Maximum number of expensive Stokes solver steps = 0
+        set Number of cheap Stokes solver steps = 2
         set Linear solver tolerance = 1e-1
         set GMRES solver restart length = 100
+        set Skip expensive stokes solver = true
     end
 end
 
@@ -274,12 +268,7 @@ end
 
 
 subsection Postprocess
-    set List of postprocessors = visualization, velocity statistics, temperature statistics, depth average
-    subsection Depth average
-        set Number of zones = 50
-        set Output format = txt
-        set Time between graphical output = 0
-    end
+    set List of postprocessors = visualization, velocity statistics, temperature statistics
     subsection Visualization
         set List of output variables = density, viscosity, named additional outputs, nonadiabatic pressure, strain rate, stress, heating
         set Output format = gnuplot # vtu

@@ -245,7 +245,7 @@ namespace aspect
            * List of the second Peierls shear modulus
            */
           std::vector<double> shear_moduluses;
-          
+
           /**
            * List of the second Peierls shear modulus
            */

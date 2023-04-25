@@ -17,7 +17,7 @@ subsection Geometry model
   end
 end
 
-# Mesh refinement specifications 
+# Mesh refinement specifications
 subsection Mesh refinement
   set Initial adaptive refinement        = 0
   set Initial global refinement          = 0
@@ -68,19 +68,19 @@ subsection Material model
       set Thermal expansivities = 0.0
       set Heat capacities = 1250.0
       set Grain size = 0.67e-02
-      
-      # rheology   
+
+      # rheology
       set Viscosity averaging scheme = harmonic
       set Include Peierls creep = true    # Change to true for restart
-    	set Viscous flow law = composite     # change to composite for restart
+      set Viscous flow law = composite     # change to composite for restart
       set Reference viscosity = 1e20
       set Minimum viscosity = 1e18  # change to 1e18 on restart
-      # diffusion creep  
+      # diffusion creep
       set Prefactors for diffusion creep = 8.5714e-16
       set Grain size exponents for diffusion creep = 3.0e+00
       set Activation energies for diffusion creep = 3.35e+05
       set Activation volumes for diffusion creep = 7.0e-06
-      # dislocation creep	
+      # dislocation creep
       set Prefactors for dislocation creep = 6.85918e-15
       set Stress exponents for dislocation creep = 3.0e+00
       set Activation energies for dislocation creep = 4.80e+05

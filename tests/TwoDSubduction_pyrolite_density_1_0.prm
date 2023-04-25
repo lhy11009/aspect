@@ -40,7 +40,7 @@ subsection Solver parameters
     end
     subsection Stokes solver parameters
         set Linear solver tolerance = 1.0
-        set Number of cheap Stokes solver steps = 0 
+        set Number of cheap Stokes solver steps = 0
     end
 end
 
@@ -190,5 +190,3 @@ end
 subsection Checkpointing
     set Steps between checkpoint = 100
 end
-
-

@@ -44,34 +44,40 @@ namespace aspect
         */
         // compute the interval of points on the plate for later steps
         double particle_interval_plate = 0.0;
-        if (geometry_model_name == "chunk"){
+        if (geometry_model_name == "chunk")
+          {
             particle_interval_plate = maximum_radius * feature_start / n_particles_on_plate;
-        }
-        else{
+          }
+        else
+          {
             // other geometries are not implemented yet
             Assert (false, ExcNotImplemented());
-        }
+          }
 
-        for (unsigned i = 0; i < n_particles_on_plate; ++i){
+        for (unsigned i = 0; i < n_particles_on_plate; ++i)
+          {
             const double depth = feature_surface_distance;
             const double radius = maximum_radius - depth;
             const double theta = feature_start * i / (n_particles_on_plate-1);
-            if (geometry_model_name == "chunk"){
-              x = radius*cos(theta);
-              y = radius*sin(theta);
-            }
-            else{
-              // other geometries are not implemented yet
-              Assert (false, ExcNotImplemented());
-            }
+            if (geometry_model_name == "chunk")
+              {
+                x = radius*cos(theta);
+                y = radius*sin(theta);
+              }
+            else
+              {
+                // other geometries are not implemented yet
+                Assert (false, ExcNotImplemented());
+              }
             const Point<2> particle_position(x, y);
             this->insert_particle_at_position(particle_position, particle_index, particle_handler);
             ++particle_index;
-            if (i == n_particles_on_plate - 1){
-              x_last = x;
-              y_last = y;
-            }
-        }
+            if (i == n_particles_on_plate - 1)
+              {
+                x_last = x;
+                y_last = y;
+              }
+          }
         /*
         Second part: generate particles on the slab.
         */
@@ -83,14 +89,16 @@ namespace aspect
           {
             const double depth = i * interval;
             const double radius = maximum_radius - depth;
-            if (geometry_model_name == "chunk"){
-              x = radius*cos(search_start);
-              y = radius*sin(search_start);
-            }
-            else{
-              // other geometries are not implemented yet
-              Assert (false, ExcNotImplemented());
-            }
+            if (geometry_model_name == "chunk")
+              {
+                x = radius*cos(search_start);
+                y = radius*sin(search_start);
+              }
+            else
+              {
+                // other geometries are not implemented yet
+                Assert (false, ExcNotImplemented());
+              }
             // get the distance of the initial point to the surface of the slab
             double diff, min_diff, initial_distance, distance;
             const std::array<double, 3> point = {{x, y, 0.0}};
@@ -99,140 +107,162 @@ namespace aspect
             min_diff = (initial_distance - feature_surface_distance) / feature_surface_distance ;
             // earch for a point that approximates the desinated distance to the feature surface
             int search_step = 0;
-            for (int j = -search_max_step; j < search_max_step; j++){
-              if (geometry_model_name == "chunk"){
-                x = radius*cos(search_start + j*search_length);
-                y = radius*sin(search_start + j*search_length);
+            for (int j = -search_max_step; j < search_max_step; j++)
+              {
+                if (geometry_model_name == "chunk")
+                  {
+                    x = radius*cos(search_start + j*search_length);
+                    y = radius*sin(search_start + j*search_length);
+                  }
+                else
+                  {
+                    // other geometries are not implemented yet
+                    Assert (false, ExcNotImplemented());
+                  }
+                const std::array<double, 3> point = {{x, y, 0.0}};
+                plane_distances = this->get_world_builder().distance_to_plane(point, depth, "Slab");
+                distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
+                diff = (distance - feature_surface_distance)/feature_surface_distance;
+                if (abs(diff) < abs(min_diff))
+                  {
+                    min_diff = diff;
+                    search_step = j;
+                  }
+                // std::cerr << "i = " << i << ", j = "<< j << ", distance = " << distance << std::endl;  //debug
               }
-              else{
-                // other geometries are not implemented yet
-                Assert (false, ExcNotImplemented());
-              }
-              const std::array<double, 3> point = {{x, y, 0.0}};
-              plane_distances = this->get_world_builder().distance_to_plane(point, depth, "Slab");
-              distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
-              diff = (distance - feature_surface_distance)/feature_surface_distance;
-              if (abs(diff) < abs(min_diff)){
-                min_diff = diff;
-                search_step = j;
-              }
-              // std::cerr << "i = " << i << ", j = "<< j << ", distance = " << distance << std::endl;  //debug
-            }
             // first, check this point is valid (i.e. a non-infinite minimum difference)
-            // then, pair it with an adjacent point (also check this point has a valid distance) 
+            // then, pair it with an adjacent point (also check this point has a valid distance)
             // to create a range and iterate for an approximation of the desinated point.
-            if (isinf(min_diff)){
-              continue;
-            }
+            if (isinf(min_diff))
+              {
+                continue;
+              }
             double search_result_0, search_result_1, search_result_temp;
-            if (min_diff < 0.0){
-              search_result_0 = search_start + (search_step-1)*search_length;
-              search_result_1 = search_start + search_step*search_length;
-              if (geometry_model_name == "chunk"){
-                x = radius*cos(search_result_0);
-                y = radius*sin(search_result_0);
+            if (min_diff < 0.0)
+              {
+                search_result_0 = search_start + (search_step-1)*search_length;
+                search_result_1 = search_start + search_step*search_length;
+                if (geometry_model_name == "chunk")
+                  {
+                    x = radius*cos(search_result_0);
+                    y = radius*sin(search_result_0);
+                  }
+                else
+                  {
+                    // other geometries are not implemented yet
+                    Assert (false, ExcNotImplemented());
+                  }
+                const std::array<double, 3> point1 = {{x, y, 0.0}};
+                auto plane_distances = this->get_world_builder().distance_to_plane(point1, depth, "Slab");
+                distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
               }
-              else{
-                // other geometries are not implemented yet
-                Assert (false, ExcNotImplemented());
-              }
-              const std::array<double, 3> point1 = {{x, y, 0.0}};
-              auto plane_distances = this->get_world_builder().distance_to_plane(point1, depth, "Slab");
-              distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
-            }
             else
-            {
-              search_result_0 = search_start + search_step*search_length;
-              search_result_1 = search_start + (search_step+1)*search_length;
-              if (geometry_model_name == "chunk"){
-                x = radius*cos(search_result_1);
-                y = radius*sin(search_result_1);
+              {
+                search_result_0 = search_start + search_step*search_length;
+                search_result_1 = search_start + (search_step+1)*search_length;
+                if (geometry_model_name == "chunk")
+                  {
+                    x = radius*cos(search_result_1);
+                    y = radius*sin(search_result_1);
+                  }
+                else
+                  {
+                    // other geometries are not implemented yet
+                    Assert (false, ExcNotImplemented());
+                  }
+                const std::array<double, 3> point1 = {{x, y, 0.0}};
+                auto plane_distances = this->get_world_builder().distance_to_plane(point1, depth, "Slab");
+                distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
               }
-              else{
-                // other geometries are not implemented yet
-                Assert (false, ExcNotImplemented());
-              }
-              const std::array<double, 3> point1 = {{x, y, 0.0}};
-              auto plane_distances = this->get_world_builder().distance_to_plane(point1, depth, "Slab");
-              distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
-            }
             //std::cerr << "distance: " << distance << std::endl;  // debug
-            if (isinf(distance)){
-              continue;
-            }
+            if (isinf(distance))
+              {
+                continue;
+              }
             // Search for a point with a desinated distance to the surface
             diff = min_diff;
             bool found = false;
-            while (true){
-              search_result_temp = (search_result_0 + search_result_1) / 2.0;
-              if (geometry_model_name == "chunk"){
-                x = radius*cos(search_result_temp);
-                y = radius*sin(search_result_temp);
+            while (true)
+              {
+                search_result_temp = (search_result_0 + search_result_1) / 2.0;
+                if (geometry_model_name == "chunk")
+                  {
+                    x = radius*cos(search_result_temp);
+                    y = radius*sin(search_result_temp);
+                  }
+                else
+                  {
+                    Assert (false, ExcNotImplemented());
+                  }
+                const std::array<double, 3> point_temp = {{x, y, 0.0}};
+                plane_distances = this->get_world_builder().distance_to_plane(point_temp, depth, "Slab");
+                distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
+                diff = (distance - feature_surface_distance)/feature_surface_distance;
+                //std::cerr << "search_result_temp: " << search_result_temp << ", diff: " << diff << std::endl;  // debug
+                if (isinf(diff))
+                  {
+                    // Not lucky, it's possible to mess up with the curvature of the surface that
+                    // the medium of two valid points may not be valid.
+                    break;
+                  }
+                else if (abs(diff) < search_tolerance)
+                  {
+                    // Good, a point approximating the desinated distance to the surface is food
+                    found = true;
+                    break;
+                  }
+                else if (diff < 0.0)
+                  {
+                    // search in the direction of increasing coordinate
+                    search_result_1 = search_result_temp;
+                  }
+                else
+                  {
+                    // search in the direction of decreasing coordinate
+                    search_result_0 = search_result_temp;
+                  }
               }
-              else{
-                Assert (false, ExcNotImplemented());
-              }
-              const std::array<double, 3> point_temp = {{x, y, 0.0}};
-              plane_distances = this->get_world_builder().distance_to_plane(point_temp, depth, "Slab");
-              distance = plane_distances.get_distance_from_surface(); // the distance of the query point to the feature surface
-              diff = (distance - feature_surface_distance)/feature_surface_distance;
-              //std::cerr << "search_result_temp: " << search_result_temp << ", diff: " << diff << std::endl;  // debug
-              if (isinf(diff)){
-                // Not lucky, it's possible to mess up with the curvature of the surface that
-                // the medium of two valid points may not be valid.
-                break;
-              }
-              else if (abs(diff) < search_tolerance){
-                // Good, a point approximating the desinated distance to the surface is food
-                found = true;
-                break;
-              }
-              else if (diff < 0.0){
-                // search in the direction of increasing coordinate
-                search_result_1 = search_result_temp;
-              }
-              else{
-                // search in the direction of decreasing coordinate
-                search_result_0 = search_result_temp;
-              }
-            }
             // add a new particle at the point found in the last step
-            if (found){
-              if (geometry_model_name == "chunk"){
-                x = radius*cos(search_result_temp);
-                y = radius*sin(search_result_temp);
-              }
-              else{
-                // other geometries are not implemented yet
-                Assert (false, ExcNotImplemented());
-              }
-              // make sure the distance between adjacent points are smaller than the distance between points
-              // on the plate by inserting additional points.
-              const double n_insert = ceil(pow((x - x_last) * (x - x_last) +\
-              (y - y_last) * (y - y_last), 0.5) / particle_interval_plate);
-              for (unsigned j = 1; j < n_insert; ++j){
-                const double x_i = (x_last * (n_insert - j) + x * j) / n_insert  ;
-                const double y_i = (y_last * (n_insert - j) + y * j) / n_insert  ;
-                const Point<2> particle_position(x_i, y_i);
+            if (found)
+              {
+                if (geometry_model_name == "chunk")
+                  {
+                    x = radius*cos(search_result_temp);
+                    y = radius*sin(search_result_temp);
+                  }
+                else
+                  {
+                    // other geometries are not implemented yet
+                    Assert (false, ExcNotImplemented());
+                  }
+                // make sure the distance between adjacent points are smaller than the distance between points
+                // on the plate by inserting additional points.
+                const double n_insert = ceil(pow((x - x_last) * (x - x_last) +\
+                                                 (y - y_last) * (y - y_last), 0.5) / particle_interval_plate);
+                for (unsigned j = 1; j < n_insert; ++j)
+                  {
+                    const double x_i = (x_last * (n_insert - j) + x * j) / n_insert  ;
+                    const double y_i = (y_last * (n_insert - j) + y * j) / n_insert  ;
+                    const Point<2> particle_position(x_i, y_i);
+                    this->insert_particle_at_position(particle_position, particle_index, particle_handler);
+                    ++particle_index;
+                    ++n_insert_particles;
+                  }
+                const Point<2> particle_position(x, y);
                 this->insert_particle_at_position(particle_position, particle_index, particle_handler);
                 ++particle_index;
-                ++n_insert_particles;
+                x_last = x;
+                y_last = y;
               }
-              const Point<2> particle_position(x, y);
-              this->insert_particle_at_position(particle_position, particle_index, particle_handler);
-              ++particle_index;
-              x_last = x;
-              y_last = y;
-            }
           }
         particle_handler.update_cached_numbers();
-        std::cout << "WorldBuilderFeatureSurface::generate_particles: " << n_particles_on_plate << 
-        " are generated on the plate; Expect " << n_particles_on_slab << " on the slab, "
-        << (particle_index - n_particles_on_plate) << " are successfully generated on the slab, including "
-        << n_insert_particles << " inserted separtately to maintain a regular distances between adjacent points."
-        << std::endl << std::endl;
+        std::cout << "WorldBuilderFeatureSurface::generate_particles: " << n_particles_on_plate <<
+                  " are generated on the plate; Expect " << n_particles_on_slab << " on the slab, "
+                  << (particle_index - n_particles_on_plate) << " are successfully generated on the slab, including "
+                  << n_insert_particles << " inserted separtately to maintain a regular distances between adjacent points."
+                  << std::endl << std::endl;
       }
-      
+
       template <>
       void
       WorldBuilderFeatureSurface<3>::generate_particles(Particles::ParticleHandler<3> &)
@@ -260,17 +290,17 @@ namespace aspect
                                "The number is parsed as a floating point number (so that one can "
                                "specify, for example, '1e4' particles) but it is interpreted as "
                                "an integer, of course.");
-            
+
             prm.enter_subsection("Generator");
             {
               prm.enter_subsection("World builder feature surface");
               {
                 prm.declare_entry ("Number of particles on the slab", "1000",
                                    Patterns::Double (0.),
-                                  "Total number of particles to generate(not per processor or per element) on the subducting slab surface"
-                                  "The number is parsed as a floating point number (so that one can "
-                                  "specify, for example, '1e4' particles) but it is interpreted as "
-                                  "an integer, of course.");
+                                   "Total number of particles to generate(not per processor or per element) on the subducting slab surface"
+                                   "The number is parsed as a floating point number (so that one can "
+                                   "specify, for example, '1e4' particles) but it is interpreted as "
+                                   "an integer, of course.");
                 prm.declare_entry ("Feature surface distance", "0.0",
                                    Patterns::Double (0.),
                                    "The distance of particles to the feature surface. Units: \\si{\\meter}.");
@@ -307,7 +337,7 @@ namespace aspect
                 prm.declare_entry ("Search tolerance", "0.01",
                                    Patterns::Double (0.),
                                    "The tolerance of the searching."
-                                   " this is the tolerance on the relative difference between the query points' distance" 
+                                   " this is the tolerance on the relative difference between the query points' distance"
                                    " to the surface and the desinated distance");
               }
               prm.leave_subsection();
@@ -328,9 +358,9 @@ namespace aspect
         {
           geometry_model_name = prm.get("Model name");
           AssertThrow((geometry_model_name == "box" || geometry_model_name == "chunk"),
-                  ExcMessage("You need to select a Geometry model of"
-                             "either 'box' or 'chunk' to use the particle generator of"
-                             "world builder feature surface"));
+                      ExcMessage("You need to select a Geometry model of"
+                                 "either 'box' or 'chunk' to use the particle generator of"
+                                 "world builder feature surface"));
         }
         prm.leave_subsection();
 
@@ -380,7 +410,7 @@ namespace aspect
       ASPECT_REGISTER_PARTICLE_GENERATOR(WorldBuilderFeatureSurface,
                                          "world builder feature surface",
                                          "Generates a distribution of particles from coordinates "
-                                         "specified along a feature surface defined in WorldBuilder." 
+                                         "specified along a feature surface defined in WorldBuilder."
                                          "All of the values that define this generator are read "
                                          "from a section ``Postprocess/Particles/Generator/World builder feature surface'' in the "
                                          "input file")

@@ -1,0 +1,56 @@
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/prescribe_field/libprescribed_temperature.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/isosurfaces_TwoD1/libisosurfaces_TwoD1.so>
+
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Number of active cells: 80 (on 3 levels)
+Number of degrees of freedom: 4,092 (738+105+369+720+720+720+720)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_skip_expensive_stokes/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2154 K, 3500 K
+
+Number of active cells: 140 (on 4 levels)
+Number of degrees of freedom: 7,239 (1,342+186+671+1,260+1,260+1,260+1,260)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_skip_expensive_stokes/solution/solution-00001
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2189 K, 3500 K
+
+Number of active cells: 173 (on 5 levels)
+Number of degrees of freedom: 8,976 (1,678+231+839+1,557+1,557+1,557+1,557)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Solving spcrust system ... 1 iterations.
+   Solving spharz system ... 1 iterations.
+   Solving opcrust system ... 0 iterations.
+   Skipping opharz composition solve because RHS is zero.
+   Initial Newton Stokes residual = 2.68555e+14, v = 2.68555e+14, p = 0
+
+   Solving Stokes system... 2+0 iterations.
+    skip expensive stokes by user choice
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 1: nan, norm of the rhs: nan
+
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_skip_expensive_stokes/solution/solution-00002
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2192 K, 3500 K
+
+Termination requested by criterion: end time
+
+
++----------------------------------------------+------------+------------+
++----------------------------------+-----------+------------+------------+
++----------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------

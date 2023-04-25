@@ -45,7 +45,7 @@ subsection Boundary temperature model
 end
 
 # To guarantuee a steady downward flow, we fix the velocity
-# at the top and bottom, and set it to free slip on the sides. 
+# at the top and bottom, and set it to free slip on the sides.
 subsection Boundary velocity model
   set Prescribed velocity boundary indicators = bottom:function, top:function
   set Tangential velocity boundary indicators = left, right
@@ -68,21 +68,21 @@ end
 subsection Material model
   set Model name = visco plastic twod
   subsection Visco Plastic TwoD
-    # If the temperature is equal to the phase transition temperature, the 
-    # phase transition will occur at the phase transition depth. However, 
-    # if the temperature deviates from this value, the Clapeyron slope 
+    # If the temperature is equal to the phase transition temperature, the
+    # phase transition will occur at the phase transition depth. However,
+    # if the temperature deviates from this value, the Clapeyron slope
     # determines how much the pressure (and depth) of the phase boundary
     # changes. Here, the phase transition will be in the middle of the box
-    # for T=T1. 
+    # for T=T1.
     set Phase transition depths                        = background:200000|500000
     set Phase transition temperatures                  = background:1000|1000
     set Phase transition Clapeyron slopes              = background:0.0|1e7
 
-    # We set the width of the phase transition to 5 km. You may want to 
+    # We set the width of the phase transition to 5 km. You may want to
     # change this parameter to see how latent heating depends on the width
-    # of the phase transition. 
+    # of the phase transition.
     set Phase transition widths                        = background:500|5000
-    
+
     # The change of density across the phase transition. Together with the
     # Clapeyron slope, this is what determines the entropy change.
     set Densities = background: 3400.0|3401.0|3515.6   # reference density = 3400.0, density jump = 115.6
@@ -91,15 +91,15 @@ subsection Material model
     set Reference temperature                          = 1000
     set Thermal diffusivities = 7.0e-7  # thermal conductivity = 2.38
 
-    # We set the thermal expansion amd the compressibility to zero, so that 
-    # all temperature (and density) changes are caused by advection, diffusion 
-    # and latent heating. 
+    # We set the thermal expansion amd the compressibility to zero, so that
+    # all temperature (and density) changes are caused by advection, diffusion
+    # and latent heating.
     set Thermal expansivities = 0.0
     # set Compressibility                                = 0.0
 
-    # Viscosity is constant. 
+    # Viscosity is constant.
     set Viscous flow law = composite
-    set Prefactors for diffusion creep = background: 5e-23|5e-32|5e-23 
+    set Prefactors for diffusion creep = background: 5e-23|5e-32|5e-23
     set Grain size exponents for diffusion creep = 0.0
     set Activation energies for diffusion creep = 0.0
     set Activation volumes for diffusion creep = 0.0
@@ -112,8 +112,8 @@ end
 
 
 subsection Mesh refinement
-  set Initial adaptive refinement        = 0 
-  set Initial global refinement          = 7 
+  set Initial adaptive refinement        = 0
+  set Initial global refinement          = 7
   set Time steps between mesh refinement = 0
 end
 
@@ -143,7 +143,7 @@ subsection Postprocess
 
     # We are only interested in the last timestep (when the system hast reached
     # a steady state). For following the development of the system or checking
-    # if the solution already reached steady state, this parameter can be set 
+    # if the solution already reached steady state, this parameter can be set
     # to a smaller value.
     set Time between graphical output = 5e16
     set List of output variables      = density, viscosity, named additional outputs

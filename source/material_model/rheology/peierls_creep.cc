@@ -86,11 +86,11 @@ namespace aspect
             creep_parameters.stress_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                              stress_cutoffs, composition);
             creep_parameters.shear_modulus = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
-                                                 shear_moduluses, composition);
+                                             shear_moduluses, composition);
             creep_parameters.shear_modulus_derivative = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
-                                                 shear_modulus_derivatives, composition);
+                                                        shear_modulus_derivatives, composition);
           }
-		
+
         return creep_parameters;
       }
 
@@ -579,18 +579,18 @@ namespace aspect
                                                               expected_n_phases_per_composition);
 
         shear_moduluses = Utilities::parse_map_to_double_array(prm.get("Peierls shear modulus"),
-                                                                  list_of_composition_names,
-                                                                  has_background_field,
-                                                                  "Peierls shear modulus",
-                                                                  true,
-                                                                  expected_n_phases_per_composition);
+                                                               list_of_composition_names,
+                                                               has_background_field,
+                                                               "Peierls shear modulus",
+                                                               true,
+                                                               expected_n_phases_per_composition);
 
         shear_modulus_derivatives = Utilities::parse_map_to_double_array(prm.get("Peierls shear modulus derivative"),
-                                                                  list_of_composition_names,
-                                                                  has_background_field,
-                                                                  "Peierls shear modulus derivative",
-                                                                  true,
-                                                                  expected_n_phases_per_composition);
+                                                                         list_of_composition_names,
+                                                                         has_background_field,
+                                                                         "Peierls shear modulus derivative",
+                                                                         true,
+                                                                         expected_n_phases_per_composition);
       }
     }
   }

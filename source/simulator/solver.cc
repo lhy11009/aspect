@@ -819,69 +819,69 @@ namespace aspect
 
             //todo_solver
             if (parameters.skip_expensive_stokes_solver)
-            {
-              //tell stokes to succeed by skipping the expensive stokes
-              pcout << "skip expensive stokes by user choice" << std::endl;
-            }
+              {
+                //tell stokes to succeed by skipping the expensive stokes
+                pcout << "skip expensive stokes by user choice" << std::endl;
+              }
             else
-            {
-            // use the value defined by the user
-            // OR
-            // at least a restart length of 100 for melt models
-            const unsigned int number_of_temporary_vectors = (parameters.include_melt_transport == false ?
-                                                              parameters.stokes_gmres_restart_length :
-                                                              std::max(parameters.stokes_gmres_restart_length, 100U));
-
-            SolverFGMRES<LinearAlgebra::BlockVector>
-            solver(solver_control_expensive, mem,
-                   SolverFGMRES<LinearAlgebra::BlockVector>::
-                   AdditionalData(number_of_temporary_vectors));
-
-            try
               {
-                // if no expensive steps allowed, we have failed, rethrow exception
-                if (parameters.n_expensive_stokes_solver_steps == 0)
+                // use the value defined by the user
+                // OR
+                // at least a restart length of 100 for melt models
+                const unsigned int number_of_temporary_vectors = (parameters.include_melt_transport == false ?
+                                                                  parameters.stokes_gmres_restart_length :
+                                                                  std::max(parameters.stokes_gmres_restart_length, 100U));
+
+                SolverFGMRES<LinearAlgebra::BlockVector>
+                solver(solver_control_expensive, mem,
+                       SolverFGMRES<LinearAlgebra::BlockVector>::
+                       AdditionalData(number_of_temporary_vectors));
+
+                try
                   {
-                    pcout << "0 iterations." << std::endl;
-                    throw exc;
+                    // if no expensive steps allowed, we have failed, rethrow exception
+                    if (parameters.n_expensive_stokes_solver_steps == 0)
+                      {
+                        pcout << "0 iterations." << std::endl;
+                        throw exc;
+                      }
+
+                    solver.solve(stokes_block,
+                                 distributed_stokes_solution,
+                                 distributed_stokes_rhs,
+                                 preconditioner_expensive);
+
+                    // Success. Print expensive iterations to screen.
+                    pcout << solver_control_expensive.last_step()
+                          << " iterations." << std::endl;
+
+                    final_linear_residual = solver_control_expensive.last_value();
                   }
+                // if the solver fails, report the error from processor 0 with some additional
+                // information about its location, and throw a quiet exception on all other
+                // processors
+                catch (const std::exception &exc)
+                  {
+                    signals.post_stokes_solver(*this,
+                                               preconditioner_cheap.n_iterations_S() + preconditioner_expensive.n_iterations_S(),
+                                               preconditioner_cheap.n_iterations_A() + preconditioner_expensive.n_iterations_A(),
+                                               solver_control_cheap,
+                                               solver_control_expensive);
 
-                solver.solve(stokes_block,
-                             distributed_stokes_solution,
-                             distributed_stokes_rhs,
-                             preconditioner_expensive);
+                    std::vector<SolverControl> solver_controls;
+                    if (parameters.n_cheap_stokes_solver_steps > 0)
+                      solver_controls.push_back(solver_control_cheap);
+                    if (parameters.n_expensive_stokes_solver_steps > 0)
+                      solver_controls.push_back(solver_control_expensive);
 
-                // Success. Print expensive iterations to screen.
-                pcout << solver_control_expensive.last_step()
-                      << " iterations." << std::endl;
-
-                final_linear_residual = solver_control_expensive.last_value();
+                    Utilities::linear_solver_failed("iterative Stokes solver",
+                                                    "Simulator::solve_stokes",
+                                                    solver_controls,
+                                                    exc,
+                                                    mpi_communicator,
+                                                    parameters.output_directory+"solver_history.txt");
+                  }
               }
-            // if the solver fails, report the error from processor 0 with some additional
-            // information about its location, and throw a quiet exception on all other
-            // processors
-            catch (const std::exception &exc)
-              {
-                signals.post_stokes_solver(*this,
-                                           preconditioner_cheap.n_iterations_S() + preconditioner_expensive.n_iterations_S(),
-                                           preconditioner_cheap.n_iterations_A() + preconditioner_expensive.n_iterations_A(),
-                                           solver_control_cheap,
-                                           solver_control_expensive);
-
-                std::vector<SolverControl> solver_controls;
-                if (parameters.n_cheap_stokes_solver_steps > 0)
-                  solver_controls.push_back(solver_control_cheap);
-                if (parameters.n_expensive_stokes_solver_steps > 0)
-                  solver_controls.push_back(solver_control_expensive);
-
-                Utilities::linear_solver_failed("iterative Stokes solver",
-                                                "Simulator::solve_stokes",
-                                                solver_controls,
-                                                exc,
-                                                mpi_communicator,
-                                                parameters.output_directory+"solver_history.txt");
-              }
-            }
           }
 
         // signal successful solver

@@ -41,7 +41,7 @@ subsection Solver parameters
     end
     subsection Stokes solver parameters
         set Linear solver tolerance = 1.0
-        set Number of cheap Stokes solver steps = 0 
+        set Number of cheap Stokes solver steps = 0
     end
 end
 
@@ -205,7 +205,7 @@ subsection Prescribed temperatures
         set Function constants = Depth=1.45e5, Width=2.75e5, Ro=6.371e6, PHIM=1.065,\
                              AGEOP=1.26144e15, TS=2.730e+02, TM=1.673e+03, K=1.000e-06, VSUB=1.58549e-09, PHILIM=1e-6
         set Function expression = ((r*(PHIM-phi)<Width) ? TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*AGEOP)))):\
-	(phi > PHILIM)? (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt((K*Ro*phi)/VSUB))))): TM)
+  (phi > PHILIM)? (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt((K*Ro*phi)/VSUB))))): TM)
     end
 end
 
@@ -242,4 +242,3 @@ subsection Checkpointing
 end
 
 set Output directory = output-TwoDSubduction_1e18_cr80
-

@@ -20,7 +20,7 @@ subsection Geometry model
   end
 end
 
-# Mesh refinement specifications 
+# Mesh refinement specifications
 subsection Mesh refinement
   set Initial adaptive refinement        = 0
   set Initial global refinement          = 0
@@ -94,7 +94,7 @@ subsection Material model
         set Viscous flow law = composite
         set Yield mechanism = drucker
         set Grain size = 1.0000e-02
-        set Prefactors for diffusion creep = background:1.4250e-15|1.0657e-18, spcrust:5.0000e-21|1.4250e-15|1.0657e-18, spharz:1.4250e-15|1.0657e-18 
+        set Prefactors for diffusion creep = background:1.4250e-15|1.0657e-18, spcrust:5.0000e-21|1.4250e-15|1.0657e-18, spharz:1.4250e-15|1.0657e-18
         set Grain size exponents for diffusion creep = background:3.0000e+00|3.0000e+00, spcrust:0.0000e+00|3.0000e+00|3.0000e+00, spharz:3.0000e+00|3.0000e+00
         set Activation energies for diffusion creep = background:3.1700e+05|3.1700e+05, spcrust:0.0000e+00|3.1700e+05|3.1700e+05, spharz:3.1700e+05|3.1700e+05
         set Activation volumes for diffusion creep = background:4.0000e-06|1.5000e-06, spcrust:0.0000e+00|4.0000e-06|1.5000e-06, spharz:4.0000e-06|1.5000e-06
