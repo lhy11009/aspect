@@ -28,12 +28,10 @@ Number of mesh deformation degrees of freedom: 12538
       Relative nonlinear residual (total Newton system) after nonlinear iteration 1: 1, norm of the rhs: 1.71848e+15
 
    Solving Stokes system... 10+    skip expensive stokes by user choice (loc: defect correct)
+    also skip the whole nonlinear iteration by user choice (loc: defect correct)
       Relative nonlinear residual (total Newton system) after nonlinear iteration 2: 0.778895, norm of the rhs: 1.33851e+15, newton_derivative_scaling_factor: 0
 
-   The linear solver tolerance is set to 0.01. 
-   Solving Stokes system... 10+    skip expensive stokes by user choice (loc: defect correct)
-      Relative nonlinear residual (total Newton system) after nonlinear iteration 3: 1.16878, norm of the rhs: 2.00852e+15, newton_derivative_scaling_factor: 0
-
+    nonlinear iteration complete by user choice
 
    Postprocessing:
 

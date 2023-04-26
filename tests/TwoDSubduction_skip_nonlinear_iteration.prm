@@ -1,4 +1,4 @@
-#### Continental Extension Cookbook: modified to test the implementation of skipping expensive iterations
+#### Continental Extension Cookbook
 # This cookbook is based off numerous published studies, five of which are listed below.
 # For additional information, see these publications and references therein.
 #   1. Brune, S., Heine, C., Perez-Gussinye, M., and Sobolev, S.V. (2014), Nat. Comm., v.5, n.4014,
@@ -74,6 +74,7 @@ subsection Solver parameters
     set Number of cheap Stokes solver steps = 10
     set Maximum number of expensive Stokes solver steps = 2
     set Skip expensive stokes solver = true
+    set Skip nonlinear interation with expensive stokes solver = true
     set Linear solver tolerance = 1e-1
   end
   subsection Newton solver parameters
@@ -302,3 +303,4 @@ subsection Gravity model
     set Magnitude = 9.81
   end
 end
+

@@ -821,7 +821,7 @@ namespace aspect
             if (parameters.skip_expensive_stokes_solver)
               {
                 //tell stokes to succeed by skipping the expensive stokes
-                pcout << "skip expensive stokes by user choice" << std::endl;
+                pcout << "   skip expensive stokes by user choice (loc: solve_stokes)" << std::endl;
               }
             else
               {

@@ -236,8 +236,8 @@ namespace aspect
                              "where Newton's method does not. "
                              "\n\n"
                              "Once derivatives are used in a Newton method, \\aspect{} always uses the Eisenstat Walker method.");
-          
-	  prm.declare_entry ("Use Eisenstat Walker method with new version", "false",
+
+          prm.declare_entry ("Use Eisenstat Walker method with new version", "false",
                              Patterns::Bool(),
                              "If set to true, Use the new version of the EW method suggested by Menno"
                              "\n\n"
@@ -287,7 +287,7 @@ namespace aspect
           use_Newton_failsafe = prm.get_bool("Use Newton failsafe");
           SPD_safety_factor = prm.get_double("SPD safety factor");
           use_Eisenstat_Walker_method_for_Picard_iterations = prm.get_bool("Use Eisenstat Walker method for Picard iterations");
-	  // todo_ew
+          // todo_ew
           use_Eisenstat_Walker_method_with_new_version = prm.get_bool("Use Eisenstat Walker method with new version");
         }
         prm.leave_subsection ();
