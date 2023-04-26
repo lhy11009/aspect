@@ -524,12 +524,21 @@ namespace aspect
         if (!use_picard || newton_handler->parameters.use_Eisenstat_Walker_method_for_Picard_iterations)
           {
             const bool EisenstatWalkerChoiceOne = true;
+	    //todo_ew
+	    //
+	    if (newton_handler->parameters.use_Eisenstat_Walker_method_with_new_version){
+		    pcout << "    use new version of Eisenstat Walker method" << std::endl;
+		    parameters.linear_stokes_solver_tolerance = std::min(1./(std::pow(0.55,log(dcr.residual/dcr.initial_residual))),newton_handler->parameters.maximum_linear_stokes_solver_tolerance);
+	    }
+	    else
+	    {
             parameters.linear_stokes_solver_tolerance = compute_Eisenstat_Walker_linear_tolerance(EisenstatWalkerChoiceOne,
                                                         newton_handler->parameters.maximum_linear_stokes_solver_tolerance,
                                                         parameters.linear_stokes_solver_tolerance,
                                                         dcr.stokes_residuals.second,
                                                         dcr.residual,
                                                         dcr.residual_old);
+	    }
 
             pcout << "   The linear solver tolerance is set to "
                   << parameters.linear_stokes_solver_tolerance
