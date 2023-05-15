@@ -242,6 +242,85 @@ namespace aspect
       }
 
 
+      template <int dim>
+      double
+      PeierlsCreep<dim>::compute_exact_viscosity_TwoD (const double strain_rate,
+                                                  const double pressure,
+                                                  const double temperature,
+                                                  const unsigned int composition,
+                                                  const std::vector<double> &phase_function_values,
+                                                  const std::vector<unsigned int> &n_phase_transitions_per_composition) const
+      {
+        /**
+         * A generalised Peierls creep formulation. The Peierls creep expression
+         * for the strain rate has multiple stress-dependent terms, and cannot be
+         * directly inverted to find an expression for viscosity in terms of
+         * strain rate. For this reason, a Newton-Raphson iteration is required,
+         * which can be quite expensive.
+         * The equation for the strain rate is given in
+         * compute_exact_strain_rate_and_derivative.
+         */
+        const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
+
+        // The generalized Peierls creep flow law cannot be expressed as viscosity in
+        // terms of strain rate, because there are two stress-dependent terms
+        // in the strain rate expression.
+        // We use Newton's method to find the second invariant of the stress tensor.
+
+        // Create a starting guess for the stress using
+        // the approximate form of the viscosity expression
+        double viscosity = compute_approximate_viscosity(strain_rate, pressure, temperature, composition);
+        double stress_ii = 2.*viscosity*strain_rate;
+        double strain_rate_residual = 2.*strain_rate_residual_threshold;
+
+        double strain_rate_deriv = 0;
+        unsigned int stress_iteration = 0;
+        while (std::abs(strain_rate_residual) > strain_rate_residual_threshold
+               && stress_iteration < stress_max_iteration_number)
+          {
+            const std::pair<double, double> edot_and_deriv = compute_exact_strain_rate_and_derivative(stress_ii, pressure, temperature, p);
+
+            strain_rate_residual = edot_and_deriv.first - strain_rate;
+            strain_rate_deriv = edot_and_deriv.second;
+
+            // If the strain rate derivative is zero, we catch it below.
+            if (strain_rate_deriv>std::numeric_limits<double>::min())
+              stress_ii -= strain_rate_residual/strain_rate_deriv;
+
+            stress_iteration += 1;
+
+            // If anything that would be used in the next iteration is not finite, the
+            // Newton iteration would trigger an exception and we want to abort the
+            // iteration instead.
+            // Currently, we still throw an exception, but if this exception is thrown,
+            // another more robust iterative scheme should be implemented
+            // (similar to that seen in the diffusion-dislocation material model).
+            const bool abort_newton_iteration = !numbers::is_finite(stress_ii)
+                                                || !numbers::is_finite(strain_rate_residual)
+                                                || !numbers::is_finite(strain_rate_deriv)
+                                                || strain_rate_deriv < std::numeric_limits<double>::min()
+                                                || !numbers::is_finite(std::pow(stress_ii, p.stress_exponent))
+                                                || stress_iteration == stress_max_iteration_number;
+            AssertThrow(!abort_newton_iteration,
+                        ExcMessage("No convergence has been reached in the loop that determines "
+                                   "the Peierls creep viscosity. Aborting! "
+                                   "Residual is " + Utilities::to_string(strain_rate_residual) +
+                                   " after " + Utilities::to_string(stress_iteration) + " iterations. "
+                                   "You can increase the number of iterations by adapting the "
+                                   "parameter 'Maximum Peierls strain rate iterations'."));
+          }
+        if (apply_strict_stress_cutoff)
+        {
+          // apply a stricter, definite stress cutoff
+          if (stress_ii < p.stress_cutoff)
+            stress_ii = p.stress_cutoff;
+        }
+        
+        viscosity = 0.5*stress_ii/strain_rate;
+
+        return viscosity;
+      }
+
 
       template <int dim>
       double
@@ -264,6 +343,40 @@ namespace aspect
             case exact:
             {
               viscosity = compute_exact_viscosity(strain_rate, pressure, temperature, composition, phase_function_values, n_phase_transitions_per_composition);
+              break;
+            }
+            default:
+            {
+              AssertThrow(false, ExcNotImplemented());
+              break;
+            }
+          }
+
+        return viscosity;
+      }
+      
+      
+      template <int dim>
+      double
+      PeierlsCreep<dim>::compute_viscosity_TwoD (const double strain_rate,
+                                            const double pressure,
+                                            const double temperature,
+                                            const unsigned int composition,
+                                            const std::vector<double> &phase_function_values,
+                                            const std::vector<unsigned int> &n_phase_transitions_per_composition) const
+      {
+        double viscosity = 0.0;
+
+        switch (peierls_creep_flow_law)
+          {
+            case viscosity_approximation:
+            {
+              viscosity = compute_approximate_viscosity(strain_rate, pressure, temperature, composition, phase_function_values, n_phase_transitions_per_composition);
+              break;
+            }
+            case exact:
+            {
+              viscosity = compute_exact_viscosity_TwoD(strain_rate, pressure, temperature, composition, phase_function_values, n_phase_transitions_per_composition);
               break;
             }
             default:
@@ -488,6 +601,8 @@ namespace aspect
                            "dependence of Peierls stresses for background material and compositional fields,"
                            "for a total of N+1 values, where N is the number of compositional fields."
                            "If only one value is given, then all use the same value. Units: none");
+        prm.declare_entry ("Apply strict stress cutoff for Peierls creep", "false", Patterns::Bool(),
+                           "Whether to apply the strict stress cutoff");
 
       }
 
@@ -591,6 +706,8 @@ namespace aspect
                                                                          "Peierls shear modulus derivative",
                                                                          true,
                                                                          expected_n_phases_per_composition);
+        
+        apply_strict_stress_cutoff = prm.get_bool("Apply strict stress cutoff for Peierls creep");
       }
     }
   }
