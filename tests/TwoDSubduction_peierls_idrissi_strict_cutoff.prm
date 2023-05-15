@@ -1,4 +1,7 @@
-# This activate the peierls rheology with dislocation and diffusion creep rheology in the model of visco plastic twod
+# This activate the peierls rheology only (others are turned off) in the of visco plastic twod
+# Purpose of this test is:
+# 1. generate a diagram with the variables included in the visco_plastic_peierls_cutoff_test.prm.
+# 2. modify from the previous test of tests/TwoDSubduction_peierls_idrissi.prm and demostrate the usage of the strict cutoff scheme.
 
 set Dimension                              = 2
 set Start time                             = 0

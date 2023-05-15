@@ -1,7 +1,11 @@
-# This activate the peierls rheology only (others are turned off) in the of visco plastic twod
+# This activate the peierls rheology with the composite rheology in the of visco plastic twod
 # Purpose of this test is:
-# 1. generate a diagram with the variables included in the visco_plastic_peierls_cutoff_test.prm
-# 2. show the issue of the iddrissi flow law at T > 1400 K even with the Cutoff-stress being activated (at least with this set of variables)
+# 1. generate a diagram with the variables included in the visco_plastic_peierls_cutoff_test.prm.
+# 2. modify from the previous test of tests/TwoDSubduction_peierls_idrissi.prm and demostrate the usage of the strict cutoff scheme.
+# 3. from here, modify the cutoff stress and have the right relation between the diffusion, dislocation and the Peierls creep.
+#    Specifically, the Peierls creep shouldn't be activated at warmer condition. The value I put here (20 MPa) ensures that the Peierls
+#    viscosity stays bigger than 1e22 at a strain rate of 1e-15, which is also predicted from using the approximated formula and the
+#    Mei 10 rheology
 
 set Dimension                              = 2
 set Start time                             = 0
@@ -75,13 +79,18 @@ subsection Material model
       # rheology
       set Viscosity averaging scheme = harmonic
       set Include Peierls creep = true
-      set Viscous flow law = diffusion
+      set Viscous flow law = composite
       set Minimum viscosity = 1e11
       # diffusion creep
-      set Prefactors for diffusion creep = 1e-32
-      set Grain size exponents for diffusion creep = 0.0
-      set Activation energies for diffusion creep = 0.0
-      set Activation volumes for diffusion creep = 0.0
+      set Prefactors for diffusion creep = 8.1787e-17
+      set Grain size exponents for diffusion creep = 3.0000e+00
+      set Activation energies for diffusion creep = 2.8500e+05
+      set Activation volumes for diffusion creep = 6.9000e-06
+      # dislocation creep
+      set Prefactors for dislocation creep =  5.9076e-16
+      set Stress exponents for dislocation creep = 3.5000e+00
+      set Activation energies for dislocation creep = 4.9000e+05
+      set Activation volumes for dislocation creep = 1.3400e-05
       # Parameters for Idrissi Low Temperature Plasticity
       set Include Peierls creep                     = true
       set Peierls creep flow law                    = exact
@@ -95,7 +104,8 @@ subsection Material model
       set Peierls glide parameters q                = 2.0
       set Peierls strain rate residual tolerance    = 1e-22
       set Maximum Peierls strain rate iterations    = 40
-      set Cutoff stresses for Peierls creep         = 1000.0
+      set Cutoff stresses for Peierls creep         = 2e7
+      set Apply strict stress cutoff for Peierls creep = true
     end
 end
 
