@@ -1,9 +1,9 @@
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
 
-Loading shared library </home/lochy/Softwares/aspect/build_plugins/prescribe_field/libprescribed_temperature.so>
-Loading shared library </home/lochy/Softwares/aspect/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.so>
-Loading shared library </home/lochy/Softwares/aspect/build_plugins/isosurfaces_TwoD1/libisosurfaces_TwoD1.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library </home/lochy/Softwares/aspect/build_plugins/isosurfaces_TwoD1/libisosurfaces_TwoD1.release.so>
 
 -----------------------------------------------------------------------------
 -----------------------------------------------------------------------------
