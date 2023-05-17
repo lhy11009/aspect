@@ -304,7 +304,12 @@ namespace aspect
             AssertThrow(!abort_newton_iteration,
                         ExcMessage("No convergence has been reached in the loop that determines "
                                    "the Peierls creep viscosity. Aborting! "
-                                   "Residual is " + Utilities::to_string(strain_rate_residual) +
+                                   "Strain rate (input) is " + Utilities::to_string(strain_rate) +
+                                   ". Temperature (input) is " + Utilities::to_string(temperature) +
+                                   ". Pressure (input) is " + Utilities::to_string(pressure) +
+                                   ". stress is " + Utilities::to_string(stress_ii) +
+                                   ". Residual is " + Utilities::to_string(strain_rate_residual) +
+                                   ". Derivative is " + Utilities::to_string(strain_rate_deriv) +
                                    " after " + Utilities::to_string(stress_iteration) + " iterations. "
                                    "You can increase the number of iterations by adapting the "
                                    "parameter 'Maximum Peierls strain rate iterations'."));
