@@ -48,6 +48,7 @@ namespace aspect
                                                    const std::vector<unsigned int> &n_phase_transitions_per_composition) const
       {
         PeierlsCreepParameters creep_parameters;
+        // todo_pcut
         if (phase_function_values == std::vector<double>())
           {
             // no phases
@@ -62,6 +63,7 @@ namespace aspect
             creep_parameters.stress_cutoff = stress_cutoffs[composition];
             creep_parameters.shear_modulus = shear_moduluses[composition];
             creep_parameters.shear_modulus_derivative = shear_modulus_derivatives[composition];
+            creep_parameters.pressure_cutoff = pressure_cutoffs[composition];
           }
         else
           {
@@ -89,6 +91,8 @@ namespace aspect
                                              shear_moduluses, composition);
             creep_parameters.shear_modulus_derivative = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                                         shear_modulus_derivatives, composition);
+            creep_parameters.pressure_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
+                                                        pressure_cutoffs, composition);
           }
 
         return creep_parameters;
@@ -261,6 +265,10 @@ namespace aspect
          * compute_exact_strain_rate_and_derivative.
          */
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
+        
+        // todo_pcut
+        if (pressure > p.pressure_cutoff)
+            return std::numeric_limits<double>::max();
 
         // The generalized Peierls creep flow law cannot be expressed as viscosity in
         // terms of strain rate, because there are two stress-dependent terms
@@ -608,7 +616,11 @@ namespace aspect
                            "If only one value is given, then all use the same value. Units: none");
         prm.declare_entry ("Apply strict stress cutoff for Peierls creep", "false", Patterns::Bool(),
                            "Whether to apply the strict stress cutoff");
-
+        // todo_pcut
+        prm.declare_entry ("Cutoff pressures for Peierls creep", boost::lexical_cast<std::string>(std::numeric_limits<double>::max()),
+                           Patterns::Anything(),
+                           "List of the Pressure thresholds above which the peierls rheology is deactivated by set"
+                           "to a very large value. Units: \\si{\\pascal}");
       }
 
 
@@ -713,6 +725,13 @@ namespace aspect
                                                                          expected_n_phases_per_composition);
         
         apply_strict_stress_cutoff = prm.get_bool("Apply strict stress cutoff for Peierls creep");
+        // todo_pcut
+        pressure_cutoffs = Utilities::parse_map_to_double_array(prm.get("Cutoff pressures for Peierls creep"),
+                                                                list_of_composition_names,
+                                                                has_background_field,
+                                                                "Cutoff pressures for Peierls creep",
+                                                                true,
+                                                                expected_n_phases_per_composition);
       }
     }
   }

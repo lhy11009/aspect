@@ -53,6 +53,7 @@ namespace aspect
         double stress_cutoff;
         double shear_modulus;
         double shear_modulus_derivative;
+        double pressure_cutoff;
       };
 
       /**
@@ -281,7 +282,8 @@ namespace aspect
           double strain_rate_residual_threshold;
           unsigned int stress_max_iteration_number;
           bool apply_strict_stress_cutoff;
-
+          // todo_pcut
+          std::vector<double> pressure_cutoffs;
       };
     }
   }
