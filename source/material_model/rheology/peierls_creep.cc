@@ -267,8 +267,10 @@ namespace aspect
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
         
         // todo_pcut
-        if (pressure > p.pressure_cutoff)
-            return std::numeric_limits<double>::max();
+        if (pressure > p.pressure_cutoff){
+            // return std::numeric_limits<double>::max();
+            return 1e31;
+        }
 
         // The generalized Peierls creep flow law cannot be expressed as viscosity in
         // terms of strain rate, because there are two stress-dependent terms
