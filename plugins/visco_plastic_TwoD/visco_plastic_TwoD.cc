@@ -1452,7 +1452,10 @@ namespace aspect
           prm.leave_subsection();
 
           // todo_density
-          // A function for reset density for some part as the last step of computing viscosity
+          // Reset density for some part as the last step of computing density
+          reset_density = prm.get_bool("Reset density");
+          
+	  // A function for reset density for some part as the last step of computing viscosity
           prm.enter_subsection("Reset density function");
           {
             reset_density_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
