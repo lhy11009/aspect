@@ -507,6 +507,14 @@ namespace aspect
         void reset_calculated_viscosities(const unsigned int point_index,
                                           std::vector<double> &viscosities,
                                           const MaterialModel::MaterialModelInputs<dim> &in) const;
+        
+        /**
+         * A function that resets the values of density in specified region with specified value.
+         * If reset_density is false, this is skipped.
+         */
+        void reset_calculated_densities(const unsigned int point_index,
+                                          std::vector<double> &densities,
+                                          const MaterialModel::MaterialModelInputs<dim> &in) const;
 
         // todo_c_visc 
         /**
@@ -597,10 +605,6 @@ namespace aspect
          */
         bool reset_viscosity;
 
-
-
-
-
         /**
          * A function object representing the temperature used to reset viscosity
          */
@@ -611,6 +615,23 @@ namespace aspect
          * choices are depth, cartesian and spherical.
          */
         Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
+
+
+        /**
+         * todo_density
+         */
+        bool reset_density;
+        
+        /**
+         * A function object representing the temperature used to reset density
+         */
+        Functions::ParsedFunction<dim> reset_density_function;
+
+        /**
+         * The coordinate representation to evaluate the function to reset density. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem reset_density_function_coordinate_system;
 
         // todo_c_visc, reset composition_viscosity 
         /**
