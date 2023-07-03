@@ -18,7 +18,7 @@
   <http://www.gnu.org/licenses/>.
 */
 
-
+//foo
 #ifndef _aspect_global_h
 #define _aspect_global_h
 
