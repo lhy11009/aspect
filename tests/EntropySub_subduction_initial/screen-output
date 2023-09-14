@@ -1,0 +1,54 @@
+
+Loading shared library <./libEntropySub_subduction_initial.debug.so>
+
+Number of active cells: 384 (on 4 levels)
+Number of degrees of freedom: 8,686 (3,298+441+1,649+1,649+1,649)
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_initial/solution/solution-00000
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2171 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.077e+17 // 0/0/0
+
+Number of active cells: 534 (on 5 levels)
+Number of degrees of freedom: 12,636 (4,798+641+2,399+2,399+2,399)
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_initial/solution/solution-00001
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2183 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.086e+17 // 0/0/0
+
+Number of active cells: 861 (on 6 levels)
+Number of degrees of freedom: 21,166 (8,038+1,071+4,019+4,019+4,019)
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_initial/solution/solution-00002
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2185 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 0/0/0
+
+Number of active cells: 1,638 (on 7 levels)
+Number of degrees of freedom: 40,744 (15,478+2,049+7,739+7,739+7,739)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Solving entropy system ... 0 iterations.
+   Copying properties into prescribed compositional field density_field... done.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 200+194 iterations.
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_initial/solution/solution-00003
+     RMS, max velocity:                  0.041 m/year, 0.443 m/year
+     Temperature min/avg/max:            273 K, 2185 K, 3500 K
+     Mass fluxes through boundary parts: 0.0001257 kg/yr, 0.02264 kg/yr, 0 kg/yr, 4.877e-07 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 3228/5592/1.939e+17
+
+Termination requested by criterion: end time
+
+
+
