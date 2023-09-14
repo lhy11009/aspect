@@ -1,5 +1,5 @@
 # Entropy field initiated with a constant temperature and a table lookup of
-# (P, T) -> S. 
+# (P, T) -> S.
 
 set Dimension                              = 2
 set Use years in output instead of seconds = true

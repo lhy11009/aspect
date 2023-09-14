@@ -1,0 +1,36 @@
+
+Loading shared library <./libEntropySub_initial.debug.so>
+
+Number of active cells: 384 (on 4 levels)
+Number of degrees of freedom: 5,388 (3,298+441+1,649)
+
+   Postprocessing:
+     Writing graphical output: output-EntropySub_initial/solution/solution-00000
+
+Number of active cells: 534 (on 5 levels)
+Number of degrees of freedom: 7,838 (4,798+641+2,399)
+
+   Postprocessing:
+     Writing graphical output: output-EntropySub_initial/solution/solution-00001
+
+Number of active cells: 858 (on 6 levels)
+Number of degrees of freedom: 13,089 (8,014+1,068+4,007)
+
+   Postprocessing:
+     Writing graphical output: output-EntropySub_initial/solution/solution-00002
+
+Number of active cells: 1,632 (on 7 levels)
+Number of degrees of freedom: 25,188 (15,430+2,043+7,715)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 200+18 iterations.
+
+   Postprocessing:
+     Writing graphical output: output-EntropySub_initial/solution/solution-00003
+
+Termination requested by criterion: end time
+
+
+
