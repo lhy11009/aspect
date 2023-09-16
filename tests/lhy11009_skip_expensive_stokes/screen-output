@@ -1,0 +1,39 @@
+
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
+Number of active cells: 3,200 (on 4 levels)
+Number of degrees of freedom: 107,649 (26,082+3,321+13,041+13,041+13,041+13,041+13,041+13,041)
+
+Number of mesh deformation degrees of freedom: 6642
+   Solving mesh displacement system... 0 iterations.
+Number of active cells: 6,080 (on 5 levels)
+Number of degrees of freedom: 204,549 (49,570+6,269+24,785+24,785+24,785+24,785+24,785+24,785)
+
+Number of mesh deformation degrees of freedom: 12538
+   Solving mesh displacement system... 0 iterations.
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving mesh displacement system... 0 iterations.
+   Solving temperature system... 0 iterations.
+   Skipping noninitial_plastic_strain composition solve because RHS is zero.
+   Solving plastic_strain system ... 0 iterations.
+   Solving crust_upper system ... 0 iterations.
+   Solving crust_lower system ... 0 iterations.
+   Solving mantle_lithosphere system ... 0 iterations.
+   Initial Newton Stokes residual = 1.71808e+15, v = 1.71661e+15, p = 7.0922e+13
+
+   Solving Stokes system... 1+0 iterations.
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 1: 1, norm of the rhs: 1.71808e+15
+
+   Solving Stokes system... 10+    skip expensive stokes by user choice (loc: defect correct)
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 2: 0.779483, norm of the rhs: 1.33921e+15, newton_derivative_scaling_factor: 0
+
+   The linear solver tolerance is set to 0.01. 
+   Solving Stokes system... 10+    skip expensive stokes by user choice (loc: defect correct)
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 3: 1.16965, norm of the rhs: 2.00954e+15, newton_derivative_scaling_factor: 0
+
+
+   Postprocessing:
+
+Termination requested by criterion: end time
+
+
+
