@@ -500,12 +500,12 @@ namespace aspect
         prm.declare_entry ("Skip expensive stokes solver", "false",
                            Patterns::Bool(),
                            "Skip the expensive stokes solver, even if the cheap ones fail");
-        
+
         prm.declare_entry ("Skip nonlinear interation with expensive stokes solver", "false",
                            Patterns::Bool(),
                            "Skip the whole nonlinear iteration with the expensive stokes solve."
                            "This only works if the Skip expensive stokes solver is set to true.");
-        
+
         prm.declare_entry ("Skip nonlinear interation with expensive stokes solver iteration", "1",
                            Patterns::Integer(1),
                            "Skip the whole nonlinear iteration with the expensive stokes solve after"

@@ -257,7 +257,7 @@ subsection Prescribed temperatures
         set Function constants = Depth=1.45e5, Width=2.75e5, Ro=6.371e6, PHIM=2.9933e+00,\
                              AGEOP=6.3072e+14, TS=2.730e+02, TM=1.5730e+03, K=1.000e-06, VSUB=1.5855e-09, PHILIM=1e-6
         set Function expression = ((r*(PHIM-phi)<Width) ? TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*AGEOP)))):\
-	(phi > PHILIM)? (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt((K*Ro*phi)/VSUB))))): TM)
+  (phi > PHILIM)? (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt((K*Ro*phi)/VSUB))))): TM)
     end
 end
 

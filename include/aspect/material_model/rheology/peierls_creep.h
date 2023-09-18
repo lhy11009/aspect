@@ -128,17 +128,17 @@ namespace aspect
                                    const unsigned int composition,
                                    const std::vector<double> &phase_function_values = std::vector<double>(),
                                    const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
-          
+
           /**
           * lhy11009: my implementation of compute viscosity
-          */ 
+          */
           double
           compute_exact_viscosity_TwoD (const double strain_rate,
-                                   const double pressure,
-                                   const double temperature,
-                                   const unsigned int composition,
-                                   const std::vector<double> &phase_function_values = std::vector<double>(),
-                                   const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
+                                        const double pressure,
+                                        const double temperature,
+                                        const unsigned int composition,
+                                        const std::vector<double> &phase_function_values = std::vector<double>(),
+                                        const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
 
 
           /**
@@ -159,15 +159,15 @@ namespace aspect
                              const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
 
           /*
-          ** lhy11009: My own implementation 
+          ** lhy11009: My own implementation
           */
           double
           compute_viscosity_TwoD (const double strain_rate,
-                             const double pressure,
-                             const double temperature,
-                             const unsigned int composition,
-                             const std::vector<double> &phase_function_values = std::vector<double>(),
-                             const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
+                                  const double pressure,
+                                  const double temperature,
+                                  const unsigned int composition,
+                                  const std::vector<double> &phase_function_values = std::vector<double>(),
+                                  const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
 
           /**
            * Compute the strain rate and first stress derivative

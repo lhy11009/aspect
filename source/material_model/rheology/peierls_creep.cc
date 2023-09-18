@@ -92,7 +92,7 @@ namespace aspect
             creep_parameters.shear_modulus_derivative = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                                         shear_modulus_derivatives, composition);
             creep_parameters.pressure_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
-                                                        pressure_cutoffs, composition);
+                                               pressure_cutoffs, composition);
           }
 
         return creep_parameters;
@@ -249,11 +249,11 @@ namespace aspect
       template <int dim>
       double
       PeierlsCreep<dim>::compute_exact_viscosity_TwoD (const double strain_rate,
-                                                  const double pressure,
-                                                  const double temperature,
-                                                  const unsigned int composition,
-                                                  const std::vector<double> &phase_function_values,
-                                                  const std::vector<unsigned int> &n_phase_transitions_per_composition) const
+                                                       const double pressure,
+                                                       const double temperature,
+                                                       const unsigned int composition,
+                                                       const std::vector<double> &phase_function_values,
+                                                       const std::vector<unsigned int> &n_phase_transitions_per_composition) const
       {
         /**
          * A generalised Peierls creep formulation. The Peierls creep expression
@@ -265,12 +265,13 @@ namespace aspect
          * compute_exact_strain_rate_and_derivative.
          */
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
-        
+
         // todo_pcut
-        if (pressure > p.pressure_cutoff){
+        if (pressure > p.pressure_cutoff)
+          {
             // return std::numeric_limits<double>::max();
             return 1e31;
-        }
+          }
 
         // The generalized Peierls creep flow law cannot be expressed as viscosity in
         // terms of strain rate, because there are two stress-dependent terms
@@ -325,12 +326,12 @@ namespace aspect
                                    "parameter 'Maximum Peierls strain rate iterations'."));
           }
         if (apply_strict_stress_cutoff)
-        {
-          // apply a stricter, definite stress cutoff
-          if (stress_ii < p.stress_cutoff)
-            stress_ii = p.stress_cutoff;
-        }
-        
+          {
+            // apply a stricter, definite stress cutoff
+            if (stress_ii < p.stress_cutoff)
+              stress_ii = p.stress_cutoff;
+          }
+
         viscosity = 0.5*stress_ii/strain_rate;
 
         return viscosity;
@@ -369,16 +370,16 @@ namespace aspect
 
         return viscosity;
       }
-      
-      
+
+
       template <int dim>
       double
       PeierlsCreep<dim>::compute_viscosity_TwoD (const double strain_rate,
-                                            const double pressure,
-                                            const double temperature,
-                                            const unsigned int composition,
-                                            const std::vector<double> &phase_function_values,
-                                            const std::vector<unsigned int> &n_phase_transitions_per_composition) const
+                                                 const double pressure,
+                                                 const double temperature,
+                                                 const unsigned int composition,
+                                                 const std::vector<double> &phase_function_values,
+                                                 const std::vector<unsigned int> &n_phase_transitions_per_composition) const
       {
         double viscosity = 0.0;
 
@@ -725,7 +726,7 @@ namespace aspect
                                                                          "Peierls shear modulus derivative",
                                                                          true,
                                                                          expected_n_phases_per_composition);
-        
+
         apply_strict_stress_cutoff = prm.get_bool("Apply strict stress cutoff for Peierls creep");
         // todo_pcut
         pressure_cutoffs = Utilities::parse_map_to_double_array(prm.get("Cutoff pressures for Peierls creep"),

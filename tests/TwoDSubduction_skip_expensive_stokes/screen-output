@@ -1,9 +1,5 @@
------------------------------------------------------------------------------
------------------------------------------------------------------------------
 
 Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
------------------------------------------------------------------------------
------------------------------------------------------------------------------
 Number of active cells: 3,200 (on 4 levels)
 Number of degrees of freedom: 107,649 (26,082+3,321+13,041+13,041+13,041+13,041+13,041+13,041)
 
@@ -22,17 +18,17 @@ Number of mesh deformation degrees of freedom: 12538
    Solving crust_upper system ... 0 iterations.
    Solving crust_lower system ... 0 iterations.
    Solving mantle_lithosphere system ... 0 iterations.
-   Initial Newton Stokes residual = 1.71848e+15, v = 1.71661e+15, p = 7.9997e+13
+   Initial Newton Stokes residual = 1.71808e+15, v = 1.71661e+15, p = 7.0922e+13
 
    Solving Stokes system... 1+0 iterations.
-      Relative nonlinear residual (total Newton system) after nonlinear iteration 1: 1, norm of the rhs: 1.71848e+15
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 1: 1, norm of the rhs: 1.71808e+15
 
-   Solving Stokes system... 10+    skip expensive stokes by user choice (loc: defect correct)
-      Relative nonlinear residual (total Newton system) after nonlinear iteration 2: 0.778895, norm of the rhs: 1.33851e+15, newton_derivative_scaling_factor: 0
+   Solving Stokes system... 10+   skip expensive stokes by user choice (loc: solve_stokes)
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 2: 0.216381, norm of the rhs: 3.7176e+14, newton_derivative_scaling_factor: 0
 
    The linear solver tolerance is set to 0.01. 
-   Solving Stokes system... 10+    skip expensive stokes by user choice (loc: defect correct)
-      Relative nonlinear residual (total Newton system) after nonlinear iteration 3: 1.16878, norm of the rhs: 2.00852e+15, newton_derivative_scaling_factor: 0
+   Solving Stokes system... 10+   skip expensive stokes by user choice (loc: solve_stokes)
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 3: 0.122062, norm of the rhs: 2.09712e+14, newton_derivative_scaling_factor: 0
 
 
    Postprocessing:
@@ -40,9 +36,4 @@ Number of mesh deformation degrees of freedom: 12538
 Termination requested by criterion: end time
 
 
-+-----------------------------------------------+------------+------------+
-+-----------------------------------+-----------+------------+------------+
-+-----------------------------------+-----------+------------+------------+
 
------------------------------------------------------------------------------
------------------------------------------------------------------------------

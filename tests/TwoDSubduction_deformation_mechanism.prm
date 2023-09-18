@@ -40,7 +40,7 @@ subsection Boundary traction model
     subsection Initial lithostatic pressure
         set Representative point = 100000.0, 100000.0
         set Number of integration points = 2048
-    end 
+    end
 end
 
 # Internal velocity prescribed from a plug in
@@ -140,4 +140,3 @@ subsection Postprocess
     set Time between graphical output = 0.1e6
   end
 end
-

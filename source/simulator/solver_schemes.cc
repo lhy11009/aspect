@@ -573,76 +573,70 @@ namespace aspect
           }
         catch (...)
           {
-            if (parameters.skip_expensive_stokes_solver && nonlinear_iteration > 0)
-              {
-                // tell stokes to succeed by skipping the expensive stokes
-                // doesn't work for the 0th non-linear iteration because the residual is not
-                // set yet and you will get nan value
-                // If it's the 0th non-linear iteration, resume the default way
-                pcout << "    skip expensive stokes by user choice (loc: defect correct)" << std::endl;
-                if (parameters.skip_nonlinear_interation_with_expensive_stokes_solver
+            // tell stokes to succeed by skipping the expensive stokes
+            // doesn't work for the 0th non-linear iteration because the residual is not
+            // set yet and you will get nan value
+            // If it's the 0th non-linear iteration, resume the default way
+            pcout << "    skip expensive stokes by user choice (loc: defect correct)" << std::endl;
+            if (parameters.skip_nonlinear_interation_with_expensive_stokes_solver
                 && nonlinear_iteration >= parameters.skip_nonlinear_interation_with_expensive_stokes_solver_iteration)
-                {
-                  pcout << "    also skip the whole nonlinear iteration by user choice (loc: defect correct)" << std::endl;
-                  dcr.nonlinear_iteration_complete = true;
-                }
-              }
-            else
               {
-                // start the solve over again and try with a stabilized version
-                pcout << "failed, trying again with stabilization" << std::endl;
-                newton_handler->parameters.preconditioner_stabilization = Newton::Parameters::Stabilization::SPD;
-                newton_handler->parameters.velocity_block_stabilization = Newton::Parameters::Stabilization::SPD;
-
-                // If the Stokes matrix depends on the solution, or we have active
-                // velocity boundary conditions, we need to re-assemble the system matrix
-                // (and preconditioner) every time. If we have active boundary conditions,
-                // they could a) depend on the solution, or b) be inhomogeneous. In both
-                // cases, just assembling the RHS will be incorrect.  If no active
-                // boundaries exist, we only have no-slip or free slip conditions, so we
-                // don't need to force assembly of the matrix.
-                if (stokes_matrix_depends_on_solution()
-                    ||
-                    (nonlinear_iteration == 0 && boundary_velocity_manager.get_active_boundary_velocity_conditions().size() > 0))
-                  rebuild_stokes_matrix = rebuild_stokes_preconditioner = assemble_newton_stokes_matrix = true;
-                else if (parameters.enable_prescribed_dilation)
-                  // The dilation requires the Stokes matrix (which is on the rhs
-                  // in the Newton solver) to be updated.
-                  rebuild_stokes_matrix = true;
-
-                assemble_stokes_system();
-
-                /**
-                 * Eisenstat Walker method for determining the tolerance
-                 */
-                if (nonlinear_iteration > 1)
-                  {
-                    dcr.residual_old = dcr.residual;
-                    dcr.velocity_residual = system_rhs.block(introspection.block_indices.velocities).l2_norm();
-                    dcr.pressure_residual = system_rhs.block(introspection.block_indices.pressure).l2_norm();
-                    dcr.residual = std::sqrt(dcr.velocity_residual * dcr.velocity_residual + dcr.pressure_residual * dcr.pressure_residual);
-
-                    if (!use_picard)
-                      {
-                        const bool EisenstatWalkerChoiceOne = true;
-                        parameters.linear_stokes_solver_tolerance = compute_Eisenstat_Walker_linear_tolerance(EisenstatWalkerChoiceOne,
-                                                                    newton_handler->parameters.maximum_linear_stokes_solver_tolerance,
-                                                                    parameters.linear_stokes_solver_tolerance,
-                                                                    dcr.stokes_residuals.second,
-                                                                    dcr.residual,
-                                                                    dcr.residual_old);
-
-                        pcout << "   The linear solver tolerance is set to " << parameters.linear_stokes_solver_tolerance << std::endl;
-                      }
-                  }
-
-                if (stokes_matrix_free)
-                  stokes_matrix_free->build_preconditioner();
-                else
-                  build_stokes_preconditioner();
-
-                dcr.stokes_residuals = solve_stokes();
+                pcout << "    also skip the whole nonlinear iteration by user choice (loc: defect correct)" << std::endl;
+                dcr.nonlinear_iteration_complete = true;
               }
+            // start the solve over again and try with a stabilized version
+            pcout << "failed, trying again with stabilization" << std::endl;
+            newton_handler->parameters.preconditioner_stabilization = Newton::Parameters::Stabilization::SPD;
+            newton_handler->parameters.velocity_block_stabilization = Newton::Parameters::Stabilization::SPD;
+
+            // If the Stokes matrix depends on the solution, or we have active
+            // velocity boundary conditions, we need to re-assemble the system matrix
+            // (and preconditioner) every time. If we have active boundary conditions,
+            // they could a) depend on the solution, or b) be inhomogeneous. In both
+            // cases, just assembling the RHS will be incorrect.  If no active
+            // boundaries exist, we only have no-slip or free slip conditions, so we
+            // don't need to force assembly of the matrix.
+            if (stokes_matrix_depends_on_solution()
+                ||
+                (nonlinear_iteration == 0 && boundary_velocity_manager.get_active_boundary_velocity_conditions().size() > 0))
+              rebuild_stokes_matrix = rebuild_stokes_preconditioner = assemble_newton_stokes_matrix = true;
+            else if (parameters.enable_prescribed_dilation)
+              // The dilation requires the Stokes matrix (which is on the rhs
+              // in the Newton solver) to be updated.
+              rebuild_stokes_matrix = true;
+
+            assemble_stokes_system();
+
+            /**
+             * Eisenstat Walker method for determining the tolerance
+             */
+            if (nonlinear_iteration > 1)
+              {
+                dcr.residual_old = dcr.residual;
+                dcr.velocity_residual = system_rhs.block(introspection.block_indices.velocities).l2_norm();
+                dcr.pressure_residual = system_rhs.block(introspection.block_indices.pressure).l2_norm();
+                dcr.residual = std::sqrt(dcr.velocity_residual * dcr.velocity_residual + dcr.pressure_residual * dcr.pressure_residual);
+
+                if (!use_picard)
+                  {
+                    const bool EisenstatWalkerChoiceOne = true;
+                    parameters.linear_stokes_solver_tolerance = compute_Eisenstat_Walker_linear_tolerance(EisenstatWalkerChoiceOne,
+                                                                newton_handler->parameters.maximum_linear_stokes_solver_tolerance,
+                                                                parameters.linear_stokes_solver_tolerance,
+                                                                dcr.stokes_residuals.second,
+                                                                dcr.residual,
+                                                                dcr.residual_old);
+
+                    pcout << "   The linear solver tolerance is set to " << parameters.linear_stokes_solver_tolerance << std::endl;
+                  }
+              }
+
+            if (stokes_matrix_free)
+              stokes_matrix_free->build_preconditioner();
+            else
+              build_stokes_preconditioner();
+
+            dcr.stokes_residuals = solve_stokes();
           }
       }
 
@@ -963,13 +957,13 @@ namespace aspect
           }
 
         ++nonlinear_iteration;
-        
+
         if (dcr.nonlinear_iteration_complete)
-        {
-          // check the option to end nonlinear iterations by user choice
-          pcout <<  "    nonlinear iteration complete by user choice" << std::endl;
-          break;
-        }
+          {
+            // check the option to end nonlinear iterations by user choice
+            pcout <<  "    nonlinear iteration complete by user choice" << std::endl;
+            break;
+          }
       }
     while (nonlinear_solver_control.check(nonlinear_iteration, relative_residual) == SolverControl::iterate);
 

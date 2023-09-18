@@ -303,4 +303,3 @@ subsection Gravity model
     set Magnitude = 9.81
   end
 end
-
