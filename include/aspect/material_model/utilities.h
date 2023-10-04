@@ -605,6 +605,18 @@ namespace aspect
                                       const std::vector<double> &transition_temperatures,
                                       const std::vector<double> &transition_widths,
                                       const std::vector<double> &transition_slopes) const;
+          
+          /**
+           * function to compute value of phase function on a pyrolite composition
+           * version 1.1
+           */
+          double
+          compute_value_pyrolite_1_1 (const PhaseFunctionInputs<dim> &in,
+                                      const std::vector<double> &manually_method_pyrolite,
+                                      const std::vector<double> &transition_depths,
+                                      const std::vector<double> &transition_temperatures,
+                                      const std::vector<double> &transition_widths,
+                                      const std::vector<double> &transition_slopes) const;
 
           /**
            * function to compute value of phase function on a harzburgite composition
