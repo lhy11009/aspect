@@ -73,6 +73,9 @@ namespace aspect
       // We only need the material model to compute the density
       in.requested_properties = MaterialModel::MaterialProperties::density | MaterialModel::MaterialProperties::additional_outputs;
       in.velocity[0] = Tensor <1,dim> ();
+      // first set the composition values to 0.0
+      for (unsigned int c=0; c<this->n_compositional_fields(); ++c)
+        in.composition[0][c] = 0.0;
       // The entropy along an adiabat is constant (equals the surface entropy)
       in.composition[0][entropy_indices[0]] = surface_entropy;
 
@@ -87,6 +90,10 @@ namespace aspect
       const int gravity_direction =  (g * (point_bot - point_surf) >= 0) ?
                                      1 :
                                      -1;
+              
+      // add initial values for the temperature field, so that material model produces no error
+      for (unsigned int i=0; i<n_points; ++i)
+        temperatures[i] = this->get_adiabatic_surface_temperature();
 
       // now integrate downward using the explicit Euler method for simplicity
       //

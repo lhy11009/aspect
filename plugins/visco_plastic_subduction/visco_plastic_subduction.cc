@@ -180,6 +180,9 @@ namespace aspect
       // Store value of phase function for each phase and composition
       // While the number of phases is fixed, the value of the phase function is updated for every point
       std::vector<double> phase_function_values(phase_function.n_phase_transitions(), 0.0);
+
+      // create a new MaterialModelInputs object
+      MaterialModel::MaterialModelInputs<dim> in_new(in);
             
 
       // Loop through all requested points
@@ -257,7 +260,9 @@ namespace aspect
               {
                 prescribed_temperature_out->prescribed_temperature_outputs[i] = temperature_lookup;
               }
-          
+            
+            // update the value of temperature
+            in_new.temperature[i] = temperature_lookup;
           }
           else
           {
@@ -339,14 +344,14 @@ namespace aspect
           // to compute the elastic force term.
           bool plastic_yielding = false;
           IsostrainViscosities isostrain_viscosities;
-          if (in.requests_property(MaterialProperties::viscosity) || in.requests_property(MaterialProperties::additional_outputs))
+          if (in_new.requests_property(MaterialProperties::viscosity) || in_new.requests_property(MaterialProperties::additional_outputs))
             {
               // Currently, the viscosities for each of the compositional fields are calculated assuming
               // isostrain amongst all compositions, allowing calculation of the viscosity ratio.
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
               isostrain_viscosities =
-                rheology->calculate_isostrain_viscosities(in, i, volume_fractions_for_rheology, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
+                rheology->calculate_isostrain_viscosities(in_new, i, volume_fractions_for_rheology, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
@@ -367,7 +372,7 @@ namespace aspect
 
                 rheology->compute_viscosity_derivatives(i, volume_fractions_for_rheology,
                                                         isostrain_viscosities.composition_viscosities,
-                                                        in, out, phase_function_values,
+                                                        in_new, out, phase_function_values,
                                                         phase_function.n_phase_transitions_for_each_composition());
             }
           else
@@ -390,18 +395,20 @@ namespace aspect
             }
 
           // Now compute changes in the compositional fields (i.e. the accumulated strain).
-          for (unsigned int c=0; c<in.composition[i].size(); ++c)
+          for (unsigned int c=0; c<in_new.composition[i].size(); ++c)
             out.reaction_terms[i][c] = 0.0;
           
           // Calculate changes in strain invariants and update the reaction terms
-          rheology->strain_rheology.fill_reaction_outputs(in, i, rheology->min_strain_rate, plastic_yielding, out);
+          rheology->strain_rheology.fill_reaction_outputs(in_new, i, rheology->min_strain_rate, plastic_yielding, out);
 
           // Fill plastic outputs if they exist.
           // The values in isostrain_viscosities only make sense when the calculate_isostrain_viscosities function
           // has been called.
           // TODO do we even need a separate function? We could compute the PlasticAdditionalOutputs here like
           // the ElasticAdditionalOutputs.
-          rheology->fill_plastic_outputs(i, volume_fractions_for_rheology, plastic_yielding, in, out, isostrain_viscosities);
+          // add one if condition to prevent it from failing
+          if (in_new.requests_property(MaterialProperties::viscosity))
+            rheology->fill_plastic_outputs(i, volume_fractions_for_rheology, plastic_yielding, in_new, out, isostrain_viscosities);
 
           if (this->get_parameters().enable_elasticity)
             {
@@ -419,12 +426,12 @@ namespace aspect
         }
 
       // If we use the full strain tensor, compute the change in the individual tensor components.
-      rheology->strain_rheology.compute_finite_strain_reaction_terms(in, out);
+      rheology->strain_rheology.compute_finite_strain_reaction_terms(in_new, out);
 
       if (this->get_parameters().enable_elasticity)
         {
-          rheology->elastic_rheology.fill_elastic_force_outputs(in, average_elastic_shear_moduli, out);
-          rheology->elastic_rheology.fill_reaction_outputs(in, average_elastic_shear_moduli, out);
+          rheology->elastic_rheology.fill_elastic_force_outputs(in_new, average_elastic_shear_moduli, out);
+          rheology->elastic_rheology.fill_reaction_outputs(in_new, average_elastic_shear_moduli, out);
         }
     }
 
