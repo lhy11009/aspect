@@ -103,6 +103,11 @@ namespace aspect
          * Pointer to the StructuredDataLookup object that holds the material data.
          */
         std::unique_ptr<Utilities::StructuredDataLookup<2>> material_lookup;
+
+        /*
+          * whether pressure is the first indice in the table
+        */
+        bool pressure_first;
     };
   }
 }
