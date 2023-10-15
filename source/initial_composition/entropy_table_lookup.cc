@@ -66,10 +66,17 @@ namespace aspect
           const double pressure = this->get_adiabatic_conditions().pressure(position);
 
           // Convert pressure from Pa to bar, bar is used in the table.
-          Point<2> temperature_pressure(temperature, pressure / 1.e5);
-
-          const double entropy = material_lookup->get_data(temperature_pressure, 0);
-
+          double entropy;
+          if (pressure_first)
+          {
+            Point<2> temperature_pressure(pressure / 1.e5, temperature);
+            entropy = material_lookup->get_data(temperature_pressure, 0);
+          }
+          else
+          {
+            Point<2> temperature_pressure(temperature, pressure / 1.e5);
+            entropy = material_lookup->get_data(temperature_pressure, 0);
+          }
           return entropy;
         }
       return 0.0;
@@ -93,6 +100,9 @@ namespace aspect
           prm.declare_entry ("Material file name", "material_table_temperature_pressure.txt",
                              Patterns::List (Patterns::Anything()),
                              "The file name of the material data.");
+          prm.declare_entry ("Pressure first","false",
+                             Patterns::Bool (),
+                             "Whether the pressure is the first coordinate in the table.");
         }
         prm.leave_subsection();
       }
@@ -110,6 +120,7 @@ namespace aspect
         {
           data_directory              = Utilities::expand_ASPECT_SOURCE_DIR(prm.get("Data directory"));
           material_file_name          = prm.get("Material file name");
+          pressure_first              = prm.get_bool ("Pressure first");
         }
         prm.leave_subsection();
       }

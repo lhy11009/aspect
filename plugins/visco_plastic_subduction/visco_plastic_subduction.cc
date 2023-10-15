@@ -201,18 +201,45 @@ namespace aspect
             // Also convert pressure from Pa to bar, bar is used in the table.
             const double entropy = in.composition[i][entropy_index];
             const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
+            
+            Tensor<1, 2> density_gradient;
+            double temperature_lookup;
+
+            if (pressure_first)
+            {
+              // first dimension in table is pressure
+              out.densities[i] = entropy_reader->density(pressure, entropy);
+              out.thermal_expansion_coefficients[i] = entropy_reader->thermal_expansivity(pressure, entropy);
+              out.specific_heat[i] = entropy_reader->specific_heat(pressure, entropy);
+              density_gradient = entropy_reader->density_gradient(pressure, entropy);
+              temperature_lookup =  entropy_reader->temperature(pressure, entropy);
+              // fill seismic velocities outputs if they exist
+              if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
+              {
+                seismic_out->vp[i] = entropy_reader->seismic_vp(pressure, entropy);
+                seismic_out->vs[i] = entropy_reader->seismic_vs(pressure, entropy);
+              }
+            }
+            else
+            {
+              // first dimension in table is entropy
+              out.densities[i] = entropy_reader->density(entropy, pressure);
+              out.thermal_expansion_coefficients[i] = entropy_reader->thermal_expansivity(entropy, pressure);
+              out.specific_heat[i] = entropy_reader->specific_heat(entropy, pressure);
+              density_gradient = entropy_reader->density_gradient(entropy,pressure);
+              temperature_lookup =  entropy_reader->temperature(entropy,pressure);
+              // fill seismic velocities outputs if they exist
+              if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
+              {
+                seismic_out->vp[i] = entropy_reader->seismic_vp(entropy, pressure);
+                seismic_out->vs[i] = entropy_reader->seismic_vs(entropy, pressure);
+              }
+            }
   
-            out.densities[i] = entropy_reader->density(entropy,pressure);
-            out.thermal_expansion_coefficients[i] = entropy_reader->thermal_expansivity(entropy,pressure);
-            out.specific_heat[i] = entropy_reader->specific_heat(entropy,pressure);
-  
-            const Tensor<1, 2> density_gradient = entropy_reader->density_gradient(entropy,pressure);
             const Tensor<1, 2> pressure_unit_vector({0.0, 1.0});
             out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
   
-  
             // Thermal conductivity can be pressure temperature dependent
-            const double temperature_lookup =  entropy_reader->temperature(entropy,pressure);
             out.thermal_conductivities[i] = 0.1; // test, set for constant value 
             // out.thermal_conductivities[i] = thermal_conductivity(temperature_lookup, in.pressure[i], in.position[i]);
   
@@ -231,12 +258,6 @@ namespace aspect
                 prescribed_temperature_out->prescribed_temperature_outputs[i] = temperature_lookup;
               }
           
-            // fill seismic velocities outputs if they exist
-            if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
-              {
-                seismic_out->vp[i] = entropy_reader->seismic_vp(entropy, pressure);
-                seismic_out->vs[i] = entropy_reader->seismic_vs(entropy, pressure);
-              }
           }
           else
           {
@@ -475,6 +496,9 @@ namespace aspect
           prm.declare_entry ("Material file name", "material_table.txt",
                              Patterns::List (Patterns::Anything()),
                              "The file name of the material data.");
+          prm.declare_entry ("Pressure first","false",
+                             Patterns::Bool (),
+                             "Whether the pressure is the first coordinate in the table.");
         }
         prm.leave_subsection();
       }
@@ -552,6 +576,7 @@ namespace aspect
           use_entropy_method = prm.get_bool ("Use entropy method");
           data_directory              = Utilities::expand_ASPECT_SOURCE_DIR(prm.get ("Data directory"));
           material_file_name          = prm.get ("Material file name");
+          pressure_first = prm.get_bool ("Pressure first");
         }
         prm.leave_subsection();
       }

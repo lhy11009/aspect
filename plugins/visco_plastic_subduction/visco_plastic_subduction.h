@@ -298,6 +298,11 @@ namespace aspect
          */
         std::string data_directory;
         std::string material_file_name;
+
+        /*
+          * whether pressure is the first indice in the table
+        */
+        bool pressure_first;
     };
 
   }
