@@ -243,7 +243,8 @@ namespace aspect
             out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
   
             // Thermal conductivity can be pressure temperature dependent
-            out.thermal_conductivities[i] = 0.1; // test, set for constant value 
+            // todo_conduct
+            out.thermal_conductivities[i] = thermal_conductivities[0]; // test
             // out.thermal_conductivities[i] = thermal_conductivity(temperature_lookup, in.pressure[i], in.position[i]);
   
             out.entropy_derivative_pressure[i]    = 0.;
