@@ -275,7 +275,8 @@ namespace aspect
           // Choice of activation volume depends on whether there is an adiabatic temperature
           // gradient used when calculating the viscosity. This allows the same activation volume
           // to be used in incompressible and compressible models.
-          const double temperature_for_viscosity = in.temperature[i] + adiabatic_temperature_gradient_for_viscosity*in.pressure[i];
+          const double temperature_for_viscosity0 = in.temperature[i] + adiabatic_temperature_gradient_for_viscosity*in.pressure[i];
+          const double temperature_for_viscosity = std::max(temperature_for_viscosity0, min_temperature_for_viscosity);
           AssertThrow(temperature_for_viscosity != 0, ExcMessage(
                         "The temperature used in the calculation of the visco-plastic rheology is zero. "
                         "This is not allowed, because this value is used to divide through. It is probably "
@@ -1261,6 +1262,9 @@ namespace aspect
             Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
           }
           prm.leave_subsection();
+
+          prm.declare_entry ("Minimum temperature for viscosity", "0.0", Patterns::Double (0.),
+                             "Minimum temperature for viscosity computation", "Units: \\si{\\T}.");
         }
         prm.leave_subsection();
       }
@@ -1545,6 +1549,8 @@ namespace aspect
               throw;
             }
           prm.leave_subsection();
+
+          min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
         }
         prm.leave_subsection();
       }

@@ -692,6 +692,11 @@ namespace aspect
                                        std::vector<std::vector<double> > &reaction_terms,
                                        ReactionRateOutputs<dim> *reaction_rate_out,
                                        const MaterialModel::MaterialModelInputs<dim> &in) const;
+
+        /**
+         * minimum temperature for the viscosity computation
+        */
+        double min_temperature_for_viscosity;
     };
 
   }
