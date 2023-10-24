@@ -263,7 +263,7 @@ namespace aspect
               }
             
             // update the value of temperature
-            in_new.temperature[i] = temperature_lookup;
+            in_new.temperature[i] = std::max(temperature_lookup, min_temperature_for_viscosity);
           }
           else
           {
@@ -507,6 +507,8 @@ namespace aspect
           prm.declare_entry ("Pressure first","false",
                              Patterns::Bool (),
                              "Whether the pressure is the first coordinate in the table.");
+          prm.declare_entry ("Minimum temperature for viscosity", "0.0", Patterns::Double (0.),
+                             "Minimum temperature for viscosity computation", "Units: \\si{\\T}.");
         }
         prm.leave_subsection();
       }
@@ -585,6 +587,7 @@ namespace aspect
           data_directory              = Utilities::expand_ASPECT_SOURCE_DIR(prm.get ("Data directory"));
           material_file_name          = prm.get ("Material file name");
           pressure_first = prm.get_bool ("Pressure first");
+          min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
         }
         prm.leave_subsection();
       }
