@@ -303,6 +303,11 @@ namespace aspect
           * whether pressure is the first indice in the table
         */
         bool pressure_first;
+
+        /**
+         * minimum temperature for the viscosity computation
+        */
+        double min_temperature_for_viscosity;
     };
 
   }
