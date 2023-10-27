@@ -610,11 +610,18 @@ namespace aspect
                   composition_viscosities_derivatives[composition_index][strain_rate_indices] = viscosity_derivative;
                 }
             }
+          
+          // Determine whether to use the adiabatic pressure instead of the full pressure (default)
+          // when calculating creep viscosity.
+          double pressure_for_creep = in.pressure[i];
+          
+          if (use_adiabatic_pressure_in_creep)
+            pressure_for_creep = this->get_adiabatic_conditions().pressure(in.position[i]);
 
           /**
            * Now compute the derivative of the viscosity to the pressure
            */
-          const double pressure_difference = in.pressure[i] + (std::fabs(in.pressure[i]) * finite_difference_accuracy);
+          const double pressure_difference = pressure_for_creep + (std::fabs(pressure_for_creep) * finite_difference_accuracy);
 
           in_derivatives.pressure[i] = pressure_difference;
 
@@ -631,9 +638,9 @@ namespace aspect
               double viscosity_derivative = viscosity_difference[composition_index] - composition_viscosities[composition_index];
               if (viscosity_difference[composition_index] != 0)
                 {
-                  if (in.pressure[i] != 0)
+                  if (pressure_for_creep != 0)
                     {
-                      viscosity_derivative /= std::fabs(in.pressure[i]) * finite_difference_accuracy;
+                      viscosity_derivative /= std::fabs(pressure_for_creep) * finite_difference_accuracy;
                     }
                   else
                     {
