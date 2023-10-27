@@ -271,11 +271,18 @@ namespace aspect
       for (unsigned int j=0; j < volume_fractions.size(); ++j)
         {
           // Step 1: viscous behavior
+          
+          // Determine whether to use the adiabatic pressure instead of the full pressure (default)
+          // when calculating creep viscosity.
+          double pressure_for_creep = in.pressure[i];
+          
+          if (use_adiabatic_pressure_in_creep)
+            pressure_for_creep = this->get_adiabatic_conditions().pressure(in.position[i]);
 
           // Choice of activation volume depends on whether there is an adiabatic temperature
           // gradient used when calculating the viscosity. This allows the same activation volume
           // to be used in incompressible and compressible models.
-          const double temperature_for_viscosity0 = in.temperature[i] + adiabatic_temperature_gradient_for_viscosity*in.pressure[i];
+          const double temperature_for_viscosity0 = in.temperature[i] + adiabatic_temperature_gradient_for_viscosity*pressure_for_creep;
           const double temperature_for_viscosity = std::max(temperature_for_viscosity0, min_temperature_for_viscosity);
           AssertThrow(temperature_for_viscosity != 0, ExcMessage(
                         "The temperature used in the calculation of the visco-plastic rheology is zero. "
@@ -285,6 +292,7 @@ namespace aspect
                         "), adiabatic_temperature_gradient_for_viscosity ("
                         + Utilities::to_string(adiabatic_temperature_gradient_for_viscosity) + ") and pressure ("
                         + Utilities::to_string(in.pressure[i]) + ")."));
+              
 
           // Step 1a: compute viscosity from diffusion creep law
           // hardwire: decoupled transition of eclogite
@@ -295,7 +303,7 @@ namespace aspect
                                                                    phase_function.n_phase_transitions_for_each_composition());
           }
 
-          const double viscosity_diffusion = diffusion_creep.compute_viscosity(in.pressure[i], temperature_for_viscosity, j,
+          const double viscosity_diffusion = diffusion_creep.compute_viscosity(pressure_for_creep, temperature_for_viscosity, j,
                                                                                re_phase_function_values,
                                                                                phase_function.n_phase_transitions_for_each_composition());
           
@@ -311,7 +319,7 @@ namespace aspect
           }
 
           // Step 1b: compute viscosity from dislocation creep law
-          const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, in.pressure[i], temperature_for_viscosity, j,
+          const double viscosity_dislocation = dislocation_creep.compute_viscosity(edot_ii, pressure_for_creep, temperature_for_viscosity, j,
                                                                                    re_phase_function_values,
                                                                                    phase_function.n_phase_transitions_for_each_composition());
           
@@ -361,7 +369,7 @@ namespace aspect
           // Step 1d: compute viscosity from Peierls creep law and harmonically average with current viscosities
           if (use_peierls_creep)
             {
-              const double viscosity_peierls = peierls_creep->compute_viscosity_TwoD(edot_ii, in.pressure[i], temperature_for_viscosity, j,
+              const double viscosity_peierls = peierls_creep->compute_viscosity_TwoD(edot_ii, pressure_for_creep, temperature_for_viscosity, j,
                                                                                 re_phase_function_values,
                                                                                 phase_function.n_phase_transitions_for_each_composition());
               // record the dislocation viscosities for output
@@ -1077,6 +1085,16 @@ namespace aspect
                              "Select what type of yield mechanism to use between Drucker Prager "
                              "and stress limiter options.");
 
+          prm.declare_entry ("Use adiabatic pressure in creep viscosity", "false",
+                             Patterns::Bool (),
+                             "Whether to use the adiabatic pressure instead of the full "
+                             "pressure (default) when calculating creep (diffusion, dislocation, "
+                             "and peierls) viscosity. This may be helpful in models where the "
+                             "full pressure has an unusually large negative value arising from "
+                             "large negative dynamic pressure, resulting in solver convergence "
+                             "issue and in some cases a viscosity of zero.");
+              
+
           // Diffusion creep parameters
           Rheology::DiffusionCreep<dim>::declare_parameters(prm);
 
@@ -1551,6 +1569,7 @@ namespace aspect
           prm.leave_subsection();
 
           min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
+          use_adiabatic_pressure_in_creep = prm.get_bool("Use adiabatic pressure in creep viscosity");
         }
         prm.leave_subsection();
       }
