@@ -504,7 +504,13 @@ namespace aspect
                            "system is computed. This approximate inverse of the $S$ block is used "
                            "in the preconditioning used in the GMRES solver. The exact definition of "
                            "this block preconditioner for the Stokes equation can be found in "
-                           "\\cite{kronbichler:etal:2012}.");
+                           "\\cite{KHB12}.");
+        prm.declare_entry ("Skip expensive stokes solver", "false",
+                           Patterns::Bool(),
+                           "Skip the expensive stokes solver, even if the cheap ones fail");
+        prm.declare_entry ("Allow expensive stokes inconvergence", "false",
+                           Patterns::Bool(),
+                           "Allow the expensive stokes to be inconvergent, default is false");
       }
       prm.leave_subsection ();
 
@@ -1436,6 +1442,8 @@ namespace aspect
         use_full_A_block_preconditioner = prm.get_bool ("Use full A block as preconditioner");
         linear_solver_S_block_tolerance = prm.get_double ("Linear solver S block tolerance");
         stokes_gmres_restart_length     = prm.get_integer("GMRES solver restart length");
+        skip_expensive_stokes_solver = prm.get_bool("Skip expensive stokes solver");
+        allow_expensive_stokes_inconvergence = prm.get_bool("Allow expensive stokes inconvergence");
       }
       prm.leave_subsection ();
 
