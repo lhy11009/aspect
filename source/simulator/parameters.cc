@@ -508,6 +508,9 @@ namespace aspect
         prm.declare_entry ("Skip expensive stokes solver", "false",
                            Patterns::Bool(),
                            "Skip the expensive stokes solver, even if the cheap ones fail");
+        prm.declare_entry ("Allow expensive stokes inconvergence", "false",
+                           Patterns::Bool(),
+                           "Allow the expensive stokes to be inconvergent, default is false");
       }
       prm.leave_subsection ();
 
@@ -1438,6 +1441,7 @@ namespace aspect
         linear_solver_S_block_tolerance = prm.get_double ("Linear solver S block tolerance");
         stokes_gmres_restart_length     = prm.get_integer("GMRES solver restart length");
         skip_expensive_stokes_solver = prm.get_bool("Skip expensive stokes solver");
+        allow_expensive_stokes_inconvergence = prm.get_bool("Allow expensive stokes inconvergence");
       }
       prm.leave_subsection ();
 

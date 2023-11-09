@@ -1,0 +1,16 @@
+# This is a copy of simple_incompressible.prm that decreases Stokes solver
+# tolerance to provoke a crash and check the error message and solver history
+# output.
+# This is from the stokes_solver_fail.prm. This test would fail initially,
+# but here the test allows inconvergence in the stokes solver, so the run will be successful.
+
+
+include $ASPECT_SOURCE_DIR/tests/simple_incompressible.prm
+
+
+subsection Solver parameters
+  subsection Stokes solver parameters
+    set Linear solver tolerance = 1e-35
+    set Allow expensive stokes inconvergence = true
+  end
+end
