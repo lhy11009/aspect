@@ -918,25 +918,38 @@ namespace aspect
                 // processors
                 catch (const std::exception &exc)
                   {
-                    signals.post_stokes_solver(*this,
-                                               preconditioner_cheap.n_iterations_S() + preconditioner_expensive.n_iterations_S(),
-                                               preconditioner_cheap.n_iterations_A() + preconditioner_expensive.n_iterations_A(),
-                                               solver_control_cheap,
-                                               solver_control_expensive);
+                    if (parameters.allow_expensive_stokes_inconvergence)
+                      {
+                        // Success. Print expensive iterations to screen.
+                        pcout << solver_control_expensive.last_step()
+                              << " iterations." << std::endl;
 
-                    std::vector<SolverControl> solver_controls;
-                    if (parameters.n_cheap_stokes_solver_steps > 0)
-                      solver_controls.push_back(solver_control_cheap);
-                    if (parameters.n_expensive_stokes_solver_steps > 0)
-                      solver_controls.push_back(solver_control_expensive);
+                        pcout << "    Allow inconvergence in the expensive stokes by user choice (loc: solve_stokes)" << std::endl;
+                        final_linear_residual = solver_control_expensive.last_value();
+                        pcout << "    Final linear residual (loc: solve_stokes): " << final_linear_residual << std::endl;
+                      }
+                    else
+                      {
+                        signals.post_stokes_solver(*this,
+                                                   preconditioner_cheap.n_iterations_S() + preconditioner_expensive.n_iterations_S(),
+                                                   preconditioner_cheap.n_iterations_A() + preconditioner_expensive.n_iterations_A(),
+                                                   solver_control_cheap,
+                                                   solver_control_expensive);
 
-                    // Exit with an exception that describes the underlying cause:
-                    Utilities::throw_linear_solver_failure_exception("iterative Stokes solver",
-                                                                     "Simulator::solve_stokes",
-                                                                     solver_controls,
-                                                                     exc,
-                                                                     mpi_communicator,
-                                                                     parameters.output_directory+"solver_history.txt");
+                        std::vector<SolverControl> solver_controls;
+                        if (parameters.n_cheap_stokes_solver_steps > 0)
+                          solver_controls.push_back(solver_control_cheap);
+                        if (parameters.n_expensive_stokes_solver_steps > 0)
+                          solver_controls.push_back(solver_control_expensive);
+
+                        // Exit with an exception that describes the underlying cause:
+                        Utilities::throw_linear_solver_failure_exception("iterative Stokes solver",
+                                                                         "Simulator::solve_stokes",
+                                                                         solver_controls,
+                                                                         exc,
+                                                                         mpi_communicator,
+                                                                         parameters.output_directory+"solver_history.txt");
+                      }
                   }
               }
           }
