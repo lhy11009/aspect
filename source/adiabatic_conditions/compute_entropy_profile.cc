@@ -90,7 +90,7 @@ namespace aspect
       const int gravity_direction =  (g * (point_bot - point_surf) >= 0) ?
                                      1 :
                                      -1;
-              
+
       // add initial values for the temperature field, so that material model produces no error
       for (unsigned int i=0; i<n_points; ++i)
         temperatures[i] = this->get_adiabatic_surface_temperature();
