@@ -68,15 +68,15 @@ namespace aspect
           // Convert pressure from Pa to bar, bar is used in the table.
           double entropy;
           if (pressure_first)
-          {
-            Point<2> temperature_pressure(pressure / 1.e5, temperature);
-            entropy = material_lookup->get_data(temperature_pressure, 0);
-          }
+            {
+              Point<2> temperature_pressure(pressure / 1.e5, temperature);
+              entropy = material_lookup->get_data(temperature_pressure, 0);
+            }
           else
-          {
-            Point<2> temperature_pressure(temperature, pressure / 1.e5);
-            entropy = material_lookup->get_data(temperature_pressure, 0);
-          }
+            {
+              Point<2> temperature_pressure(temperature, pressure / 1.e5);
+              entropy = material_lookup->get_data(temperature_pressure, 0);
+            }
           return entropy;
         }
       return 0.0;
