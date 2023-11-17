@@ -382,7 +382,14 @@ namespace aspect
                 if (j == volume_fractions.size() - 1)
                   add_viscosities_out->peierls_viscosities[i] = exp(add_viscosities_out->peierls_viscosities[i]);
               }
-              viscosity_pre_yield = (viscosity_pre_yield * viscosity_peierls) / (viscosity_pre_yield + viscosity_peierls);
+              if (composite_peierls_creep)
+              {
+                viscosity_pre_yield = (viscosity_pre_yield * viscosity_peierls) / (viscosity_pre_yield + viscosity_peierls);
+              }
+              else
+              {
+                viscosity_pre_yield = std::min(viscosity_pre_yield, viscosity_peierls);
+              }
             }
 	  else
 	  {
@@ -1100,6 +1107,12 @@ namespace aspect
                              "full pressure has an unusually large negative value arising from "
                              "large negative dynamic pressure, resulting in solver convergence "
                              "issue and in some cases a viscosity of zero.");
+          
+          prm.declare_entry ("Use composite peierls creep", "true",
+                             Patterns::Bool (),
+                             "Whether to use the composite rheology to compute the Peierls creep"
+                             "if false, use a minimum between the Peierls and the diffusion + dislocation"
+                             "creep");
               
 
           // Diffusion creep parameters
@@ -1577,6 +1590,7 @@ namespace aspect
 
           min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
           use_adiabatic_pressure_in_creep = prm.get_bool("Use adiabatic pressure in creep viscosity");
+          composite_peierls_creep = prm.get_bool("Use composite peierls creep");
         }
         prm.leave_subsection();
       }

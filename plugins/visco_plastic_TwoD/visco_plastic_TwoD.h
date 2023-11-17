@@ -708,6 +708,12 @@ namespace aspect
          */
         bool use_adiabatic_pressure_in_creep;
 
+        /**
+         * use composite peierls creep.
+         * If false, use the minimum value of peierls and creep viscosity
+        */
+        bool composite_peierls_creep;
+
     };
 
   }
