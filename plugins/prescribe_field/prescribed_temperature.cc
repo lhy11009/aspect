@@ -39,7 +39,8 @@ namespace aspect
   std::string temperature_model;
   // these are defined for the plate model
   double top_temperature, subducting_plate_velocity, 
-  overiding_plate_age, x_extent, y_extent, area_width, potential_mantle_temperature;
+  overiding_plate_age, x_extent, y_extent, area_width,
+  potential_mantle_temperature, overiding_plate_area_width;
 
   // Because we do not initially know what dimension we're in, we need
   // function parser objects for both 2d and 3d.
@@ -85,6 +86,56 @@ namespace aspect
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp(-1.0 * i * i * M_PI * M_PI * thermal_diffusivity * overiding_plate_age / (max_depth * max_depth)));
   
+        }
+        return temperature;  
+  }
+  
+  double plate_model_T1(const double c1, const double c2)
+  {
+      // Use plate model to compute the temperature, migrated from the world builder
+      // in order to generate consistent result with the world builder.
+      const double x = c1;
+      const double y = c2;
+      const double thermal_diffusivity = 1e-6;
+      const double thermal_expansion_coefficient = 3e-5;
+      const double gravity_norm = 10.0;
+      const double specific_heat = 1250.0;
+      const double max_depth = 150e3 ; // same with the wb file
+      const int sommation_number = 100; // same as in the World Builder
+      const double overriding_plate_pseudo_velocity = overiding_plate_age / overiding_plate_area_width;
+      const double depth = y_extent - y;
+      const double bottom_temperature_local =  potential_mantle_temperature *
+                                                std::exp(((thermal_expansion_coefficient* gravity_norm) /
+                                                           specific_heat) * depth);
+  
+      double temperature = top_temperature + (bottom_temperature_local - top_temperature) * (depth / max_depth);
+
+      double age;
+  
+      for (int i = 1; i<sommation_number+1; ++i)
+        {
+          // suming over the "sommation_number"
+          // use a spreading ridge around the left corner and a pseudo spreading ridge around the right corner 
+          if (x < area_width)
+          {
+            age = x / subducting_plate_velocity;
+            temperature = temperature + (bottom_temperature_local - top_temperature) *
+                          ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
+                           std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
+                                     std::sqrt(((subducting_plate_velocity*subducting_plate_velocity*max_depth*max_depth) /
+                                                (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * M_PI * M_PI)) *
+                                    ((subducting_plate_velocity * age) / max_depth)));
+          }
+          else if (x > x_extent - overiding_plate_area_width)
+            {
+              age = (x_extent - x) / overiding_plate_area_width * overiding_plate_age;
+              temperature = temperature + (bottom_temperature_local - top_temperature) *
+                          ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
+                           std::exp((((overriding_plate_pseudo_velocity * max_depth)/(2 * thermal_diffusivity)) -
+                                     std::sqrt(((overriding_plate_pseudo_velocity*overriding_plate_pseudo_velocity*max_depth*max_depth) /
+                                                (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * M_PI * M_PI)) *
+                                    ((overriding_plate_pseudo_velocity * age) / max_depth)));
+            }
         }
         return temperature;  
   }
@@ -240,18 +291,35 @@ namespace aspect
       prm.leave_subsection();
 
       temperature_model = prm.get("Model name");
-      if (temperature_model == "plate model")
+      if (temperature_model == "plate model" || temperature_model == "plate model 1")
         AssertThrow(dim == 2,
                     ExcMessage("Plate model only works in 2d right now"));
-      // plate model
-      prm.enter_subsection ("Plate model");
+
+      if (temperature_model == "plate model")
       {
-        area_width = prm.get_double("Area width");
-        subducting_plate_velocity = prm.get_double("Subducting plate velocity");
-        overiding_plate_age = prm.get_double("Overiding plate age");
-        top_temperature = prm.get_double("Top temperature");
+          // plate model
+          prm.enter_subsection ("Plate model");
+          {
+            area_width = prm.get_double("Area width");
+            subducting_plate_velocity = prm.get_double("Subducting plate velocity");
+            overiding_plate_age = prm.get_double("Overiding plate age");
+            top_temperature = prm.get_double("Top temperature");
+          }
+          prm.leave_subsection();
       }
-      prm.leave_subsection();
+      else if (temperature_model == "plate model 1")
+      {
+          // plate model 1
+          prm.enter_subsection ("Plate model 1");
+          {
+            area_width = prm.get_double("Area width");
+            subducting_plate_velocity = prm.get_double("Subducting plate velocity");
+            overiding_plate_age = prm.get_double("Overiding plate age");
+            overiding_plate_area_width = prm.get_double("Overiding area width");
+            top_temperature = prm.get_double("Top temperature");
+          }
+          prm.leave_subsection();
+      }
 
       prm.enter_subsection("Temperature function");
       {
@@ -423,10 +491,15 @@ namespace aspect
                                           (as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates())),
                                            0);
                             }
-                            else{
+                            else if (temperature_model == "plate model"){
                               // use the plate model
                               const Point<2> p = as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates()));
                               u_i       = plate_model_T(p[0], p[1]);
+                            }
+                            else if (temperature_model == "plate model 1"){
+                              // use the plate model1
+                              const Point<2> p = as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates()));
+                              u_i       = plate_model_T1(p[0], p[1]);
                             }
                           }
                         else
