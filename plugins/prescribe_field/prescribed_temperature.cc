@@ -94,6 +94,7 @@ namespace aspect
   {
       // Use plate model to compute the temperature, migrated from the world builder
       // in order to generate consistent result with the world builder.
+      // Fix the overiding plate side by creating a minor ridge there.
       const double x = c1;
       const double y = c2;
       const double thermal_diffusivity = 1e-6;
@@ -102,7 +103,7 @@ namespace aspect
       const double specific_heat = 1250.0;
       const double max_depth = 150e3 ; // same with the wb file
       const int sommation_number = 100; // same as in the World Builder
-      const double overriding_plate_pseudo_velocity = overiding_plate_age / overiding_plate_area_width;
+      const double overriding_plate_pseudo_velocity = overiding_plate_area_width / overiding_plate_age;
       const double depth = y_extent - y;
       const double bottom_temperature_local =  potential_mantle_temperature *
                                                 std::exp(((thermal_expansion_coefficient* gravity_norm) /
@@ -118,6 +119,7 @@ namespace aspect
           // use a spreading ridge around the left corner and a pseudo spreading ridge around the right corner 
           if (x < area_width)
           {
+            // for the subducting plate
             age = x / subducting_plate_velocity;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
@@ -128,6 +130,7 @@ namespace aspect
           }
           else if (x > x_extent - overiding_plate_area_width)
             {
+              // for the overiding plate
               age = (x_extent - x) / overiding_plate_area_width * overiding_plate_age;
               temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
@@ -201,7 +204,7 @@ namespace aspect
       prm.leave_subsection ();
 
       prm.declare_entry("Model name", "function", 
-                        Patterns::Selection ("function|plate model"),
+                        Patterns::Selection ("function|plate model|plate model 1"),
                         "A selection that determines the model to use "
                         "for the indicated area."
                         );
@@ -223,6 +226,31 @@ namespace aspect
         prm.declare_entry("Area width", "2.75e5",
                           Patterns::Double (0.),
                           "Width of the area"
+                          );
+      }
+      prm.leave_subsection();
+
+      prm.enter_subsection ("Plate model 1");
+      {
+        prm.declare_entry("Subducting plate velocity", "1.5855e-09",
+                          Patterns::Double (0.),
+                          "Velocity of the subducting plate"
+                          );
+        prm.declare_entry("Overiding plate age", "1.2614e+15",
+                          Patterns::Double (0.),
+                          "Velocity of the overiding plate"
+                          );
+        prm.declare_entry("Top temperature", "273.0",
+                          Patterns::Double (0.),
+                          "Temperature of the top boundary"
+                          );
+        prm.declare_entry("Area width", "2.75e5",
+                          Patterns::Double (0.),
+                          "Width of the area"
+                          );
+        prm.declare_entry("Overiding area width", "2.75e5",
+                          Patterns::Double (0.),
+                          "Width of the area below the overiding plate."
                           );
       }
       prm.leave_subsection();
