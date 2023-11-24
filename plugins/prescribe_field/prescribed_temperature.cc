@@ -90,13 +90,13 @@ namespace aspect
         return temperature;  
   }
   
-  double plate_model_T1(const double c1, const double c2)
+  double plate_model_T1_2d(const Point<2> &p, const double depth)
   {
       // Use plate model to compute the temperature, migrated from the world builder
       // in order to generate consistent result with the world builder.
       // Fix the overiding plate side by creating a minor ridge there.
-      const double x = c1;
-      const double y = c2;
+      const double x = p[0];
+      const double y = p[1];
       const double thermal_diffusivity = 1e-6;
       const double thermal_expansion_coefficient = 3e-5;
       const double gravity_norm = 10.0;
@@ -104,7 +104,6 @@ namespace aspect
       const double max_depth = 150e3 ; // same with the wb file
       const int sommation_number = 100; // same as in the World Builder
       const double overriding_plate_pseudo_velocity = overiding_plate_area_width / overiding_plate_age;
-      const double depth = y_extent - y;
       const double bottom_temperature_local =  potential_mantle_temperature *
                                                 std::exp(((thermal_expansion_coefficient* gravity_norm) /
                                                            specific_heat) * depth);
@@ -120,7 +119,9 @@ namespace aspect
           if (x < area_width)
           {
             // for the subducting plate
-            age = x / subducting_plate_velocity;
+            // age = x / subducting_plate_velocity;
+            age = overiding_plate_age;
+            subducting_plate_velocity = 0.0;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -131,7 +132,9 @@ namespace aspect
           else if (x > x_extent - overiding_plate_area_width)
             {
               // for the overiding plate
-              age = (x_extent - x) / overiding_plate_area_width * overiding_plate_age;
+              // age = (x_extent - x) / overiding_plate_area_width * overiding_plate_age;
+              age = overiding_plate_age;
+              subducting_plate_velocity = 0.0;
               temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((overriding_plate_pseudo_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -526,8 +529,9 @@ namespace aspect
                             }
                             else if (temperature_model == "plate model 1"){
                               // use the plate model1
-                              const Point<2> p = as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates()));
-                              u_i       = plate_model_T1(p[0], p[1]);
+                              const Point<2> p2d = as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates()));
+                              const double depth = simulator_access.get_geometry_model().depth(p);
+                              u_i       = plate_model_T1_2d(p2d, depth);
                             }
                           }
                         else
