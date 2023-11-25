@@ -54,6 +54,10 @@ namespace aspect
         double shear_modulus;
         double shear_modulus_derivative;
         double pressure_cutoff;
+        // todo_pdiff
+        double activation_volume_difference;
+        double reference_pressure;
+        double reference_temperature;
       };
 
       /**
@@ -282,8 +286,23 @@ namespace aspect
           double strain_rate_residual_threshold;
           unsigned int stress_max_iteration_number;
           bool apply_strict_stress_cutoff;
-          // todo_pcut
+
           std::vector<double> pressure_cutoffs;
+
+          /**
+           * List of the activation volume differences
+           */
+          std::vector<double> activation_volume_differences;
+
+          /**
+           * List of the reference temperatures
+           */
+          std::vector<double> reference_temperatures;
+
+          /**
+           * List of the reference pressures
+           */
+          std::vector<double> reference_pressures;
       };
     }
   }

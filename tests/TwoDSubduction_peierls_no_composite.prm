@@ -191,7 +191,7 @@ subsection Material model
         set Angles of internal friction = 25.0
         set Cohesions = 50.e6
         set Include Peierls creep = true
-	    set Use composite peierls creep = false
+      set Use composite peierls creep = false
         set Peierls creep flow law = exact
         set Peierls fitting parameters = 0.17
         set Peierls glide parameters p = 0.5
@@ -272,7 +272,7 @@ subsection Prescribed temperatures
         set Function constants = Depth=1.45e5, Width=2.75e5, Ro=6.371e6, PHIM=2.4439e+00,\
                              AGEOP=1.2614e+15, TS=2.730e+02, TM=1.5730e+03, K=1.000e-06, VSUB=1.5855e-09, PHILIM=1e-6
         set Function expression = ((r*(PHIM-phi)<Width) ? TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt(K*AGEOP)))):\
-	(phi > PHILIM)? (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt((K*Ro*phi)/VSUB))))): TM)
+  (phi > PHILIM)? (TS+(TM-TS)*(1-erfc(abs(Ro-r)/(2*sqrt((K*Ro*phi)/VSUB))))): TM)
     end
 end
 
@@ -295,4 +295,3 @@ end
 subsection Checkpointing
     set Steps between checkpoint = 50
 end
-

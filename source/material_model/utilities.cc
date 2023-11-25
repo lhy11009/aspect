@@ -2102,7 +2102,7 @@ namespace aspect
           }
         return function_value;
       }
-      
+
       template <int dim>
       double
       PyroliteTransition<dim>::compute_value_pyrolite_1_1 (const PhaseFunctionInputs<dim> &in,

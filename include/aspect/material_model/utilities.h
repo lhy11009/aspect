@@ -605,7 +605,7 @@ namespace aspect
                                       const std::vector<double> &transition_temperatures,
                                       const std::vector<double> &transition_widths,
                                       const std::vector<double> &transition_slopes) const;
-          
+
           /**
            * function to compute value of phase function on a pyrolite composition
            * version 1.1
