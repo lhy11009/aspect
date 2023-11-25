@@ -1,0 +1,45 @@
+
+Loading shared library <ASPECT_DIR/tester-build/prescribe_field/libprescribed_temperature.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/isosurfaces_TwoD1/libisosurfaces_TwoD1.debug.so>
+
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
+Number of active cells: 1,344 (on 4 levels)
+Number of degrees of freedom: 66,420 (11,074+1,425+5,537+12,096+12,096+12,096+12,096)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_reset_corner_T_box/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2278 K, 3211 K
+     Writing depth average:    output-TwoDSubduction_reset_corner_T_box/depth_average
+
+Number of active cells: 2,352 (on 5 levels)
+Number of degrees of freedom: 116,414 (19,498+2,495+9,749+21,168+21,168+21,168+21,168)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_reset_corner_T_box/solution/solution-00001
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2278 K, 3211 K
+     Writing depth average:    output-TwoDSubduction_reset_corner_T_box/depth_average
+
+Number of active cells: 3,036 (on 6 levels)
+Number of degrees of freedom: 151,090 (25,666+3,295+12,833+27,324+27,324+27,324+27,324)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Solving spcrust system ... 1 iterations.
+   Solving spharz system ... 1 iterations.
+   Solving opcrust system ... 1 iterations.
+   Solving opharz system ... 1 iterations.
+   Solving Stokes system... 19+0 iterations.
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_reset_corner_T_box/solution/solution-00002
+     RMS, max velocity:        0.00473 m/year, 0.0512 m/year
+     Temperature min/avg/max:  273 K, 2278 K, 3211 K
+     Writing depth average:    output-TwoDSubduction_reset_corner_T_box/depth_average
+
+Termination requested by criterion: end time
+
+
+

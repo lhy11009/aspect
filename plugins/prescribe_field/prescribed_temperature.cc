@@ -119,9 +119,7 @@ namespace aspect
           if (x < area_width)
           {
             // for the subducting plate
-            // age = x / subducting_plate_velocity;
-            age = overiding_plate_age;
-            subducting_plate_velocity = 0.0;
+            age = x / subducting_plate_velocity;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -132,9 +130,7 @@ namespace aspect
           else if (x > x_extent - overiding_plate_area_width)
             {
               // for the overiding plate
-              // age = (x_extent - x) / overiding_plate_area_width * overiding_plate_age;
-              age = overiding_plate_age;
-              subducting_plate_velocity = 0.0;
+              age = (x_extent - x) / overiding_plate_area_width * overiding_plate_age;
               temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((overriding_plate_pseudo_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -287,7 +283,7 @@ namespace aspect
     prescribe_internal_temperatures = prm.get_bool ("Prescribe internal temperatures");
     // Get temperature & Geometry information for the plate model
     potential_mantle_temperature = prm.get_double("Adiabatic surface temperature");
-    prm.enter_subsection ("Geometry");
+    prm.enter_subsection ("Geometry model");
     {
       prm.enter_subsection ("Box");
       {
@@ -531,7 +527,10 @@ namespace aspect
                               // use the plate model1
                               const Point<2> p2d = as_2d(Utilities::convert_array_to_point<dim>(function_point.get_coordinates()));
                               const double depth = simulator_access.get_geometry_model().depth(p);
-                              u_i       = plate_model_T1_2d(p2d, depth);
+                              if (indicator > 0.5)
+                              {
+                                u_i       = plate_model_T1_2d(p2d, depth);
+                              }
                             }
                           }
                         else

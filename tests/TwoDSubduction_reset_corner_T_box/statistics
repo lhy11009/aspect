@@ -1,0 +1,25 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Visualization file name
+# 9: RMS velocity (m/year)
+# 10: Max. velocity (m/year)
+# 11: Minimal temperature (K)
+# 12: Average temperature (K)
+# 13: Maximal temperature (K)
+# 14: Average nondimensional temperature (K)
+# 15: Iterations for temperature solver
+# 16: Iterations for composition solver 1
+# 17: Iterations for composition solver 2
+# 18: Iterations for composition solver 3
+# 19: Iterations for composition solver 4
+# 20: Iterations for Stokes solver
+# 21: Velocity iterations in Stokes preconditioner
+# 22: Schur complement iterations in Stokes preconditioner
+0 0.000000000000e+00 0.000000000000e+00 1344 12499  5537  48384 output-TwoDSubduction_reset_corner_T_box/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.27784306e+03 3.21060000e+03 6.82476532e-01 0 0 0 0 0  0  0  0 
+0 0.000000000000e+00 0.000000000000e+00 2352 21993  9749  84672 output-TwoDSubduction_reset_corner_T_box/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.27813777e+03 3.21060000e+03 6.82576855e-01 0 0 0 0 0  0  0  0 
+0 0.000000000000e+00 0.000000000000e+00 3036 28961 12833 109296 output-TwoDSubduction_reset_corner_T_box/solution/solution-00002 4.72606382e-03 5.12081232e-02 2.73000000e+02 2.27815096e+03 3.21060000e+03 6.82581345e-01 0 1 1 1 1 18 20 20 
