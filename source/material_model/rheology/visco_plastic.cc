@@ -120,12 +120,17 @@ namespace aspect
 
         // Use a specified "reference" strain rate if the strain rate is not yet available,
         // or close to zero. This is to avoid division by zero.
-        const bool use_reference_strainrate = this->simulator_is_past_initialization() == false
+        bool use_reference_strainrate = this->simulator_is_past_initialization() == false
                                               ||
                                               (this->get_timestep_number() == 0 &&
                                                this->get_nonlinear_iteration() == 0)
                                               ||
                                               (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
+        // todo_restart
+        if (use_reference_strainrate_at_restart)
+        {
+            use_reference_strainrate = (use_reference_strainrate || (this->get_timestep_number() == this->get_restart_timestep_number()));
+        }
 
         double edot_ii;
         if (use_reference_strainrate)
@@ -610,6 +615,11 @@ namespace aspect
                            "Using a pressure gradient of 32436 Pa/m, then a value of "
                            "0.3 K/km = 0.0003 K/m = 9.24e-09 K/Pa gives an earth-like adiabat."
                            "Units: \\si{\\kelvin\\per\\pascal}.");
+
+        // todo_restart 
+        prm.declare_entry ("Use reference strain rate at restart", "false",
+                           Patterns::Bool (),
+                           "Whether to use the reference strain rate in compuation after the model restarts.");
       }
 
 
@@ -735,6 +745,9 @@ namespace aspect
                        ExcMessage("If adiabatic heating is enabled you should not add another adiabatic gradient"
                                   "to the temperature for computing the viscosity, because the ambient"
                                   "temperature profile already includes the adiabatic gradient."));
+
+        // todo_restart
+        use_reference_strainrate_at_restart = prm.get_bool ("Use reference strain rate at restart");
 
       }
 

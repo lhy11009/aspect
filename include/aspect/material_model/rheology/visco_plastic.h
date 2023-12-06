@@ -326,6 +326,12 @@ namespace aspect
            */
           Rheology::DruckerPragerParameters drucker_prager_parameters;
 
+          // todo_restart
+          /*
+          Whether to use the reference strain rate in compuation after the model restarts.
+          */
+          bool use_reference_strainrate_at_restart;
+
       };
     }
   }

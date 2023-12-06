@@ -146,6 +146,13 @@ namespace aspect
   }
 
 
+  // todo_restart
+  template <int dim>
+  unsigned int SimulatorAccess<dim>::get_restart_timestep_number () const
+  {
+    return simulator->restart_timestep_number;
+  }
+
 
   template <int dim>
   unsigned int SimulatorAccess<dim>::get_nonlinear_iteration () const
