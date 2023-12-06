@@ -1963,6 +1963,8 @@ namespace aspect
             parameters.additional_refinement_times
             .erase (parameters.additional_refinement_times.begin());
           }
+          // todo_restart
+          restart_timestep_number = timestep_number;
       }
     else
       {
@@ -1992,6 +1994,9 @@ namespace aspect
 
         // calculate global volume after refining mesh
         global_volume = GridTools::volume (triangulation, *mapping);
+
+        // todo_restart
+        restart_timestep_number = -1;
       }
 
     // start the timer for periodic checkpoints after the setup above

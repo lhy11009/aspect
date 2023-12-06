@@ -281,6 +281,13 @@ namespace aspect
       unsigned int
       get_timestep_number () const;
 
+      // todo_restart 
+      /**
+       * Return the number of a restarted time step.
+       */
+      unsigned int
+      get_restart_timestep_number () const;
+
       /**
        * Return the current nonlinear iteration number of a time step.
        */
