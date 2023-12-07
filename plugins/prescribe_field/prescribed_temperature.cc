@@ -36,11 +36,12 @@ namespace aspect
   bool prescribe_internal_temperatures;
   Utilities::Coordinates::CoordinateSystem coordinate_system_indicator_function;
   Utilities::Coordinates::CoordinateSystem coordinate_system_function;
-  std::string temperature_model;
+  std::string temperature_model, geometry_model_name;
   // these are defined for the plate model
   double top_temperature, subducting_plate_velocity, 
   overiding_plate_age, x_extent, y_extent, area_width,
-  potential_mantle_temperature, overiding_plate_area_width;
+  potential_mantle_temperature, overiding_plate_area_width,
+  theta_M, theta_M_rad, outer_radius;
 
   // Because we do not initially know what dimension we're in, we need
   // function parser objects for both 2d and 3d.
@@ -96,7 +97,6 @@ namespace aspect
       // in order to generate consistent result with the world builder.
       // Fix the overiding plate side by creating a minor ridge there.
       const double x = p[0];
-      const double y = p[1];
       const double thermal_diffusivity = 1e-6;
       const double thermal_expansion_coefficient = 3e-5;
       const double gravity_norm = 10.0;
@@ -141,6 +141,57 @@ namespace aspect
         }
         return temperature;  
   }
+  
+  double plate_model_T1_2d_chunk(const Point<2> &p, const double depth)
+  {
+      // Use plate model to compute the temperature, migrated from the world builder
+      // in order to generate consistent result with the world builder.
+      // Fix the overiding plate side by creating a minor ridge there.
+      const double theta = std::atan2(p[1], p[0]);
+      const double thermal_diffusivity = 1e-6;
+      const double thermal_expansion_coefficient = 3e-5;
+      const double gravity_norm = 10.0;
+      const double specific_heat = 1250.0;
+      const double max_depth = 150e3 ; // same with the wb file
+      const int sommation_number = 100; // same as in the World Builder
+      const double overriding_plate_pseudo_velocity = overiding_plate_area_width / overiding_plate_age;
+      const double bottom_temperature_local =  potential_mantle_temperature *
+                                                std::exp(((thermal_expansion_coefficient* gravity_norm) /
+                                                           specific_heat) * depth);
+  
+      double temperature = top_temperature + (bottom_temperature_local - top_temperature) * (depth / max_depth);
+  
+      for (int i = 1; i<sommation_number+1; ++i)
+        {
+          // suming over the "sommation_number"
+          // use a spreading ridge around the left corner and a pseudo spreading ridge around the right corner 
+          if (outer_radius * theta < area_width)
+          {
+            const double dist = outer_radius * theta;
+            // for the subducting plate
+            const double age = dist / subducting_plate_velocity;
+            temperature = temperature + (bottom_temperature_local - top_temperature) *
+                          ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
+                           std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
+                                     std::sqrt(((subducting_plate_velocity*subducting_plate_velocity*max_depth*max_depth) /
+                                                (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * M_PI * M_PI)) *
+                                    ((subducting_plate_velocity * age) / max_depth)));
+          }
+          else if (outer_radius * (theta_M_rad - theta) < overiding_plate_area_width)
+            {
+              const double dist = outer_radius * (theta_M_rad - theta);
+              // for the overiding plate
+              const double age = dist / overiding_plate_area_width * overiding_plate_age;
+              temperature = temperature + (bottom_temperature_local - top_temperature) *
+                          ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
+                           std::exp((((overriding_plate_pseudo_velocity * max_depth)/(2 * thermal_diffusivity)) -
+                                     std::sqrt(((overriding_plate_pseudo_velocity*overriding_plate_pseudo_velocity*max_depth*max_depth) /
+                                                (4*thermal_diffusivity*thermal_diffusivity)) + double(i) * double(i) * M_PI * M_PI)) *
+                                    ((overriding_plate_pseudo_velocity * age) / max_depth)));
+            }
+        }
+        return temperature;  
+  }
 
   /**
    * Declare additional parameters.
@@ -166,6 +217,9 @@ namespace aspect
                      );
     prm.enter_subsection ("Geometry");
     {
+      prm.declare_entry ("Model name", "unspecified",
+                        Patterns::Anything(),
+                        "Geometry models");
       prm.enter_subsection ("Box");
       {
         prm.declare_entry("X extent", "6.7830e+06",
@@ -178,8 +232,21 @@ namespace aspect
                           );
       }
       prm.leave_subsection();
+
+      prm.enter_subsection ("Chunk");
+      {
+          prm.declare_entry ("Chunk outer radius", "1.",
+                             Patterns::Double (0.),
+                             "Radius at the top surface of the chunk. Units: \\si{\\meter}.");
+          
+          prm.declare_entry ("Chunk maximum longitude", "0.",
+                             Patterns::Double (-180., 360.), // enables crossing of either hemisphere
+                             "Minimum longitude of the chunk. Units: degrees.");
+      }
+      prm.leave_subsection();
     }
     prm.leave_subsection();
+
     // Declare variables defined in the "Prescribed temperatures" subsection
     prm.enter_subsection ("Prescribed temperatures");
     {
@@ -285,10 +352,19 @@ namespace aspect
     potential_mantle_temperature = prm.get_double("Adiabatic surface temperature");
     prm.enter_subsection ("Geometry model");
     {
+      geometry_model_name = prm.get ("Model name");
       prm.enter_subsection ("Box");
       {
         x_extent = prm.get_double("X extent");
         y_extent = prm.get_double("Y extent");
+      }
+      prm.leave_subsection();
+
+      prm.enter_subsection ("Chunk");
+      {
+          outer_radius = prm.get_double("Chunk outer radius");
+          theta_M = prm.get_double("Chunk maximum longitude");
+          theta_M_rad = theta_M * M_PI / 180.0;
       }
       prm.leave_subsection();
     }
@@ -529,7 +605,15 @@ namespace aspect
                               const double depth = simulator_access.get_geometry_model().depth(p);
                               if (indicator > 0.5)
                               {
-                                u_i       = plate_model_T1_2d(p2d, depth);
+                                if (geometry_model_name == "box")
+                                  u_i       = plate_model_T1_2d(p2d, depth);
+                                else if (geometry_model_name == "chunk") 
+                                  u_i       = plate_model_T1_2d_chunk(p2d, depth);
+                                else
+                                {
+                                  AssertThrow (false, ExcMessage ("The prescribed_temperature plugin only works"
+                                                  "with the geometry of box or chunk:\n\n"));
+                                }
                               }
                             }
                           }
