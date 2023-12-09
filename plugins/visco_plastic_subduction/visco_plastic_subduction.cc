@@ -434,6 +434,20 @@ namespace aspect
           rheology->elastic_rheology.fill_elastic_force_outputs(in_new, average_elastic_shear_moduli, out);
           rheology->elastic_rheology.fill_reaction_outputs(in_new, average_elastic_shear_moduli, out);
         }
+
+      //todo_re_visc
+      // Additional steps
+      for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+        {
+          // If reset_viscosity is set to true, reset viscosity for some parts of the domain
+          if (reset_viscosity)
+            {
+              for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+                {
+                  reset_calculated_viscosities(i, out.viscosities, in);
+                }
+            }
+        }
     }
 
 
@@ -509,6 +523,36 @@ namespace aspect
                              "Whether the pressure is the first coordinate in the table.");
           prm.declare_entry ("Minimum temperature for viscosity", "0.0", Patterns::Double (0.),
                              "Minimum temperature for viscosity computation", "Units: \\si{\\T}.");
+
+          // additional entries
+          // todo_re_visc
+          prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
+                             "Reset viscosity");
+          
+          prm.enter_subsection("Reset viscosity function");
+          {
+            /**
+             * Choose the coordinates to evaluate the Reset viscosity
+             * function. The function can be declared in dependence of depth,
+             * cartesian coordinates or spherical coordinates. Note that the order
+             * of spherical coordinates is r,phi,theta and not r,theta,phi, since
+             * this allows for dimension independent expressions.
+             */
+            prm.declare_entry ("Coordinate system", "cartesian",
+                               Patterns::Selection ("cartesian|spherical|depth"),
+                               "A selection that determines the assumed coordinate "
+                               "system for the function variables. Allowed values "
+                               "are `cartesian', `spherical', and `depth'. `spherical' coordinates "
+                               "are interpreted as r,phi or r,phi,theta in 2D/3D "
+                               "respectively with theta being the polar angle. `depth' "
+                               "will create a function, in which only the first "
+                               "parameter is non-zero, which is interpreted to "
+                               "be the depth of the point.");
+
+            Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
+          }
+          prm.leave_subsection();
+          
         }
         prm.leave_subsection();
       }
@@ -588,6 +632,32 @@ namespace aspect
           material_file_name          = prm.get ("Material file name");
           pressure_first = prm.get_bool ("Pressure first");
           min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
+
+          // Additional inputs
+          // todo_re_visc
+          // Reset viscosity for some part as the last step of computing viscosity
+          reset_viscosity = prm.get_bool("Reset viscosity");
+
+          // A function for reset viscosity for some part as the last step of computing viscosity
+          prm.enter_subsection("Reset viscosity function");
+          {
+            reset_viscosity_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
+          }
+          try
+            {
+              reset_viscosity_function.parse_parameters (prm);
+            }
+          catch (...)
+            {
+              std::cerr << "ERROR: FunctionParser failed to parse\n"
+                        << "\t'Reset viscosity.Function'\n"
+                        << "with expression\n"
+                        << "\t'" << prm.get("Function expression") << "'"
+                        << "More information about the cause of the parse error \n"
+                        << "is shown below.\n";
+              throw;
+            }
+          prm.leave_subsection();
         }
         prm.leave_subsection();
       }
@@ -643,6 +713,25 @@ namespace aspect
       }
     }
 
+    // todo_re_visc 
+    template <int dim>
+    void
+    ViscoPlasticSubduction<dim>::reset_calculated_viscosities( const unsigned int i,
+                                                     std::vector<double> &viscosities,
+                                                     const MaterialModel::MaterialModelInputs<dim> &in) const
+    {
+      // convert to coordinate system used by the function
+      Utilities::NaturalCoordinate<dim> point =
+        this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], reset_viscosity_function_coordinate_system );
+
+      // get value of new viscosity from function
+      // use negative value as invalid value
+      const float new_viscosity = reset_viscosity_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
+      if (new_viscosity > 0.0)
+        {
+          viscosities[i] = new_viscosity;
+        }
+    }
   }
 }
 
