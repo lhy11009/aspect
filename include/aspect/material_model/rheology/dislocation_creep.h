@@ -45,6 +45,8 @@ namespace aspect
         double activation_energy;
         double activation_volume;
         double stress_exponent;
+        double reference_strain_rate;
+        double reference_stress_exponent;
       };
 
       template <int dim>
@@ -102,6 +104,23 @@ namespace aspect
                              const std::vector<unsigned int> &n_phase_transitions_per_composition = std::vector<unsigned int>()) const;
 
           /**
+           * Include an integar number for the mixing model to use
+           * 1: iso stress (weakest), 2: iso strain (strongest), 3: log (intermediate)
+           * Also include two double numbers for the minimum and the maximum viscosities
+           * similar to the compute_viscosity function, otherwise
+           */
+          double
+          compute_viscosity_mixing (const double strain_rate,
+                             const double pressure,
+                             const double temperature,
+                             const unsigned int composition,
+                             const std::vector<double> &phase_function_values,
+                             const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                             const int,
+                             const double,
+                             const double) const;
+
+          /**
            * Compute the strain rate and first stress derivative
            * as a function of stress based on the dislocation creep law.
            */
@@ -142,6 +161,16 @@ namespace aspect
            * List of dislocation creep activation volumes V.
            */
           std::vector<double> activation_volumes_dislocation;
+
+          /**
+          * List of reference stress exponent n1.
+          */
+          std::vector<double> reference_stress_exponents_dislocation;
+
+          /*
+          * List of reference strain rate.
+          */
+          std::vector<double> reference_strain_rates_dislocation;
 
       };
     }

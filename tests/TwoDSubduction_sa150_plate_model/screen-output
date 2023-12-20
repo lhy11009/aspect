@@ -1,0 +1,29 @@
+
+Loading shared library <ASPECT_DIR/tester-build/prescribe_field/libprescribed_temperature.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/isosurfaces_TwoD1/libisosurfaces_TwoD1.debug.so>
+
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
+Number of active cells: 6,144 (on 6 levels)
+Number of degrees of freedom: 302,628 (50,050+6,369+25,025+55,296+55,296+55,296+55,296)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_sa150_plate_model/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2196 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_sa150_plate_model/depth_average
+
+*** Timestep 1:  t=6e+07 years, dt=6e+07 years
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_sa150_plate_model/solution/solution-00001
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2196 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_sa150_plate_model/depth_average
+
+Termination requested by criterion: end time
+
+
+

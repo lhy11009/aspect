@@ -1,0 +1,21 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+# 16: Average density (kg/m^3)
+# 17: Average viscosity (Pa s)
+# 18: Total mass (kg)
+0 0.000000000000e+00 0.000000000000e+00  80  843 369 2880 0 output-TwoDSubduction_reset_composition_viscosity/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.15440161e+03 3.50000000e+03 5.83018781e-01 3.63106276e+03 5.84805795e+22 1.26326204e+17 
+0 0.000000000000e+00 0.000000000000e+00 140 1528 671 5040 0 output-TwoDSubduction_reset_composition_viscosity/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18888623e+03 3.50000000e+03 5.93705060e-01 3.64846292e+03 2.88859600e+22 1.26931563e+17 
+0 0.000000000000e+00 0.000000000000e+00 173 1909 839 6228 0 output-TwoDSubduction_reset_composition_viscosity/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19185792e+03 3.50000000e+03 5.94625944e-01 3.64942472e+03 2.84691191e+22 1.26965025e+17 
