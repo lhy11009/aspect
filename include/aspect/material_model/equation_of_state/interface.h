@@ -119,6 +119,14 @@ namespace aspect
                                             const std::vector<double> &phase_function_values,
                                             const std::vector<unsigned int> &n_phase_transitions_per_composition,
                                             EquationOfStateOutputs<dim> &eos_outputs);
+
+    // use the previous version of phase average value 
+    template <int dim>
+    void
+    phase_average_equation_of_state_outputs_1(const EquationOfStateOutputs<dim> &eos_outputs_all_phases,
+                                            const std::vector<double> &phase_function_values,
+                                            const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                            EquationOfStateOutputs<dim> &eos_outputs);
   }
 }
 

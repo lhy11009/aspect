@@ -505,6 +505,22 @@ namespace aspect
                            "in the preconditioning used in the GMRES solver. The exact definition of "
                            "this block preconditioner for the Stokes equation can be found in "
                            "\\cite{kronbichler:etal:2012}.");
+
+        prm.declare_entry ("Skip expensive stokes solver", "false",
+                           Patterns::Bool(),
+                           "Skip the expensive stokes solver, even if the cheap ones fail");
+
+        prm.declare_entry ("Skip nonlinear interation with expensive stokes solver", "false",
+                           Patterns::Bool(),
+                           "Skip the whole nonlinear iteration with the expensive stokes solve."
+                           "This only works if the Skip expensive stokes solver is set to true.");
+
+        prm.declare_entry ("Skip nonlinear interation with expensive stokes solver iteration", "1",
+                           Patterns::Integer(1),
+                           "Skip the whole nonlinear iteration with the expensive stokes solve after"
+                           "this number of nonlinear iteration is reached, This only works if the Skip "
+                           "expensive stokes solver and Skip nonlinear interation with expensive stokes solver "
+                           "are both set to true.");
       }
       prm.leave_subsection ();
 
@@ -1436,6 +1452,9 @@ namespace aspect
         use_full_A_block_preconditioner = prm.get_bool ("Use full A block as preconditioner");
         linear_solver_S_block_tolerance = prm.get_double ("Linear solver S block tolerance");
         stokes_gmres_restart_length     = prm.get_integer("GMRES solver restart length");
+        skip_expensive_stokes_solver = prm.get_bool("Skip expensive stokes solver");
+        skip_nonlinear_interation_with_expensive_stokes_solver = prm.get_bool("Skip nonlinear interation with expensive stokes solver");
+        skip_nonlinear_interation_with_expensive_stokes_solver_iteration = prm.get_integer("Skip nonlinear interation with expensive stokes solver iteration");
       }
       prm.leave_subsection ();
 
