@@ -36,6 +36,7 @@
 #include <aspect/material_model/rheology/elasticity.h>
 #include <aspect/utilities.h>
 #include <aspect/material_model/equation_of_state/thermodynamic_table_lookup.h>
+#include <aspect/material_model/equation_of_state/thermodynamic_table_lookup_morb.h>
 
 #include<deal.II/fe/component_mask.h>
 #include<deal.II/base/parsed_function.h>
@@ -432,6 +433,18 @@ namespace aspect
         bool use_lookup_table;
         std::vector<int> material_lookup_indexes;
         EquationOfState::ThermodynamicTableLookup<dim> equation_of_state_lookup;
+
+        // eos for lookup morb
+        bool use_lookup_table_morb;
+        std::vector<int> material_lookup_morb_indexes;
+        EquationOfState::ThermodynamicTableLookupMorb<dim> equation_of_state_morb_lookup;
+        unsigned morb_composition_index;
+        double eclogite_phase_cutoff_below;
+        double eclogite_phase_cutoff_above_T1;
+        double eclogite_phase_cutoff_above_P1;
+        double eclogite_phase_cutoff_above_T2;
+        double eclogite_phase_cutoff_above_P2;
+        bool rewrite_morb_density;
 
         /**
          * Enumeration for selecting which viscosity averaging scheme to use.

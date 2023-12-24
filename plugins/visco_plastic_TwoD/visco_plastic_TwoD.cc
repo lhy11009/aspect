@@ -65,6 +65,10 @@ namespace aspect
       /* initialize eos for lookup tables*/
       if (use_lookup_table)
         equation_of_state_lookup.initialize();
+
+      /* initialize eos for lookup morb tables*/
+      if (use_lookup_table_morb)
+        equation_of_state_morb_lookup.initialize();
     }
 
     template <int dim>
@@ -714,17 +718,26 @@ namespace aspect
       EquationOfStateOutputs<dim> eos_outputs (this->n_compositional_fields()+1);
       EquationOfStateOutputs<dim> eos_outputs_all_phases (this->n_compositional_fields()+1+phase_function.n_phase_transitions());
       std::vector<EquationOfStateOutputs<dim>> eos_outputs_lookup (in.n_evaluation_points(), equation_of_state_lookup.number_of_lookups()); // look up table
+      // morb composition
+      std::vector<EquationOfStateOutputs<dim>> eos_outputs_lookup_morb (in.n_evaluation_points(), equation_of_state_morb_lookup.number_of_lookups()); // look up table
 
       std::vector<double> average_elastic_shear_moduli (in.n_evaluation_points());
 
       // Store value of phase function for each phase and composition
       // While the number of phases is fixed, the value of the phase function is updated for every point
       std::vector<double> phase_function_values(phase_function.n_phase_transitions(), 0.0);
+      
+      std::vector<std::vector<double>> all_volume_fractions (in.n_evaluation_points(), std::vector<double> (this->n_compositional_fields()+1));
 
       // do lookup, since the 'evaluate' fucntion loops i for up
       // Evaluate the equation of state properties at the current evaluation point
       if (use_lookup_table)
           equation_of_state_lookup.evaluate(in, eos_outputs_lookup);
+      
+      // do lookup for the morb composition, since the 'evaluate' fucntion loops i for up
+      // Evaluate the equation of state properties at the current evaluation point
+      if (use_lookup_table_morb)
+          equation_of_state_morb_lookup.evaluate(in, eos_outputs_lookup_morb);
 
       // Loop through all requested points
       for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
@@ -754,6 +767,30 @@ namespace aspect
               phase_function_values[j] = phase_function.compute_value1(phase_inputs);
             }
 
+          // Rewrite with values from the morb lookup table
+          std::vector<double> phase_function_for_rheology_values = phase_function_values;
+          if (use_lookup_table_morb){
+            unsigned int start_phase_index = 0;
+            const std::vector<unsigned int> &n_phase_transitions_per_composition = phase_function.n_phase_transitions_for_each_composition();
+            
+            for (unsigned int j=0; j<morb_composition_index; ++j)
+              start_phase_index += n_phase_transitions_per_composition[j] + 1;
+
+
+            const double eclogite_phase_volume_fraction = eos_outputs_lookup_morb[i].eos_eclogite_phase_volume_fraction;
+
+            // smaller values are cutoff
+            // high P, T regions are fixed to 1.0
+            if (eclogite_phase_volume_fraction < eclogite_phase_cutoff_below)
+              phase_function_for_rheology_values[start_phase_index + 0 -morb_composition_index] = 0.0;
+            else if ((in.temperature[i] > eclogite_phase_cutoff_above_T1) && (in.pressure[i] > eclogite_phase_cutoff_above_P1))
+              phase_function_for_rheology_values[start_phase_index + 0 -morb_composition_index] = 1.0;
+            else if ((in.temperature[i] > eclogite_phase_cutoff_above_T2) && (in.pressure[i] > eclogite_phase_cutoff_above_P2))
+              phase_function_for_rheology_values[start_phase_index + 0 -morb_composition_index] = 1.0;
+            else
+              phase_function_for_rheology_values[start_phase_index + 0 -morb_composition_index] = eclogite_phase_volume_fraction;
+          }
+
           // Average by value of gamma function to get value of compositions
           phase_average_equation_of_state_outputs_1(eos_outputs_all_phases,
                                                   phase_function_values,
@@ -761,6 +798,7 @@ namespace aspect
                                                   eos_outputs);
 
           const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[i], volumetric_compositions);
+          all_volume_fractions[i] = volume_fractions;
 
           // overite eos_outputs if there is a lookup table
           if (use_lookup_table)
@@ -775,6 +813,19 @@ namespace aspect
                 eos_outputs.thermal_expansion_coefficients[j] = eos_outputs_lookup[i].thermal_expansion_coefficients[index];
                 eos_outputs.specific_heat_capacities[j] = eos_outputs_lookup[i].specific_heat_capacities[index];
                 // TODO: include specific heat & expansivity with no 'latent_heat' option
+              }
+            }
+          }
+
+          // morb composition
+          if (use_lookup_table_morb && rewrite_morb_density)
+          {
+            for(unsigned int j=0; j < volume_fractions.size(); j++){
+              int index = material_lookup_morb_indexes[j]; // fill in the volume fractions with these indexes
+              if (index == 0)
+              {
+                // for other compositions, we assign -1 to it's material_lookup_index
+                eos_outputs.densities[j] = eos_outputs_lookup_morb[i].densities[index];
               }
             }
           }
@@ -882,14 +933,14 @@ namespace aspect
               {
                 // change for output dislocation creep viscosity
                 calculate_viscosities = calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
-                                                                        yield_mechanism, phase_function_values,
+                                                                        yield_mechanism, phase_function_for_rheology_values,
                                                                         phase_function.n_phase_transitions_for_each_composition(), add_viscosities_out);
               }
               else
               {
                 calculate_viscosities = calculate_isostrain_viscosities(in, i, volume_fractions, viscous_flow_law,
                                                                         yield_mechanism, 
-                                                                        phase_function_values,
+                                                                        phase_function_for_rheology_values,
                                                                         phase_function.n_phase_transitions_for_each_composition());
               }
 
@@ -999,6 +1050,9 @@ namespace aspect
             }
         }
 
+      // Morb phases
+      if (use_lookup_table_morb)    
+        equation_of_state_morb_lookup.fill_additional_outputs(in, all_volume_fractions, out, morb_composition_index);
     }
 
 
@@ -1264,6 +1318,36 @@ namespace aspect
           {
             prm.declare_entry ("Material lookup indexes", "0", Patterns::List(Patterns::Integer()),
                                "Indexes of compositions to match with lookup tables");
+            EquationOfState::ThermodynamicTableLookup<dim>::declare_parameters(prm);
+          }
+          prm.leave_subsection();
+
+          // Table lookup parameters form MORB composition
+          prm.declare_entry ("Use lookup table morb", "false", Patterns::Bool(),
+                             "Whether to use lookup tables for compositions and phases");
+          prm.enter_subsection ("Lookup table morb");
+          {
+            prm.declare_entry ("Morb composition index", "0", Patterns::Integer(),
+                               "index for morb composition");
+
+            prm.declare_entry ("Cutoff eclogite phase below", "0.0", Patterns::Double(),
+                               "Cutoff for eclogite composition");
+            
+            prm.declare_entry ("Cutoff eclogite phase above T1", "1e31", Patterns::Double(),
+                               "Cutoff for eclogite composition above 1 - T");
+            
+            prm.declare_entry ("Cutoff eclogite phase above P1", "1e31", Patterns::Double(),
+                               "Cutoff for eclogite composition above 1 - P");
+            
+            prm.declare_entry ("Cutoff eclogite phase above T2", "1e31", Patterns::Double(),
+                               "Cutoff for eclogite composition above 1 - T");
+            
+            prm.declare_entry ("Cutoff eclogite phase above P2", "1e31", Patterns::Double(),
+                               "Cutoff for eclogite composition above 1 - P");
+            
+            prm.declare_entry ("Rewrite morb density", "true", Patterns::Bool(),
+                               "Rewrite morb density with the lookup table.");
+
             EquationOfState::ThermodynamicTableLookup<dim>::declare_parameters(prm);
           }
           prm.leave_subsection();
@@ -1561,6 +1645,24 @@ namespace aspect
                         ExcMessage("Size of lookup indexes has to match number of fields + 1 "));
           }
           prm.leave_subsection();
+          
+          // parse options for lookup morb composition
+          use_lookup_table_morb = prm.get_bool("Use lookup table morb");
+          equation_of_state_morb_lookup.initialize_simulator (this->get_simulator());
+          prm.enter_subsection ("Lookup table morb");
+          {
+            equation_of_state_morb_lookup.parse_parameters(prm);
+            morb_composition_index          = prm.get_integer("Morb composition index");
+            eclogite_phase_cutoff_below = prm.get_double("Cutoff eclogite phase below");
+            eclogite_phase_cutoff_above_T1 = prm.get_double("Cutoff eclogite phase above T1");
+            eclogite_phase_cutoff_above_P1 = prm.get_double("Cutoff eclogite phase above P1");
+            eclogite_phase_cutoff_above_T2 = prm.get_double("Cutoff eclogite phase above T2");
+            eclogite_phase_cutoff_above_P2 = prm.get_double("Cutoff eclogite phase above P2");
+            material_lookup_morb_indexes = std::vector<int> (n_fields, -1);
+            material_lookup_morb_indexes[morb_composition_index] = 0;
+            rewrite_morb_density = prm.get_bool("Rewrite morb density");
+          }
+          prm.leave_subsection();
 
           // todo_c_visc 
           // Reset viscosity for some part as the last step of computing viscosity
@@ -1624,6 +1726,10 @@ namespace aspect
           out.additional_outputs.push_back(
             std::make_unique<MaterialModel::TwoDAdditionalViscosityOutputs<dim>> (n_points));
         }
+      
+      // create additional outputs for the equation_of_state_morb_lookup object
+      if (use_lookup_table_morb)    
+        equation_of_state_morb_lookup.create_additional_named_outputs(out);
     }
 
     template <int dim>

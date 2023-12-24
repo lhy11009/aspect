@@ -193,7 +193,7 @@ subsection Material model
         set Activation volumes for dislocation creep = background: 1.4000e-05|1.4000e-05|1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00,spcrust: 0.0000e+00|1.4000e-05|0.0000e+00|0.0000e+00,spharz: 1.4000e-05|1.4000e-05|1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00,opcrust: 1.4000e-05, opharz: 1.4000e-05
         set Angles of internal friction = 25.0
         set Cohesions = 50.e6
-	set Maximum yield stress = 500e6
+  set Maximum yield stress = 500e6
         set Include Peierls creep = true
         set Peierls creep flow law = exact
         set Peierls fitting parameters = 0.17
@@ -204,9 +204,9 @@ subsection Material model
         set Prefactors for Peierls creep = 1.4000e-19
         set Activation energies for Peierls creep = 3.2000e+05
         set Activation volumes for Peierls creep = 0.0
-	set Activation volume differences for Peierls creep = 1.3400e-05
-	set Reference temperatures = 873
-	set Reference pressures = 4.5e9
+  set Activation volume differences for Peierls creep = 1.3400e-05
+  set Reference temperatures = 873
+  set Reference pressures = 4.5e9
         set Peierls shear modulus = 7.74e10
         set Peierls shear modulus derivative = 0.0
         set Peierls strain rate residual tolerance = 1.0000e-22
@@ -301,4 +301,3 @@ end
 subsection Checkpointing
     set Steps between checkpoint = 50
 end
-

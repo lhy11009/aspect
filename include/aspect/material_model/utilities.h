@@ -268,6 +268,19 @@ namespace aspect
         };
 
         /**
+         * An implementation of the above base class that reads in files created
+         * by the Perplex software.
+         * used only for the morb composition in 2d subduction project
+         */
+        class PerplexReaderMorb : public MaterialLookup
+        {
+          public:
+            PerplexReaderMorb(const std::string &filename,
+                              const bool interpol,
+                              const MPI_Comm comm);
+        };
+
+        /**
         * This class reads in an entropy-pressure material table and looks up material
         * properties for the given entropy and pressure.
         */
@@ -518,13 +531,13 @@ namespace aspect
                                   const std::vector<double> &parameter_values,
                                   const unsigned int composition_index,
                                   const PhaseUtilities::PhaseAveragingOperation operation = PhaseUtilities::arithmetic);
-      
-      // add to keep a previous version 
+
+      // add to keep a previous version
       double phase_average_value1 (const std::vector<double> &phase_function_values,
-                                  const std::vector<unsigned int> &n_phase_transitions_per_composition,
-                                  const std::vector<double> &parameter_values,
-                                  const unsigned int composition_index,
-                                  const PhaseUtilities::PhaseAveragingOperation operation = PhaseUtilities::arithmetic);
+                                   const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                   const std::vector<double> &parameter_values,
+                                   const unsigned int composition_index,
+                                   const PhaseUtilities::PhaseAveragingOperation operation = PhaseUtilities::arithmetic);
 
 
 
@@ -739,7 +752,7 @@ namespace aspect
           double compute_value (const PhaseFunctionInputs<dim> &in) const;
 
           /* I made this other version to avoid messing up the original one
-          */ 
+          */
           double compute_value1 (const PhaseFunctionInputs<dim> &in) const;
 
           /**

@@ -925,6 +925,13 @@ namespace aspect
     }
 
 
+    template <int dim>
+    PhaseFractionAdditionalOutputs<dim>::PhaseFractionAdditionalOutputs(const std::vector<std::string> &output_names,
+                                                                        const unsigned int n_points)
+      : NamedAdditionalMaterialOutputs<dim>(output_names, n_points)
+    {}
+
+
 
     template <int dim>
     PrescribedPlasticDilation<dim>::PrescribedPlasticDilation (const unsigned int n_points)

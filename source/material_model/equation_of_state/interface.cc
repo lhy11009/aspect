@@ -35,7 +35,8 @@ namespace aspect
       specific_heat_capacities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
       compressibilities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
       entropy_derivative_pressure(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      entropy_derivative_temperature(n_individual_compositions_and_phases, numbers::signaling_nan<double>())
+      entropy_derivative_temperature(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
+      eos_eclogite_phase_volume_fraction(0.0)
     {}
 
 
@@ -63,13 +64,13 @@ namespace aspect
             MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.entropy_derivative_temperature, c);
         }
     }
-    
+
     template <int dim>
     void
     phase_average_equation_of_state_outputs_1(const EquationOfStateOutputs<dim> &eos_outputs_all_phases,
-                                            const std::vector<double> &phase_function_values,
-                                            const std::vector<unsigned int> &n_phase_transitions_per_composition,
-                                            EquationOfStateOutputs<dim> &eos_outputs)
+                                              const std::vector<double> &phase_function_values,
+                                              const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                              EquationOfStateOutputs<dim> &eos_outputs)
     {
       for (unsigned int c=0; c<eos_outputs.densities.size(); ++c)
         {
@@ -102,9 +103,9 @@ namespace aspect
                                                               const std::vector<unsigned int> &n_phase_transitions_per_composition, \
                                                               EquationOfStateOutputs<dim> &);\
   template void phase_average_equation_of_state_outputs_1<dim> (const EquationOfStateOutputs<dim> &, \
-                                                              const std::vector<double> &phase_function_values, \
-                                                              const std::vector<unsigned int> &n_phase_transitions_per_composition, \
-                                                              EquationOfStateOutputs<dim> &);
+                                                                const std::vector<double> &phase_function_values, \
+                                                                const std::vector<unsigned int> &n_phase_transitions_per_composition, \
+                                                                EquationOfStateOutputs<dim> &);
 
     ASPECT_INSTANTIATE(INSTANTIATE)
 

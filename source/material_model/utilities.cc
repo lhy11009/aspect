@@ -789,6 +789,276 @@ namespace aspect
 
         }
 
+        PerplexReaderMorb::PerplexReaderMorb(const std::string &filename,
+                                             const bool interpol,
+                                             const MPI_Comm comm)
+        {
+          /* Initializing variables */
+          interpolation = interpol;
+          delta_press=numbers::signaling_nan<double>();
+          min_press=std::numeric_limits<double>::max();
+          max_press=std::numeric_limits<double>::lowest();
+          delta_temp=numbers::signaling_nan<double>();
+          min_temp=std::numeric_limits<double>::max();
+          max_temp=std::numeric_limits<double>::lowest();
+          n_temperature=0;
+          n_pressure=0;
+          has_dominant_phase_column = false;
+
+          std::string temp;
+          // Read data from disk and distribute among processes
+          std::istringstream in(Utilities::read_and_distribute_file_content(filename, comm));
+
+          // The following lines read in a PerpleX tab file in standard format
+          // The first 13 lines are a header in the format:
+          // |<perplex version>
+          // <table filename>
+          // <grid dim>
+          // <grid variable 1> (usually T(K) or P(bar))
+          // <min grid variable 1>
+          // <delta grid variable 1>
+          // <n steps grid variable 1>
+          // <grid variable 2> (usually T(K) or P(bar))
+          // <min grid variable 2>
+          // <delta grid variable 2>
+          // <n steps grid variable 2>
+          // Number of property columns in the table
+          // Column names
+
+          // First line is the Perplex version number
+          std::getline(in, temp); // get next line, table file name
+
+          std::getline(in, temp); // get next line, dimension of table
+          unsigned int n_variables;
+          in >> n_variables;
+          AssertThrow (n_variables==2, ExcMessage("The PerpleX file " + filename + " must be two dimensional (P(bar)-T(K))."));
+
+          std::getline(in, temp); // get next line, either T(K) or P(bar)
+
+          for (unsigned int i=0; i<2; ++i)
+            {
+              std::string natural_variable;
+              in >> natural_variable;
+
+              if (natural_variable == "T(K)")
+                {
+                  std::getline(in, temp);
+                  in >> min_temp;
+                  std::getline(in, temp);
+                  in >> delta_temp;
+                  std::getline(in, temp);
+                  in >> n_temperature;
+                  std::getline(in, temp); // get next line, either T(K), P(bar) or number of columns
+                }
+              else if (natural_variable == "P(bar)")
+                {
+                  std::getline(in, temp);
+                  in >> min_press;
+                  min_press *= 1e5;  // conversion from [bar] to [Pa]
+                  std::getline(in, temp);
+                  in >> delta_press;
+                  delta_press *= 1e5; // conversion from [bar] to [Pa]
+                  std::getline(in, temp);
+                  in >> n_pressure;
+                  std::getline(in, temp); // get next line, either T(K), P(bar) or number of columns
+                }
+              else
+                {
+                  AssertThrow (false, ExcMessage("The start of the PerpleX file " + filename + " does not have the expected format."));
+                }
+            }
+
+          in >> n_columns;
+          std::getline(in, temp); // get next line, column labels
+
+          // here we string match to assign properties to columns
+          // column i in text file -> column j in properties
+          // Properties are stored in the order rho, (no alpha, cp, vp, vs, h)
+          std::vector<int> prp_indices(1, -1);
+          std::vector<int> phase_column_indices;
+          unsigned int dominant_phase_column_index = numbers::invalid_unsigned_int;
+
+          // First two columns should be P(bar) and T(K).
+          // Here we find the order.
+          std::string column_name;
+          in >> column_name;
+
+          std::string first_natural_variable;
+          if (column_name == "P(bar)")
+            {
+              first_natural_variable = column_name;
+              in >> column_name;
+              AssertThrow(column_name == "T(K)", ExcMessage("The second column name in PerpleX lookup file " + filename + " should be T(K)."));
+            }
+          else if (column_name == "T(K)")
+            {
+              first_natural_variable = column_name;
+              in >> column_name;
+              AssertThrow(column_name == "P(bar)", ExcMessage("The second column name in PerpleX lookup file " + filename + " should be P(bar)."));
+            }
+          else
+            {
+              AssertThrow(false, ExcMessage("The first column name in the PerpleX lookup file " + filename + " should be P(bar) or T(K)."));
+            }
+
+          for (unsigned int n=2; n<n_columns; ++n)
+            {
+              in >> column_name;
+              if (column_name == "rho,kg/m3")
+                prp_indices[0] = n;
+              else if (column_name == "phase")
+                {
+                  has_dominant_phase_column = true;
+                  dominant_phase_column_index = n;
+                }
+              else if (column_name.length() > 3)
+                {
+                  if (column_name.substr(0,13).compare("vol_fraction_") == 0)
+                    {
+                      if (std::find(phase_column_names.begin(),
+                                    phase_column_names.end(),
+                                    column_name) != phase_column_names.end())
+                        {
+                          AssertThrow(false,
+                                      ExcMessage("The PerpleX lookup file " + filename + " must have unique column names. "
+                                                 "Sometimes, the same phase is stable with >1 composition at the same "
+                                                 "pressure and temperature, so you may see several columns with the same name. "
+                                                 "Either combine columns with the same name, or change the names."));
+                        }
+                      // Populate phase_column_names with the column name
+                      // and phase_column_indices with the column index in the current lookup file.
+                      phase_column_indices.push_back(n);
+                      phase_column_names.push_back(column_name);
+                    }
+                }
+            }
+          AssertThrow(std::all_of(prp_indices.begin(), prp_indices.end(), [](int i)
+          {
+            return i>=0;
+          }),
+          ExcMessage("The PerpleX lookup file " + filename + " must contain columns with names "
+                     "rho,kg/m3, alpha,1/K, cp,J/K/kg, vp,km/s, vs,km/s and h,J/kg."));
+
+          std::getline(in, temp); // first data line
+
+          AssertThrow(min_temp >= 0.0, ExcMessage("Read in of Material header failed (mintemp)."));
+          AssertThrow(delta_temp > 0, ExcMessage("Read in of Material header failed (delta_temp)."));
+          AssertThrow(n_temperature > 0, ExcMessage("Read in of Material header failed (numtemp)."));
+          AssertThrow(min_press >= 0, ExcMessage("Read in of Material header failed (min_press)."));
+          AssertThrow(delta_press > 0, ExcMessage("Read in of Material header failed (delta_press)."));
+          AssertThrow(n_pressure > 0, ExcMessage("Read in of Material header failed (numpress)."));
+
+
+          max_temp = min_temp + (n_temperature-1) * delta_temp;
+          max_press = min_press + (n_pressure-1) * delta_press;
+
+          density_values.reinit(n_temperature,n_pressure);
+          thermal_expansivity_values.reinit(n_temperature,n_pressure);
+          specific_heat_values.reinit(n_temperature,n_pressure);
+          vp_values.reinit(n_temperature,n_pressure);
+          vs_values.reinit(n_temperature,n_pressure);
+          enthalpy_values.reinit(n_temperature,n_pressure);
+
+          if (has_dominant_phase_column)
+            dominant_phase_indices.reinit(n_temperature,n_pressure);
+
+          phase_volume_fractions.resize(phase_column_names.size());
+          for (auto &phase_volume_fraction : phase_volume_fractions)
+            phase_volume_fraction.reinit(n_temperature,n_pressure);
+
+          unsigned int i = 0;
+          std::vector<double> previous_row_values(n_columns, 0.);
+
+          while (!in.eof())
+            {
+              std::vector<double> row_values(n_columns);
+              std::string phase;
+
+              for (unsigned int n=0; n<n_columns; ++n)
+                {
+                  if (n == dominant_phase_column_index)
+                    in >> phase;
+                  else
+                    in >> row_values[n]; // assigned as 0 if in.fail() == True
+
+                  // P-T grids created with PerpleX-werami sometimes contain rows
+                  // filled with NaNs at extreme P-T conditions where the thermodynamic
+                  // models break down. These P-T regions are typically not relevant to
+                  // geodynamic modeling (they most commonly appear above
+                  // mantle liquidus temperatures at low pressures).
+                  // More frustratingly, PerpleX-vertex occasionally fails to find a
+                  // valid mineral assemblage in small, isolated regions within the domain,
+                  // and so PerpleX-werami also returns NaNs for pixels within these regions.
+                  // It is recommended that the user preprocesses their input
+                  // files to replace these NaNs before plugging them into ASPECT.
+                  // If this lookup encounters invalid doubles it replaces them
+                  // with the most recent valid double.
+                  if (in.fail())
+                    {
+                      in.clear();
+                      row_values[n] = previous_row_values[n];
+                    }
+                }
+              previous_row_values = row_values;
+
+              std::getline(in, temp); // read next line
+              if (in.eof())
+                break;
+
+              if (std::find(dominant_phase_names.begin(), dominant_phase_names.end(), phase) == dominant_phase_names.end())
+                dominant_phase_names.push_back(phase);
+
+              // The ordering of the first two columns in the PerpleX table files
+              // dictates whether the inner loop is over temperature or pressure.
+              // The first column is always the inner loop.
+              // The following lines populate the material property tables
+              // according to that implicit loop structure.
+              if (first_natural_variable == "T(K)")
+                {
+                  density_values[i%n_temperature][i/n_temperature]=row_values[prp_indices[0]];
+                  thermal_expansivity_values[i%n_temperature][i/n_temperature]= 0.0; // row_values[prp_indices[1]];
+                  specific_heat_values[i%n_temperature][i/n_temperature]= 0.0; // row_values[prp_indices[2]];
+                  vp_values[i%n_temperature][i/n_temperature]= 0.0; //row_values[prp_indices[3]];
+                  vs_values[i%n_temperature][i/n_temperature]= 0.0; //row_values[prp_indices[4]];
+                  enthalpy_values[i%n_temperature][i/n_temperature]= 0.0; //row_values[prp_indices[5]];
+
+                  if (has_dominant_phase_column)
+                    {
+                      std::vector<std::string>::iterator it = std::find(dominant_phase_names.begin(), dominant_phase_names.end(), phase);
+                      dominant_phase_indices[i%n_temperature][i/n_temperature] = std::distance(dominant_phase_names.begin(), it);
+                    }
+
+                  for (unsigned int n=0; n<phase_volume_fractions.size(); ++n)
+                    {
+                      phase_volume_fractions[n][i%n_temperature][i/n_temperature]=row_values[phase_column_indices[n]];
+                    }
+                }
+              else // first_natural_variable == "P(bar)"
+                {
+                  density_values[i/n_pressure][i%n_pressure]=row_values[prp_indices[0]];
+                  thermal_expansivity_values[i/n_pressure][i%n_pressure]=0.0;//row_values[prp_indices[1]];
+                  specific_heat_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[2]];
+                  vp_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[3]];
+                  vs_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[4]];
+                  enthalpy_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[5]];
+
+                  if (has_dominant_phase_column)
+                    {
+                      std::vector<std::string>::iterator it = std::find(dominant_phase_names.begin(), dominant_phase_names.end(), phase);
+                      dominant_phase_indices[i/n_pressure][i%n_pressure] = std::distance(dominant_phase_names.begin(), it);
+                    }
+
+                  for (unsigned int n=0; n<phase_volume_fractions.size(); ++n)
+                    {
+                      phase_volume_fractions[n][i/n_pressure][i%n_pressure]=row_values[phase_column_indices[n]];
+                    }
+                }
+              ++i;
+            }
+          AssertThrow(i == n_temperature*n_pressure, ExcMessage("Material table size not consistent with header."));
+
+        }
+
 
 
         void
@@ -1158,10 +1428,10 @@ namespace aspect
 
 
       double phase_average_value1 (const std::vector<double> &phase_function_values,
-                                  const std::vector<unsigned int> &n_phase_transitions_per_composition,
-                                  const std::vector<double> &parameter_values,
-                                  const unsigned int composition_index,
-                                  const PhaseUtilities::PhaseAveragingOperation operation)
+                                   const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                   const std::vector<double> &parameter_values,
+                                   const unsigned int composition_index,
+                                   const PhaseUtilities::PhaseAveragingOperation operation)
       {
         // Calculate base index and assign base value
         unsigned int start_phase_index = 0;

@@ -903,6 +903,28 @@ namespace aspect
         const std::vector<std::string> names;
     };
 
+    /**
+     * Additional output fields for the seismic velocities to be added to
+     * the MaterialModel::MaterialModelOutputs structure and filled in the
+     * MaterialModel::Interface::evaluate() function.
+     */
+    template <int dim>
+    class PhaseFractionAdditionalOutputs : public NamedAdditionalMaterialOutputs<dim>
+    {
+      public:
+        /**
+         * Constructor for case where outputs are stored for a number of points.
+         *
+         * @param output_names A list of names for the additional output variables
+         *   this object will store. The length of the list also indicates
+         *   how many additional output variables objects of derived classes
+         *   will store.
+         * @param n_points The number of points for which to store each of the
+         *   output variables.
+         */
+        PhaseFractionAdditionalOutputs(const std::vector<std::string> &output_names,
+                                       const unsigned int n_points);
+    };
 
     /**
      * Additional output fields for the seismic velocities to be added to
