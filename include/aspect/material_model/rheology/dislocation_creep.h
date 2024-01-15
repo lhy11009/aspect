@@ -45,6 +45,8 @@ namespace aspect
         double activation_energy;
         double activation_volume;
         double stress_exponent;
+        double reference_strain_rate;
+        double reference_stress_exponent;
       };
 
       template <int dim>
@@ -142,6 +144,16 @@ namespace aspect
            * List of dislocation creep activation volumes V.
            */
           std::vector<double> activation_volumes_dislocation;
+
+          /**
+          * List of reference stress exponent n1.
+          */
+          std::vector<double> reference_stress_exponents_dislocation;
+
+          /*
+          * List of reference strain rate.
+          */
+          std::vector<double> reference_strain_rates_dislocation;
 
       };
     }
