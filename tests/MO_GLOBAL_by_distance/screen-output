@@ -1,0 +1,35 @@
+
+Number of active cells: 1,536 (on 5 levels)
+Number of degrees of freedom: 76,052 (12,738+1,649+6,369+13,824+13,824+13,824+13,824)
+
+WorldBuilderFeatureSurface::generate_particles: 
+Generating method = constant distance
+Assigned 201 on the slab, 97 are successfully generated on the slab, including 0 inserted separtately to maintain a regular distances between adjacent points.
+ending scheme = infinity value
+
+   Postprocessing:
+     Writing graphical output: output-MO_GLOBAL_by_distance/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Writing particle output:  output-MO_GLOBAL_by_distance/particles/particles-00000
+
+Number of active cells: 1,251 (on 6 levels)
+Number of degrees of freedom: 63,663 (11,414+1,506+5,707+11,259+11,259+11,259+11,259)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:     output-MO_GLOBAL_by_distance/solution/solution-00001
+     RMS, max velocity:            0 m/year, 0 m/year
+     Number of advected particles: 97
+
+*** Timestep 1:  t=6e+07 years, dt=6e+07 years
+
+   Postprocessing:
+     Writing graphical output: output-MO_GLOBAL_by_distance/solution/solution-00002
+     RMS, max velocity:        0 m/year, 0 m/year
+     Writing particle output:  output-MO_GLOBAL_by_distance/particles/particles-00001
+
+Termination requested by criterion: end time
+
+
+

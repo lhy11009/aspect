@@ -1,0 +1,170 @@
+set Dimension = 2
+set Use years in output instead of seconds = true
+set Start time = 0
+set End time = 60e6
+set Output directory = output
+set Timing output frequency = 10
+set Pressure normalization = surface
+set Surface pressure = 0
+set Adiabatic surface temperature = 1573.0
+set Resume computation = false
+set Nonlinear solver scheme = no Advection, no Stokes
+set World builder file = $ASPECT_SOURCE_DIR/tests/MO_GLOBAL_by_distance.wb
+
+subsection Discretization
+    set Composition polynomial degree = 2
+    set Stokes velocity polynomial degree = 2
+    set Temperature polynomial degree = 2
+    set Use discontinuous composition discretization = true
+    subsection Stabilization parameters
+        set Use limiter for discontinuous composition solution = true
+        set Global composition maximum = 1, 1, 1, 1
+        set Global composition minimum = 0, 0, 0, 0
+    end
+end
+
+subsection Formulation
+    set Formulation = custom
+    set Mass conservation = incompressible
+    set Temperature equation = reference density profile
+end
+
+subsection Geometry model
+    set Model name = chunk
+    subsection Chunk
+        set Chunk inner radius = 3.481e6
+        set Chunk outer radius = 6.371e6
+        set Chunk maximum longitude = 1.7150e+02
+        set Chunk minimum longitude = 0.0
+        set Longitude repetitions = 6
+    end
+end
+
+
+subsection Mesh refinement
+    set Initial global refinement = 4
+    set Initial adaptive refinement = 1
+    set Minimum refinement level = 1
+    set Strategy = isosurfaces, minimum refinement function, viscosity
+    set Time steps between mesh refinement = 10
+    set Refinement fraction = 0.2
+    set Coarsening fraction = 0.2
+    set Run postprocessors on initial refinement = true
+    set Skip solvers on initial refinement = true
+    subsection Isosurfaces
+        set Isosurfaces = max, max, spcrust: 0.5 | 1.0; max-1, max, spharz: 0.5 | 1.0;  max-1, max, opcrust: 0.5 | 1.0; max-2, max, opharz: 0.5 | 1.0; max-1, max, Temperature: 270.0 | 1173.0
+    end
+    subsection Minimum refinement function
+        set Coordinate system = spherical
+        set Variable names = r,phi,t
+        set Function constants = Ro=6.3710e+06, UM=670e3, DD=100e3
+        set Function expression = ((Ro-r<UM)? \
+                                   ((Ro-r<DD)? 5: 4): 0.0)
+    end
+end
+
+
+subsection Boundary velocity model
+    set Tangential velocity boundary indicators = 0, 1, 2, 3
+end
+
+
+subsection Heating model
+    set List of model names = adiabatic heating, latent heat, shear heating
+end
+
+
+subsection Initial temperature model
+    set List of model names = world builder, adiabatic
+    set List of model operators = add
+    subsection Adiabatic
+        subsection Function
+            set Function expression = 0.0; 0.0; 0.0; 0.0
+        end
+    end
+end
+
+
+subsection Boundary temperature model
+    set Fixed temperature boundary indicators = bottom, top
+    set List of model names = spherical constant
+    subsection Spherical constant
+        set Inner temperature = 3500
+        set Outer temperature = 273
+    end
+end
+
+
+subsection Compositional fields
+    set Number of fields = 4
+    set Names of fields = spcrust,spharz,opcrust,opharz
+    set Compositional field methods = field,field,field,field
+end
+
+
+subsection Initial composition model
+    set List of model names = world builder
+end
+
+
+subsection Boundary composition model
+    set Fixed composition boundary indicators = 0, 1
+    set List of model names = initial composition
+    subsection Initial composition
+        set Minimal composition = 0
+        set Maximal composition = 1
+    end
+end
+
+
+subsection Material model
+    set Model name = visco plastic
+    set Material averaging = harmonic average
+    subsection Visco Plastic
+        set Reference temperature = 273
+        set Minimum strain rate = 1.e-20
+        set Reference strain rate = 1e-15
+        set Minimum viscosity = 1e18
+        set Maximum viscosity = 1e24
+    end
+end
+
+
+subsection Gravity model
+    set Model name = ascii data
+end
+
+
+subsection Postprocess
+  set List of postprocessors = visualization, velocity statistics, particles
+
+  subsection Visualization
+    set Time between graphical output = 0
+    set List of output variables = material properties, gravity
+  end
+    subsection Particles
+        set Data output format = gnuplot
+        set List of particle properties = initial position
+        set Time between data output = 0.1e6
+        set Number of particles = 201
+        set Particle generator name = world builder feature surface
+        subsection Generator
+            subsection World builder feature surface
+                set Generate method = 1
+                set Positive dipping = true
+                set Feature surface distance = 1.2500e+04
+                set Maximum radius = 6.3710e+06
+                set Minimum radius = 6.1710e+06
+                set Feature start = 1.1772e+00
+                set Search start = 1.1772e+00
+                set Search length = 0.00174
+                set Search max step = 100
+            end
+        end
+    end
+end
+
+
+subsection Checkpointing
+    set Steps between checkpoint = 50
+end
