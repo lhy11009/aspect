@@ -150,7 +150,7 @@ subsection Postprocess
         set Particle generator name = world builder feature surface
         subsection Generator
             subsection World builder feature surface
-                set Feature surface distance = 1.2500e+04
+                set Feature surface distances = 1.2500e+04
                 set Maximum radius = 6.3710e+06
                 set Minimum radius = 6.1710e+06
                 set Feature start = 1.1772e+00

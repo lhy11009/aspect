@@ -53,13 +53,13 @@ namespace aspect
            * The method of generating particles by looking at decreasing radius
            * */
           void
-          generate_particles_by_radius(Particles::ParticleHandler<dim> &particle_handler);
+          generate_particles_by_radius(Particles::ParticleHandler<dim> &particle_handler, const double);
 
           /**
            * The method of generating particles by looking at a constant distance
            * */
           void
-          generate_particles_by_distance(Particles::ParticleHandler<dim> &particle_handler);
+          generate_particles_by_distance(Particles::ParticleHandler<dim> &particle_handler, const double);
 
           // avoid -Woverloaded-virtual
           // TODO: remove this using directive once the following deprecated
@@ -87,6 +87,16 @@ namespace aspect
           types::particle_index n_particles;
 
           /**
+           * Number of particles created
+           */
+          types::particle_index n_particles_created;
+
+          /**
+           * Number of particles created to maintain constant distance
+           */
+          types::particle_index n_insert_particles;
+
+          /**
           * The name of the geometry model
           */
           std::string geometry_model_name;
@@ -97,6 +107,16 @@ namespace aspect
           int generate_method;
 
           /**
+           * Number of sets of particles
+          */
+          int n_set_of_particles;
+
+          /**
+           * Number of particles created in each set
+           */
+          std::vector<int> n_particles_in_each_set;
+
+          /**
           * position of the feature start
           */
           double feature_start;
@@ -105,7 +125,25 @@ namespace aspect
           * The distance of the particles
           * to the feature surface
           */
-          double feature_surface_distance;
+          std::vector<double> feature_surface_distances;
+
+          /**
+          * The minimum distance of the particles
+          * to the feature surface
+          */
+          double minimum_feature_surface_distance;
+
+          /**
+          * The maximum distance of the particles
+          * to the feature surface
+          */
+          double maximum_feature_surface_distance;
+
+          /**
+          * The interval of the distance of the particles
+          * to the feature surface
+          */
+          double interval_feature_surface_distance;
 
           /**
           * The Maximum radius to generate particles

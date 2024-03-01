@@ -1,0 +1,50 @@
+
+Number of active cells: 1,536 (on 5 levels)
+Number of degrees of freedom: 76,052 (12,738+1,649+6,369+13,824+13,824+13,824+13,824)
+
+WorldBuilderFeatureSurface::generate_particles: distance = 1000.
+Generating method = constant distance
+Assigned 201 on the slab, 93 are successfully generated on the slab, including 0 inserted separtately to maintain a regular distances between adjacent points.
+ending scheme = infinity value
+
+WorldBuilderFeatureSurface::generate_particles: distance = 6000.
+Generating method = constant distance
+Assigned 201 on the slab, 93 are successfully generated on the slab, including 0 inserted separtately to maintain a regular distances between adjacent points.
+ending scheme = infinity value
+
+WorldBuilderFeatureSurface::generate_particles: distance = 11000.
+Generating method = constant distance
+Assigned 201 on the slab, 92 are successfully generated on the slab, including 0 inserted separtately to maintain a regular distances between adjacent points.
+ending scheme = infinity value
+
+WorldBuilderFeatureSurface::generate_particles: distance = 16000.
+Generating method = constant distance
+Assigned 201 on the slab, 92 are successfully generated on the slab, including 0 inserted separtately to maintain a regular distances between adjacent points.
+ending scheme = infinity value
+
+   Postprocessing:
+     Writing graphical output: output-MO_GLOBAL_distances_by_interval/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Writing particle output:  output-MO_GLOBAL_distances_by_interval/particles/particles-00000
+
+Number of active cells: 1,215 (on 6 levels)
+Number of degrees of freedom: 61,828 (11,086+1,459+5,543+10,935+10,935+10,935+10,935)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:     output-MO_GLOBAL_distances_by_interval/solution/solution-00001
+     RMS, max velocity:            0 m/year, 0 m/year
+     Number of advected particles: 370
+
+*** Timestep 1:  t=6e+07 years, dt=6e+07 years
+
+   Postprocessing:
+     Writing graphical output: output-MO_GLOBAL_distances_by_interval/solution/solution-00002
+     RMS, max velocity:        0 m/year, 0 m/year
+     Writing particle output:  output-MO_GLOBAL_distances_by_interval/particles/particles-00001
+
+Termination requested by criterion: end time
+
+
+

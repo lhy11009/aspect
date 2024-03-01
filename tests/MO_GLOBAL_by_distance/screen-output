@@ -2,7 +2,7 @@
 Number of active cells: 1,536 (on 5 levels)
 Number of degrees of freedom: 76,052 (12,738+1,649+6,369+13,824+13,824+13,824+13,824)
 
-WorldBuilderFeatureSurface::generate_particles: 
+WorldBuilderFeatureSurface::generate_particles: distance = 12500.
 Generating method = constant distance
 Assigned 201 on the slab, 97 are successfully generated on the slab, including 0 inserted separtately to maintain a regular distances between adjacent points.
 ending scheme = infinity value

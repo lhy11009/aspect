@@ -31,16 +31,15 @@ namespace aspect
     {
       template <>
       void
-      WorldBuilderFeatureSurface<2>::generate_particles_by_radius(Particles::ParticleHandler<2> &particle_handler)
+      WorldBuilderFeatureSurface<2>::generate_particles_by_radius(Particles::ParticleHandler<2> &particle_handler, const double feature_surface_distance)
       {
         double x = 0.0;
         double y = 0.0;
-        types::particle_index particle_index = 0;
+        types::particle_index particle_index = n_particles_created;
         // generate particles on the slab.
         // Initiate variables
         // The depth interval between adjacent particles
         const double interval = (maximum_radius - minimum_radius) / (n_particles - 1.0); // 10 km
-        unsigned n_insert_particles = 0;
         for (unsigned i = 0; i < n_particles; ++i)
           {
             const double depth = i * interval;
@@ -200,15 +199,17 @@ namespace aspect
               }
           }
         particle_handler.update_cached_numbers();
-        std::cout << "WorldBuilderFeatureSurface::generate_particles: assigned" << n_particles << " on the slab, "
-                  << particle_index << " are successfully generated on the slab, including "
+        std::cout << "WorldBuilderFeatureSurface::generate_particles: distance = " << feature_surface_distance << "." << std::endl
+                  << "assigned " << n_particles << " on the slab, "
+                  << particle_index - n_particles_created  << " are successfully generated on the slab, including "
                   << n_insert_particles << " inserted separtately to maintain a regular distances between adjacent points."
                   << std::endl << std::endl;
+        n_particles_created = particle_index;
       }
 
       template <>
       void
-      WorldBuilderFeatureSurface<2>::generate_particles_by_distance(Particles::ParticleHandler<2> &particle_handler)
+      WorldBuilderFeatureSurface<2>::generate_particles_by_distance(Particles::ParticleHandler<2> &particle_handler, const double feature_surface_distance)
       {
         //part I: get the initial point
         double x = 0.0;
@@ -216,14 +217,13 @@ namespace aspect
         double x_last = 0.0;
         double y_last = 0.0;
         double theta_last = search_start;
-        types::particle_index particle_index = 0;
+        types::particle_index particle_index = n_particles_created;
         // generate particles on the slab.
         // Initiate variables
         // The depth interval between adjacent particles
         // The strategy is to decrease from the maximum radius
         // and look up with the new radius
         const double interval = 1e3; // 10 km
-        unsigned n_insert_particles = 0;
         int initial_search_steps = 1000;
         for (int i=0; i < initial_search_steps; ++i)
           {
@@ -499,13 +499,14 @@ namespace aspect
           }
 
         particle_handler.update_cached_numbers();
-        std::cout << "WorldBuilderFeatureSurface::generate_particles: " << std::endl
+        std::cout << "WorldBuilderFeatureSurface::generate_particles: distance = " << feature_surface_distance << "." << std::endl
                   << "Generating method = " << ((generate_method == 0)? "along radius": "constant distance") << std::endl
                   << "Assigned " << n_particles << " on the slab, "
-                  << particle_index << " are successfully generated on the slab, including "
+                  << particle_index - n_particles_created << " are successfully generated on the slab, including "
                   << n_insert_particles << " inserted separtately to maintain a regular distances between adjacent points." << std::endl
                   << "ending scheme = " << ending_scheme
                   << std::endl << std::endl;
+        n_particles_created = particle_index;
       }
 
       template <>
@@ -513,9 +514,19 @@ namespace aspect
       WorldBuilderFeatureSurface<2>::generate_particles(Particles::ParticleHandler<2> &particle_handler)
       {
         if (generate_method == 0)
-          generate_particles_by_radius(particle_handler);
+          {
+            for (int i_set = 0; i_set < n_set_of_particles ; ++i_set)
+              {
+                generate_particles_by_radius(particle_handler, feature_surface_distances[i_set]);
+              }
+          }
         else if (generate_method == 1)
-          generate_particles_by_distance(particle_handler);
+          {
+            for (int i_set = 0; i_set < n_set_of_particles ; ++i_set)
+              {
+                generate_particles_by_distance(particle_handler, feature_surface_distances[i_set]);
+              }
+          }
         else
           AssertThrow(false, ExcNotImplemented());
       }
@@ -529,7 +540,14 @@ namespace aspect
 
       template <>
       void
-      WorldBuilderFeatureSurface<3>::generate_particles_by_radius(Particles::ParticleHandler<3> &)
+      WorldBuilderFeatureSurface<3>::generate_particles_by_radius(Particles::ParticleHandler<3> &, const double)
+      {
+        Assert (false, ExcNotImplemented());
+      }
+
+      template <>
+      void
+      WorldBuilderFeatureSurface<3>::generate_particles_by_distance(Particles::ParticleHandler<3> &, const double)
       {
         Assert (false, ExcNotImplemented());
       }
@@ -561,9 +579,22 @@ namespace aspect
               {
                 prm.declare_entry ("Generate method", "0",
                                    Patterns::Integer (0.), "The method to generate particles.");
-                prm.declare_entry ("Feature surface distance", "0.0",
+                prm.declare_entry ("Feature surface distances", "0.0",
+                                   Patterns::List(Patterns::Double (0.)),
+                                   "The distances of particles to the feature surface. Each value is a separate set of particles."
+                                   "Units: \\si{\\meter}.");
+                prm.declare_entry ("Minimum feature surface distance", "0.0",
                                    Patterns::Double (0.),
-                                   "The distance of particles to the feature surface. Units: \\si{\\meter}.");
+                                   "The minimum distance of particles to the feature surface."
+                                   "Units: \\si{\\meter}.");
+                prm.declare_entry ("Maximum feature surface distance", "0.0",
+                                   Patterns::Double (0.),
+                                   "The maximum distance of particles to the feature surface."
+                                   "Units: \\si{\\meter}.");
+                prm.declare_entry ("Interval feature surface distance", "0.0",
+                                   Patterns::Double (0.),
+                                   "The interval of distance of particles to the feature surface."
+                                   "Units: \\si{\\meter}.");
                 prm.declare_entry ("Maximum radius", "1.0",
                                    Patterns::Double (0.),
                                    "Radius at the shallow limit of particles. Units: \\si{\\meter}.");
@@ -635,12 +666,34 @@ namespace aspect
           prm.enter_subsection("Particles");
           {
             n_particles    = static_cast<types::particle_index>(prm.get_double ("Number of particles"));
+            n_particles_created = static_cast<types::particle_index>(0.0);
+            n_insert_particles = static_cast<types::particle_index>(0.0);
             prm.enter_subsection("Generator");
             {
               prm.enter_subsection("World builder feature surface");
               {
                 generate_method = prm.get_integer("Generate method");
-                feature_surface_distance = prm.get_double("Feature surface distance");
+
+                std::vector<double> feature_surface_distances_input = Utilities::string_to_double(Utilities::split_string_list(prm.get("Feature surface distances")));
+                minimum_feature_surface_distance = prm.get_double("Minimum feature surface distance");
+                maximum_feature_surface_distance = prm.get_double("Maximum feature surface distance");
+                interval_feature_surface_distance = prm.get_double("Interval feature surface distance");
+                if (feature_surface_distances_input.size() == 1 && feature_surface_distances_input[0] == 0.0)
+                  {
+                    n_set_of_particles = std::ceil((maximum_feature_surface_distance - minimum_feature_surface_distance) / interval_feature_surface_distance);
+                    feature_surface_distances = std::vector<double> (n_set_of_particles, 0.0);
+                    for (int i = 0; i < n_set_of_particles; ++i)
+                      {
+                        feature_surface_distances[i] = minimum_feature_surface_distance + interval_feature_surface_distance * i;
+                      }
+                  }
+                else
+                  {
+                    feature_surface_distances = feature_surface_distances_input;
+                    n_set_of_particles = feature_surface_distances.size();
+                  }
+
+                n_particles_in_each_set = std::vector<int> (n_set_of_particles, 0);
                 maximum_radius = prm.get_double("Maximum radius");
                 minimum_radius = prm.get_double("Minimum radius");
                 query_coordinate = prm.get_double("Query point coordinate");

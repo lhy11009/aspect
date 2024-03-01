@@ -9,7 +9,7 @@ set Surface pressure = 0
 set Adiabatic surface temperature = 1573.0
 set Resume computation = false
 set Nonlinear solver scheme = no Advection, no Stokes
-set World builder file = $ASPECT_SOURCE_DIR/tests/MO_GLOBAL_by_distance.wb
+set World builder file = $ASPECT_SOURCE_DIR/tests/MO_GLOBAL_distances_by_interval.wb
 
 subsection Discretization
     set Composition polynomial degree = 2
@@ -136,12 +136,13 @@ end
 
 
 subsection Postprocess
-  set List of postprocessors = visualization, velocity statistics, particles
+    set List of postprocessors = visualization, velocity statistics, particles
+  
+    subsection Visualization
+        set Time between graphical output = 0
+        set List of output variables = material properties, gravity
+    end
 
-  subsection Visualization
-    set Time between graphical output = 0
-    set List of output variables = material properties, gravity
-  end
     subsection Particles
         set Data output format = gnuplot
         set List of particle properties = initial position
@@ -152,13 +153,16 @@ subsection Postprocess
             subsection World builder feature surface
                 set Generate method = 1
                 set Positive dipping = true
-                set Feature surface distances = 1.2500e+04
+                set Minimum feature surface distance = 1e3
+                set Maximum feature surface distance = 20e3
+                set Interval feature surface distance = 5e3
                 set Maximum radius = 6.3710e+06
                 set Minimum radius = 6.1710e+06
                 set Feature start = 1.1772e+00
                 set Search start = 1.1772e+00
                 set Search length = 0.00174
-                set Search max step = 100
+                set Search max step = 1000
+                set Search distance = 20e3
             end
         end
     end
