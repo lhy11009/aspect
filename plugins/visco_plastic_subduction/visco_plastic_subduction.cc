@@ -222,6 +222,13 @@ namespace aspect
                 seismic_out->vp[i] = entropy_reader->seismic_vp(pressure, entropy);
                 seismic_out->vs[i] = entropy_reader->seismic_vs(pressure, entropy);
               }
+              // pressure gradient in the first
+              const Tensor<1, 2> pressure_unit_vector({1.0, 0.0});
+              // 1e5: converting from bar^-1 to pa^-s, ongoing conversation with Rene and Ranpeng
+              out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
+              // todo_compress
+              if (use_pa_in_compressibilities)
+                out.compressibilities[i] /= 1e5;
             }
             else
             {
@@ -237,11 +244,12 @@ namespace aspect
                 seismic_out->vp[i] = entropy_reader->seismic_vp(entropy, pressure);
                 seismic_out->vs[i] = entropy_reader->seismic_vs(entropy, pressure);
               }
+              const Tensor<1, 2> pressure_unit_vector({0.0, 1.0});
+              out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
+              if (use_pa_in_compressibilities)
+                out.compressibilities[i] /= 1e5;
             }
-  
-            const Tensor<1, 2> pressure_unit_vector({0.0, 1.0});
-            out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
-  
+            
             // Thermal conductivity can be pressure temperature dependent
             // todo_conduct
             out.thermal_conductivities[i] = thermal_conductivities[0]; // test
@@ -523,6 +531,10 @@ namespace aspect
                              "Whether the pressure is the first coordinate in the table.");
           prm.declare_entry ("Minimum temperature for viscosity", "0.0", Patterns::Double (0.),
                              "Minimum temperature for viscosity computation", "Units: \\si{\\T}.");
+          // todo_compress
+          prm.declare_entry ("Use pa in compressibility","false",
+                             Patterns::Bool (),
+                             "Whether to use the unit pa in compressibility.");
 
           // additional entries
           // todo_re_visc
@@ -632,6 +644,7 @@ namespace aspect
           material_file_name          = prm.get ("Material file name");
           pressure_first = prm.get_bool ("Pressure first");
           min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
+          use_pa_in_compressibilities = prm.get_bool ("Use pa in compressibility"); // todo_compress
 
           // Additional inputs
           // todo_re_visc

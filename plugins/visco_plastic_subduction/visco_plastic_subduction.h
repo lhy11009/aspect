@@ -334,6 +334,12 @@ namespace aspect
          * choices are depth, cartesian and spherical.
          */
         Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
+
+        // todo_compress
+        /**
+         * use the unit pa in compressibility instead of bar
+        */
+        bool use_pa_in_compressibilities;
     };
 
   }
