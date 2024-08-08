@@ -280,6 +280,16 @@ namespace aspect
            * of zero.
            */
           bool use_adiabatic_pressure_in_creep;
+          
+          /**
+           * Whether to use the adiabatic pressure instead of the full pressure (default)
+           * when calculating plasticity.
+           * This may be helpful in models where the full pressure has an unusually
+           * large negative value arising from large negative dynamic pressure,
+           * resulting in solver convergence issue and in some cases a viscosity
+           * of zero.
+           */
+          bool use_adiabatic_pressure_in_plasticity;
 
           /**
            * List of exponents controlling the behavior of the stress limiter

@@ -531,7 +531,6 @@ namespace aspect
                              "Whether the pressure is the first coordinate in the table.");
           prm.declare_entry ("Minimum temperature for viscosity", "0.0", Patterns::Double (0.),
                              "Minimum temperature for viscosity computation", "Units: \\si{\\T}.");
-          // todo_compress
           prm.declare_entry ("Use pa in compressibility","false",
                              Patterns::Bool (),
                              "Whether to use the unit pa in compressibility.");
