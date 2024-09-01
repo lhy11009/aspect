@@ -88,9 +88,12 @@ namespace aspect
 
 // Uncomment this line to enable the use of the entropy averaging for multiple compositions, 
 // which has NOT been tested yet.
+      /*
       AssertThrow(material_file_names.size() == 1 || SimulatorAccess<dim>::get_end_time () == 0,
                  ExcMessage("The 'entropy model' material model can only handle one composition, "
                             "and can therefore only read one material lookup table."));
+      */
+     //new_comp
 
 
 
@@ -159,7 +162,7 @@ namespace aspect
     }
 
 
-
+    // new_comp
     template <int dim>
     double
     EntropyModel<dim>::
@@ -179,15 +182,28 @@ namespace aspect
       std::vector<double> composition_initial_Cp = Cp;
       std::vector<double> composition_lookup_T(temperature.size());
       std::vector<double> composition_lookup_Cp(temperature.size());
+      
+      bool debug_output = false;
+
+      //lhy11009: output the initial values
+      if (debug_output){     
+        for (unsigned int i = 0; i < material_file_names.size(); ++i)
+          {
+            std::cout << "Initial values" << ", i = " << i << ", p = " << pressure << ", comp S = " << composition_initial_S[i] << ", comp T = " << composition_initial_T[i] << std::endl;
+          }
+      }
 
       bool equalibration = false;
       unsigned int iteration = 0;
       double ln_equalibrated_T = 0;
 
+      // lhy11009: add to output debug information
+
       // Step1
 
       // TODO: set the iteration number as a parameter
-      while (equalibration == false || iteration == 50)
+      double max_error;
+      while (equalibration == false && iteration < 50)
         {
           double T_numerator = 0;
           double T_denominator = 0;
@@ -208,6 +224,10 @@ namespace aspect
               composition_equalibrated_S[i] = composition_initial_S[i] + composition_initial_Cp[i] * (ln_equalibrated_T - std::log (composition_initial_T[i]));
               // step3
               composition_lookup_T[i] = entropy_reader[i]->temperature(composition_equalibrated_S[i], pressure);
+              if (debug_output)
+              {
+                std::cout << "Iteration = " << iteration << ", i = " << i << ", p = " << pressure << ", comp S = " << composition_equalibrated_S[i] << ", comp T = " << composition_lookup_T[i] << std::endl;
+              }
 
               // composition_lookup_Cp[i] = entropy_reader[i]->specific_heat(composition_equalibrated_S[i], pressure);
             }
@@ -217,18 +237,26 @@ namespace aspect
           composition_initial_S = composition_equalibrated_S;
           //   composition_initial_Cp = composition_lookup_Cp;
 
-          equalibration = true;
+          max_error = 0.0; 
           for (unsigned int i = 0; i < material_file_names.size(); ++i)
             {
               // TODO: set the small value (currently 1e-5) as a parameter
-              if (std::abs (composition_lookup_T[i] - std::exp(ln_equalibrated_T)) >= 1e-8)
-                {
-                  equalibration = false;
-                  break;
-                }
+              // lhy11009: add debug outputs
+              max_error = std::max(std::abs(composition_lookup_T[i] - std::exp(ln_equalibrated_T)), max_error);
+            }
+          if (debug_output)
+            {
+              std::cout << "Iteration = " << iteration << ", equalibrated T = " << std::exp(ln_equalibrated_T) << ", error = " << max_error << std::endl;
+            }
+          if (max_error < 1e-8)
+            {
+              equalibration = true;
             }
         }
-      std::cout << "S for component = " << composition_equalibrated_S[0] <<" "<<composition_equalibrated_S[1] <<std::endl;
+      if (equalibration == false){
+          std::cout << "Iteration fails " << ", p = " << pressure << ", equalibrated T = " << std::exp(ln_equalibrated_T) << "S for component = " << composition_equalibrated_S[0] <<" "<<composition_equalibrated_S[1] << ", error = " << max_error << std::endl;
+      }
+      // std::cout << "S for component = " << composition_equalibrated_S[0] <<" "<<composition_equalibrated_S[1] <<std::endl;
       //  entropy = composition_equalibrated_S;
       return exp(ln_equalibrated_T); // vector composition_equalibrated_S could be modified while reading in reference
 
@@ -310,7 +338,7 @@ namespace aspect
           std::vector<double> composition_equalibrated_S(material_file_names.size());
 
 
-
+          // new_comp
           const double equilibrated_T = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
           const double temperature_lookup = equilibrated_T;
           
@@ -387,6 +415,10 @@ namespace aspect
                         }
                     }
 
+              out.reaction_terms[i][c] = 0.0;
+                }
+                else{
+              // lhy11009: add this
               out.reaction_terms[i][c] = 0.0;
                 }
               }
