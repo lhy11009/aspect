@@ -1,0 +1,229 @@
+# entropy_subduction_one_comp
+# We include one composition in this test with the projected density approximation. 
+# Entropy field initiated with a temperature field of a subduction slab
+# using the World Builder and a table lookup of (P, T) -> S.
+
+set Dimension = 2
+set Use years in output instead of seconds = true
+set Start time = 0
+set End time = 0
+set Output directory = output
+set Timing output frequency = 10
+set Pressure normalization = surface
+set Surface pressure = 0
+set Adiabatic surface temperature = 1573.0
+set Resume computation = false
+set Nonlinear solver scheme                = no Advection, no Stokes
+set CFL number = 0.8
+set Max nonlinear iterations = 100
+set Max nonlinear iterations in pre-refinement = 0
+set Nonlinear solver tolerance = 1e-4
+set Additional shared libraries            = $ASPECT_SOURCE_DIR/tester-build/entropy_advection_subduction/libentropy_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/visco_plastic_subduction/libvisco_plastic_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/adiabat_table_lookup/libadiabat_table_lookup_plugins.so 
+set World builder file = $ASPECT_SOURCE_DIR/tests/EntropySub_one_comp.wb
+
+subsection Discretization
+    set Composition polynomial degree = 2
+    set Stokes velocity polynomial degree = 2
+    set Temperature polynomial degree = 2
+    set Use discontinuous composition discretization = false
+end
+
+subsection Formulation
+  set Mass conservation = projected density field
+end
+
+subsection Solver parameters
+    subsection Newton solver parameters
+        set Max pre-Newton nonlinear iterations = 20
+        set Nonlinear Newton solver switch tolerance = 1e-3
+        set Max Newton line search iterations = 0
+        set Maximum linear Stokes solver tolerance = 0.01
+        set Use Newton residual scaling method = true
+        set Use Newton failsafe = true
+        set Stabilization preconditioner = SPD
+        set Stabilization velocity block = SPD
+        set Use Eisenstat Walker method for Picard iterations = true
+    end
+    subsection Stokes solver parameters
+        set Maximum number of expensive Stokes solver steps = 5000
+        set Number of cheap Stokes solver steps = 200
+        set Linear solver tolerance = 5e-3
+        set GMRES solver restart length = 100
+        set Stokes solver type = block GMG
+	set Skip expensive stokes solver = true
+    end
+end
+
+# Geometry:
+#   The mesh is a 2-D chunk that spans 171.5 degree in longitude
+subsection Geometry model
+    set Model name = chunk
+    subsection Chunk
+        set Chunk inner radius = 3.481e6
+        set Chunk outer radius = 6.371e6
+        set Chunk maximum longitude = 61.0
+        set Chunk minimum longitude = 0.0
+        set Longitude repetitions = 2
+    end
+end
+
+
+# Mesh refinement:
+#   We combine the strategies of the isosurfaces with the viscosity.
+#   In this way, we can refine the level of the refinement in the
+#   slab core controlled by the colder temperature in the slab.
+subsection Mesh refinement
+    set Initial global refinement = 4
+    set Initial adaptive refinement = 1
+    set Minimum refinement level = 4
+    set Strategy = isosurfaces
+    set Time steps between mesh refinement = 10
+    set Refinement fraction = 0.2
+    set Coarsening fraction = 0.2
+    set Run postprocessors on initial refinement = false
+    set Skip solvers on initial refinement = true
+    subsection Isosurfaces
+        set Isosurfaces = max, max, sp_crust: 0.5 | 1.0; max-1, max, sp_harz: 0.5 | 1.0;  max-1, max, Temperature: 270.0 | 1173.0
+    end
+end
+
+
+subsection Boundary velocity model
+    set Tangential velocity boundary indicators = 0, 1, 2, 3
+end
+
+# Initial temperature:
+# A slab structure is configured by the WorldBuilder
+subsection Initial temperature model
+    set List of model names = world builder, adiabat table lookup
+    subsection Adiabat table lookup
+    	set Surface entropy = 2534.0
+    	set Data directory                   = $ASPECT_SOURCE_DIR/lookup_tables/hefesto_pyrolite_P_S/
+    	set Material file name               = pyrolite_PS.txt
+	set Pressure first = true
+	# set Pressure first = true
+    end
+end
+
+# not sure what this block does
+#subsection Adiabatic conditions model
+#    # The 'ascii data' option does not need the additional
+#    # plugin, but is limited to the available adiabat data files.
+#    # 'compute entropy profile' computes arbitrary adiabats
+#    # internally, based on the data table. 
+#    # Use 'ascii data' to compare against HeFESTo adiabat.
+#    set Model name = compute entropy profile 
+#    
+#    subsection Compute entropy profile
+#        # Entropy equivalent to T=1600 K according to the used table
+#        set Surface entropy = 2534
+#    end
+#    
+#    subsection Ascii data model
+#        set Data directory  = $ASPECT_SOURCE_DIR/data/material-model/
+#        set Data file name  = entropy-table/opxtable/1600K_adiabat.txt 
+#    end
+#end
+
+    
+
+subsection Boundary temperature model
+    set Fixed temperature boundary indicators = bottom, top
+    set List of model names = spherical constant
+    subsection Spherical constant
+        set Inner temperature = 3500
+        set Outer temperature = 273
+    end
+end
+
+# We prescribe temperatures according to the data table.
+# This output is computed in the material model.
+subsection Temperature field
+    set Temperature method = prescribed field with diffusion
+end
+
+# We solve the entropy equation for the compositional field with name
+# 'entropy'. Temperature and density are then computed based on entropy and
+# pressure.
+subsection Compositional fields
+  set Number of fields = 4
+  set Names of fields = entropy, density_field, sp_crust, sp_harz
+  set Types of fields = entropy, density, unspecified, unspecified
+  set Compositional field methods = field, prescribed field, field, field
+end
+
+
+# We look up the values of entropies from another look-up table.
+# This table looks up the value of entropy from a pair of temperature and pressure.
+subsection Initial composition model
+  set List of model names = entropy table lookup, world builder
+  set List of model operators = add
+  subsection Entropy table lookup
+    set Data directory                   = $ASPECT_SOURCE_DIR/lookup_tables/hefesto_pyrolite_P_T/
+    set Material file name               = pyrolite_PT.txt
+    set Pressure first = true
+  end
+end
+
+
+# In this section, I use the visco plastic material model
+subsection Material model
+  set Model name = visco plastic subduction
+  set Material averaging = harmonic average
+  subsection Visco Plastic Subduction
+    set Reference temperature = 273
+    set Minimum strain rate = 1.e-20
+    set Reference strain rate = 1e-15
+    set Minimum viscosity = 1e18
+    set Maximum viscosity = 1e24
+    set Viscosity averaging scheme = harmonic
+    set Viscous flow law = composite
+    set Use adiabatic pressure in creep viscosity = true
+    set Use adiabatic pressure in plasticity = true
+    set Yield mechanism = drucker
+    set Grain size = 1.0000e-02
+    set Prefactors for diffusion creep = 8.1787e-17, 8.1787e-17, 8.1787e-17, 5e-21, 8.1787e-17
+    set Grain size exponents for diffusion creep = 3.0, 3.0, 3.0, 0.0, 3.0
+    set Activation energies for diffusion creep = 2.8500e+05, 2.8500e+05, 2.8500e+05, 0.0, 2.8500e+05
+    set Activation volumes for diffusion creep = 6.9000e-06, 6.9000e-06, 6.9000e-06, 0.0, 6.9000e-06
+    set Prefactors for dislocation creep = 5.9076e-16, 5.9076e-16, 5.9076e-16, 5e-32, 5.9076e-16
+    set Stress exponents for dislocation creep = 3.5, 3.5, 3.5, 1.0, 3.5
+    set Activation energies for dislocation creep = 4.9000e+05, 4.9000e+05, 4.9000e+05, 0.0, 4.9000e+05
+    set Activation volumes for dislocation creep = 1.3400e-05, 1.3400e-05, 1.3400e-05, 0.0, 1.3400e-05
+    set Angles of internal friction = 25.0
+    # set Cohesions = 50.e6
+    set Cohesions = 5e31
+    # for the entropy method
+    set Use entropy method = true
+    set Data directory                   = $ASPECT_SOURCE_DIR/lookup_tables/hefesto_pyrolite_P_S/
+    set Material file name               = pyrolite_PS.txt
+    set Pressure first = true
+  end
+end
+
+
+subsection Gravity model
+    set Model name = ascii data
+end
+
+
+subsection Postprocess
+  set List of postprocessors = visualization, velocity statistics, temperature statistics, mass flux statistics, composition statistics, depth average
+  subsection Depth average
+     set Number of zones = 50
+     set Output format = txt
+     set Time between graphical output = 0
+  end
+  subsection Visualization
+     set List of output variables      = material properties, adiabat, nonadiabatic pressure, nonadiabatic temperature, strain rate, stress, heating
+     set Output format = vtu
+     set Time between graphical output = 1e4
+     subsection Material properties
+       set List of material properties = density,thermal expansivity,specific heat,viscosity, compressibility
+     end
+  end
+end
+
+subsection Checkpointing
+    set Steps between checkpoint = 20
+end

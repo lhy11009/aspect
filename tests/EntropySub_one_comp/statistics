@@ -1,0 +1,32 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+# 16: Outward mass flux through boundary with indicator 0 ("bottom") (kg/yr)
+# 17: Outward mass flux through boundary with indicator 1 ("top") (kg/yr)
+# 18: Outward mass flux through boundary with indicator 2 ("west") (kg/yr)
+# 19: Outward mass flux through boundary with indicator 3 ("east") (kg/yr)
+# 20: Minimal value for composition entropy
+# 21: Maximal value for composition entropy
+# 22: Global mass for composition entropy
+# 23: Minimal value for composition density_field
+# 24: Maximal value for composition density_field
+# 25: Global mass for composition density_field
+# 26: Minimal value for composition sp_crust
+# 27: Maximal value for composition sp_crust
+# 28: Global mass for composition sp_crust
+# 29: Minimal value for composition sp_harz
+# 30: Maximal value for composition sp_harz
+# 31: Global mass for composition sp_harz
+0 0.000000000000e+00 0.000000000000e+00 608 5944 2627 10508 0 output-EntropySub_one_comp/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.10738888e+03 3.50000000e+03 5.68450225e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 7.14385472e+02 2.75483510e+03 3.82130465e+16 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.06320508e+11 0.00000000e+00 1.00000000e+00 7.32393977e+09 

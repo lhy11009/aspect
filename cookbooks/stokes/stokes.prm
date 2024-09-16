@@ -10,7 +10,7 @@
 set Dimension                              = 3
 set Start time                             = 0
 set End time                               = 0
-set Use years in output instead of seconds = false
+set Use years in output instead of seconds = true
 set Output directory                       = output-stokes
 
 ############### Parameters describing the model
@@ -100,8 +100,12 @@ end
 subsection Mesh refinement
   set Initial adaptive refinement        = 4
   set Initial global refinement          = 4
-  set Refinement fraction                = 0.2
-  set Strategy                           = velocity
+  set Refinement fraction                = 0.3
+  set Strategy                           = velocity, isosurfaces
+  subsection Isosurfaces
+      set Isosurfaces = max, max, C_1: 0.0 | 0.5
+  end
+  
 end
 
 ############### Parameters describing what to do with the solution

@@ -1,0 +1,26 @@
+
+Loading shared library <ASPECT_DIR/tester-build/entropy_advection_subduction/libentropy_subduction_plugins.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_subduction/libvisco_plastic_subduction_plugins.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/adiabat_table_lookup/libadiabat_table_lookup_plugins.debug.so>
+
+Vectorization over 2 doubles = 128 bits (SSE2), VECTORIZATION_LEVEL=1
+Number of active cells: 512 (on 5 levels)
+Number of degrees of freedom: 15,576 (4,290+561+2,145+2,145+2,145+2,145+2,145)
+
+Number of active cells: 608 (on 6 levels)
+Number of degrees of freedom: 19,079 (5,254+690+2,627+2,627+2,627+2,627+2,627)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_one_comp/solution/solution-00000
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2107 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          714.4/2755/3.821e+16 // 0/0/0 // 0/1/1.063e+11 // 0/1/7.324e+09
+     Writing depth average:              output-EntropySub_one_comp/depth_average
+
+Termination requested by criterion: end time
+
+
+
