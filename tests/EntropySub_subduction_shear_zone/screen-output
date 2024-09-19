@@ -41,13 +41,13 @@ Number of degrees of freedom: 58,036 (15,978+2,113+7,989+7,989+7,989+7,989+7,989
    Solving sp_crust system ... 0 iterations.
    Solving sp_harz system ... 0 iterations.
    Rebuilding Stokes preconditioner...
-   Solving Stokes system... 200+48 iterations.
+   Solving Stokes system... 200+54 iterations.
 
    Postprocessing:
      Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00003
-     RMS, max velocity:                  0.00812 m/year, 0.122 m/year
+     RMS, max velocity:                  0.00823 m/year, 0.123 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
-     Mass fluxes through boundary parts: 2.08e-05 kg/yr, 0.03667 kg/yr, 0 kg/yr, 6.864e-08 kg/yr
+     Mass fluxes through boundary parts: 2.05e-05 kg/yr, 0.02994 kg/yr, 0 kg/yr, 6.689e-08 kg/yr
      Compositions min/max/mass:          577.9/2758/1.089e+17 // 3229/5592/1.94e+17 // 0/1/1.45e+11 // 0/1/5.792e+11
 
 Termination requested by criterion: end time
