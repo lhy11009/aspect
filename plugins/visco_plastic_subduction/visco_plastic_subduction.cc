@@ -160,22 +160,20 @@ namespace aspect
     {
       // Store which components do not represent volumetric compositions (e.g. strain components).
       const ComponentMask volumetric_compositions = rheology->get_volumetric_composition_mask();
+      
+      // create a new MaterialModelInputs object
+      MaterialModel::MaterialModelInputs<dim> in_new(in);
 
-      // Values for the entropy method
-      // Indicator of the entropy method is the present of the "entropy" in the compositional fields
-      unsigned int projected_density_index, entropy_index;
-      if (use_entropy_method)
-      {
-        projected_density_index = this->introspection().compositional_index_for_name("density_field");
-        entropy_index = this->introspection().compositional_index_for_name("entropy");
-      }
-      else
-      {
-        projected_density_index = 0;
-        entropy_index = 0;
-      }
-
-      EquationOfStateOutputs<dim> eos_outputs (this->introspection().n_chemical_composition_fields()+1);
+      const unsigned int projected_density_index = (use_entropy_method? this->introspection().compositional_index_for_name("density_field"): 0);
+      const unsigned int entropy_index = (use_entropy_method? this->introspection().compositional_index_for_name("entropy"): 0);
+      const std::vector<unsigned int> &entropy_indices = (use_entropy_method? 
+                                                          this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::entropy): 
+                                                          std::vector<unsigned int>()); 
+      const std::vector<unsigned int> &composition_indices = (use_entropy_method? 
+                                                          this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::chemical_composition):
+                                                          std::vector<unsigned int>());
+      // for entropy model, with multiple compositions     
+      EquationOfStateOutputs<dim> eos_outputs (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1); // for using visco-plastic consistently
       EquationOfStateOutputs<dim> eos_outputs_all_phases (n_phases);
 
       std::vector<double> average_elastic_shear_moduli (in.n_evaluation_points());
@@ -184,8 +182,6 @@ namespace aspect
       // While the number of phases is fixed, the value of the phase function is updated for every point
       std::vector<double> phase_function_values(phase_function.n_phase_transitions(), 0.0);
 
-      // create a new MaterialModelInputs object
-      MaterialModel::MaterialModelInputs<dim> in_new(in);
             
 
       // Loop through all requested points
