@@ -47,8 +47,11 @@ namespace aspect
                     ExcMessage("The 'entropy model' material model requires the existence of a compositional field "
                                "named 'entropy'. This field does not exist."));
   
-        entropy_reader = std::make_unique<MaterialUtilities::Lookup::EntropyReader>();
-        entropy_reader->initialize(this->get_mpi_communicator(), data_directory, material_file_name);
+        for (unsigned int i = 0; i < material_file_names.size(); ++i)
+        {
+          entropy_reader.push_back(std::make_unique<MaterialUtilities::Lookup::EntropyReader>());
+          entropy_reader[i]->initialize(this->get_mpi_communicator(), data_directory, material_file_names[i]);
+        }
       }
     }
 
@@ -211,16 +214,16 @@ namespace aspect
             if (pressure_first)
             {
               // first dimension in table is pressure
-              out.densities[i] = entropy_reader->density(pressure, entropy);
-              out.thermal_expansion_coefficients[i] = entropy_reader->thermal_expansivity(pressure, entropy);
-              out.specific_heat[i] = entropy_reader->specific_heat(pressure, entropy);
-              density_gradient = entropy_reader->density_gradient(pressure, entropy);
-              temperature_lookup =  entropy_reader->temperature(pressure, entropy);
+              out.densities[i] = entropy_reader[0]->density(pressure, entropy);
+              out.thermal_expansion_coefficients[i] = entropy_reader[0]->thermal_expansivity(pressure, entropy);
+              out.specific_heat[i] = entropy_reader[0]->specific_heat(pressure, entropy);
+              density_gradient = entropy_reader[0]->density_gradient(pressure, entropy);
+              temperature_lookup =  entropy_reader[0]->temperature(pressure, entropy);
               // fill seismic velocities outputs if they exist
               if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
               {
-                seismic_out->vp[i] = entropy_reader->seismic_vp(pressure, entropy);
-                seismic_out->vs[i] = entropy_reader->seismic_vs(pressure, entropy);
+                seismic_out->vp[i] = entropy_reader[0]->seismic_vp(pressure, entropy);
+                seismic_out->vs[i] = entropy_reader[0]->seismic_vs(pressure, entropy);
               }
               // pressure gradient in the first
               const Tensor<1, 2> pressure_unit_vector({1.0, 0.0});
@@ -233,16 +236,16 @@ namespace aspect
             else
             {
               // first dimension in table is entropy
-              out.densities[i] = entropy_reader->density(entropy, pressure);
-              out.thermal_expansion_coefficients[i] = entropy_reader->thermal_expansivity(entropy, pressure);
-              out.specific_heat[i] = entropy_reader->specific_heat(entropy, pressure);
-              density_gradient = entropy_reader->density_gradient(entropy,pressure);
-              temperature_lookup =  entropy_reader->temperature(entropy,pressure);
+              out.densities[i] = entropy_reader[0]->density(entropy, pressure);
+              out.thermal_expansion_coefficients[i] = entropy_reader[0]->thermal_expansivity(entropy, pressure);
+              out.specific_heat[i] = entropy_reader[0]->specific_heat(entropy, pressure);
+              density_gradient = entropy_reader[0]->density_gradient(entropy,pressure);
+              temperature_lookup =  entropy_reader[0]->temperature(entropy,pressure);
               // fill seismic velocities outputs if they exist
               if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
               {
-                seismic_out->vp[i] = entropy_reader->seismic_vp(entropy, pressure);
-                seismic_out->vs[i] = entropy_reader->seismic_vs(entropy, pressure);
+                seismic_out->vp[i] = entropy_reader[0]->seismic_vp(entropy, pressure);
+                seismic_out->vs[i] = entropy_reader[0]->seismic_vs(entropy, pressure);
               }
               const Tensor<1, 2> pressure_unit_vector({0.0, 1.0});
               out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
@@ -640,7 +643,7 @@ namespace aspect
           //Entries for the entropy method
           use_entropy_method = prm.get_bool ("Use entropy method");
           data_directory              = Utilities::expand_ASPECT_SOURCE_DIR(prm.get ("Data directory"));
-          material_file_name          = prm.get ("Material file name");
+          material_file_names          = Utilities::split_string_list(prm.get ("Material file name"));
           pressure_first = prm.get_bool ("Pressure first");
           min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
           use_pa_in_compressibilities = prm.get_bool ("Use pa in compressibility"); // todo_compress

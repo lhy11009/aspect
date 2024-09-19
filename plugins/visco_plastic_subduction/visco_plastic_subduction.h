@@ -297,16 +297,16 @@ namespace aspect
         bool use_entropy_method;
 
         /**
-         * Pointer to the EntropyReader that reads in material data for
-         * given entropy and pressure.
+         * List of pointers to the EntropyReader that reads in material data for
+         * given entropy and pressure. There is one pointer/object per lookup file.
          */
-        std::unique_ptr<MaterialUtilities::Lookup::EntropyReader> entropy_reader;
+        std::vector<std::unique_ptr<MaterialUtilities::Lookup::EntropyReader>> entropy_reader;
         
         /**
          * Information about the location of data files.
          */
         std::string data_directory;
-        std::string material_file_name;
+        std::vector<std::string> material_file_names;
 
         /*
           * whether pressure is the first indice in the table
