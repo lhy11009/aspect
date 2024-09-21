@@ -1963,8 +1963,8 @@ namespace aspect
             parameters.additional_refinement_times
             .erase (parameters.additional_refinement_times.begin());
           }
-          // todo_restart
-          restart_timestep_number = timestep_number;
+        // todo_restart
+        restart_timestep_number = timestep_number;
       }
     else
       {

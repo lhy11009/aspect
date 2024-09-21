@@ -121,16 +121,16 @@ namespace aspect
         // Use a specified "reference" strain rate if the strain rate is not yet available,
         // or close to zero. This is to avoid division by zero.
         bool use_reference_strainrate = this->simulator_is_past_initialization() == false
-                                              ||
-                                              (this->get_timestep_number() == 0 &&
-                                               this->get_nonlinear_iteration() == 0)
-                                              ||
-                                              (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
+                                        ||
+                                        (this->get_timestep_number() == 0 &&
+                                         this->get_nonlinear_iteration() == 0)
+                                        ||
+                                        (in.strain_rate[i].norm() <= std::numeric_limits<double>::min());
         // todo_restart
         if (use_reference_strainrate_at_restart)
-        {
+          {
             use_reference_strainrate = (use_reference_strainrate || (this->get_timestep_number() == this->get_restart_timestep_number()));
-        }
+          }
 
         double edot_ii;
         if (use_reference_strainrate)
@@ -309,7 +309,7 @@ namespace aspect
 
             double pressure_for_plasticity = in.pressure[i];
 
-            if(use_adiabatic_pressure_in_plasticity)
+            if (use_adiabatic_pressure_in_plasticity)
               pressure_for_plasticity = this->get_adiabatic_conditions().pressure(in.position[i]);
 
             if (allow_negative_pressures_in_plasticity == false)
@@ -628,7 +628,7 @@ namespace aspect
                            "0.3 K/km = 0.0003 K/m = 9.24e-09 K/Pa gives an earth-like adiabat."
                            "Units: \\si{\\kelvin\\per\\pascal}.");
 
-        // todo_restart 
+        // todo_restart
         prm.declare_entry ("Use reference strain rate at restart", "false",
                            Patterns::Bool (),
                            "Whether to use the reference strain rate in compuation after the model restarts.");

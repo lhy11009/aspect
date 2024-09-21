@@ -61,7 +61,7 @@ namespace aspect
          * Return the initial temperature as a function of position.
          */
         double initial_temperature (const Point<dim> &position) const override;
-        
+
         /**
          * Declare the parameters this class takes through input files.
          */
@@ -76,19 +76,19 @@ namespace aspect
         parse_parameters (ParameterHandler &prm) override;
 
       private:
-        
+
         /**
          * Starting entropy for the profile.
          */
         double surface_entropy;
-        
-        
+
+
         /**
          * Pointer to the StructuredDataLookup object that holds the material data.
          */
         std::unique_ptr<Utilities::StructuredDataLookup<2>> material_lookup;
 
-        
+
         /**
          * Information about the location of data files.
          */

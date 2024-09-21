@@ -1,5 +1,5 @@
 # entropy_subduction_one_comp
-# We include one composition in this test with the projected density approximation. 
+# We include one composition in this test with the projected density approximation.
 # Entropy field initiated with a temperature field of a subduction slab
 # using the World Builder and a table lookup of (P, T) -> S.
 
@@ -18,7 +18,7 @@ set CFL number = 0.8
 set Max nonlinear iterations = 100
 set Max nonlinear iterations in pre-refinement = 0
 set Nonlinear solver tolerance = 1e-4
-set Additional shared libraries            = $ASPECT_SOURCE_DIR/tester-build/entropy_advection_subduction/libentropy_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/visco_plastic_subduction/libvisco_plastic_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/adiabat_table_lookup/libadiabat_table_lookup_plugins.so 
+set Additional shared libraries            = $ASPECT_SOURCE_DIR/tester-build/entropy_advection_subduction/libentropy_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/visco_plastic_subduction/libvisco_plastic_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/adiabat_table_lookup/libadiabat_table_lookup_plugins.so
 set World builder file = $ASPECT_SOURCE_DIR/tests/EntropySub_one_comp.wb
 
 subsection Discretization
@@ -50,7 +50,7 @@ subsection Solver parameters
         set Linear solver tolerance = 5e-3
         set GMRES solver restart length = 100
         set Stokes solver type = block GMG
-	set Skip expensive stokes solver = true
+  set Skip expensive stokes solver = true
     end
 end
 
@@ -97,11 +97,11 @@ end
 subsection Initial temperature model
     set List of model names = world builder, adiabat table lookup
     subsection Adiabat table lookup
-    	set Surface entropy = 2534.0
-    	set Data directory                   = $ASPECT_SOURCE_DIR/lookup_tables/hefesto_pyrolite_P_S/
-    	set Material file name               = pyrolite_PS.txt
-	set Pressure first = true
-	# set Pressure first = true
+      set Surface entropy = 2534.0
+      set Data directory                   = $ASPECT_SOURCE_DIR/lookup_tables/hefesto_pyrolite_P_S/
+      set Material file name               = pyrolite_PS.txt
+  set Pressure first = true
+  # set Pressure first = true
     end
 end
 
@@ -110,22 +110,22 @@ end
 #    # The 'ascii data' option does not need the additional
 #    # plugin, but is limited to the available adiabat data files.
 #    # 'compute entropy profile' computes arbitrary adiabats
-#    # internally, based on the data table. 
+#    # internally, based on the data table.
 #    # Use 'ascii data' to compare against HeFESTo adiabat.
-#    set Model name = compute entropy profile 
-#    
+#    set Model name = compute entropy profile
+#
 #    subsection Compute entropy profile
 #        # Entropy equivalent to T=1600 K according to the used table
 #        set Surface entropy = 2534
 #    end
-#    
+#
 #    subsection Ascii data model
 #        set Data directory  = $ASPECT_SOURCE_DIR/data/material-model/
-#        set Data file name  = entropy-table/opxtable/1600K_adiabat.txt 
+#        set Data file name  = entropy-table/opxtable/1600K_adiabat.txt
 #    end
 #end
 
-    
+
 
 subsection Boundary temperature model
     set Fixed temperature boundary indicators = bottom, top

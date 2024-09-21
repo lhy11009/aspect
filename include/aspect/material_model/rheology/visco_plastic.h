@@ -280,7 +280,7 @@ namespace aspect
            * of zero.
            */
           bool use_adiabatic_pressure_in_creep;
-          
+
           /**
            * Whether to use the adiabatic pressure instead of the full pressure (default)
            * when calculating plasticity.

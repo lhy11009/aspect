@@ -236,8 +236,8 @@ namespace aspect
          */
         bool
         is_yielding (const MaterialModelInputs<dim> &in) const;
-        
-        // todo_re_visc 
+
+        // todo_re_visc
         /**
          * A function that resets the values of viscosity in specified region with specified value.
          * If reset_viscosity is false, this is skipped.
@@ -301,7 +301,7 @@ namespace aspect
          * given entropy and pressure. There is one pointer/object per lookup file.
          */
         std::vector<std::unique_ptr<MaterialUtilities::Lookup::EntropyReader>> entropy_reader;
-        
+
         /**
          * Information about the location of data files.
          */
@@ -318,7 +318,7 @@ namespace aspect
         */
         double min_temperature_for_viscosity;
 
-        // todo_re_visc 
+        // todo_re_visc
         /**
          * Whether to reset viscosity for some part as the last step of computing viscosity
          */

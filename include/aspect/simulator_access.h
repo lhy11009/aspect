@@ -281,7 +281,7 @@ namespace aspect
       unsigned int
       get_timestep_number () const;
 
-      // todo_restart 
+      // todo_restart
       /**
        * Return the number of a restarted time step.
        */

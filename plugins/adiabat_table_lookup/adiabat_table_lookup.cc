@@ -33,7 +33,7 @@ namespace aspect
     template <int dim>
     AdiabatTableLookup<dim>::AdiabatTableLookup ()
       = default;
-    
+
     template <int dim>
     void
     AdiabatTableLookup<dim>::
@@ -115,7 +115,7 @@ namespace aspect
 {
   namespace InitialTemperature
   {
-    ASPECT_REGISTER_INITIAL_TEMPERATURE_MODEL(AdiabatTableLookup, 
+    ASPECT_REGISTER_INITIAL_TEMPERATURE_MODEL(AdiabatTableLookup,
                                               "adiabat table lookup",
                                               "Specify the initial temperature by looking up an adiabatic profile. "
                                               "from a look-up table. An entropy value is specified for the adiabatic profile.")
