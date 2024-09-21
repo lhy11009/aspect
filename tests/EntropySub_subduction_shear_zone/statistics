@@ -19,24 +19,32 @@
 # 19: Minimal value for composition entropy
 # 20: Maximal value for composition entropy
 # 21: Global mass for composition entropy
-# 22: Minimal value for composition density_field
-# 23: Maximal value for composition density_field
-# 24: Global mass for composition density_field
-# 25: Minimal value for composition sp_crust
-# 26: Maximal value for composition sp_crust
-# 27: Global mass for composition sp_crust
-# 28: Minimal value for composition sp_harz
-# 29: Maximal value for composition sp_harz
-# 30: Global mass for composition sp_harz
-# 31: Iterations for temperature solver
-# 32: Iterations for composition solver 1
-# 33: Iterations for composition solver 2
-# 34: Iterations for composition solver 3
-# 35: Iterations for composition solver 4
-# 36: Iterations for Stokes solver
-# 37: Velocity iterations in Stokes preconditioner
-# 38: Schur complement iterations in Stokes preconditioner
-0 0.000000000000e+00 0.000000000000e+00  384  3739 1649  6596 output-EntropySub_subduction_shear_zone/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.17371741e+03 3.50000000e+03 5.89004466e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.07830432e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.14816870e+12 0.00000000e+00 0.00000000e+00 0.00000000e+00 0 0          0 0 0   0    0    0 
-0 0.000000000000e+00 0.000000000000e+00  528  5376 2371  9484 output-EntropySub_subduction_shear_zone/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18585201e+03 3.50000000e+03 5.92764800e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08735386e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 5.74084349e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0 0          0 0 0   0    0    0 
-0 0.000000000000e+00 0.000000000000e+00  963  9982 4407 17628 output-EntropySub_subduction_shear_zone/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18571793e+03 3.50000000e+03 5.92723252e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08896260e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 2.87042174e+11 0.00000000e+00 1.00000000e+00 1.17905496e+10 0 0          0 0 0   0    0    0 
-0 0.000000000000e+00 0.000000000000e+00 1710 18091 7989 31956 output-EntropySub_subduction_shear_zone/solution/solution-00003 8.23044122e-03 1.22710537e-01 2.73000000e+02 2.18564357e+03 3.50000000e+03 5.92700207e-01 2.05009756e-05 2.99384482e-02 0.00000000e+00 6.68856278e-08 5.77925312e+02 2.75751926e+03 1.08918718e+17 3.22872408e+03 5.59218976e+03 1.93974423e+17 0.00000000e+00 1.00000000e+00 1.44996672e+11 0.00000000e+00 1.00000000e+00 5.79150355e+11 0 0 4294967295 0 0 254 1663 1300 
+# 22: Minimal value for composition entropy_sp_crust
+# 23: Maximal value for composition entropy_sp_crust
+# 24: Global mass for composition entropy_sp_crust
+# 25: Minimal value for composition entropy_sp_harz
+# 26: Maximal value for composition entropy_sp_harz
+# 27: Global mass for composition entropy_sp_harz
+# 28: Minimal value for composition density_field
+# 29: Maximal value for composition density_field
+# 30: Global mass for composition density_field
+# 31: Minimal value for composition sp_crust
+# 32: Maximal value for composition sp_crust
+# 33: Global mass for composition sp_crust
+# 34: Minimal value for composition sp_harz
+# 35: Maximal value for composition sp_harz
+# 36: Global mass for composition sp_harz
+# 37: Iterations for temperature solver
+# 38: Iterations for composition solver 1
+# 39: Iterations for composition solver 2
+# 40: Iterations for composition solver 3
+# 41: Iterations for composition solver 4
+# 42: Iterations for composition solver 5
+# 43: Iterations for composition solver 6
+# 44: Iterations for Stokes solver
+# 45: Velocity iterations in Stokes preconditioner
+# 46: Schur complement iterations in Stokes preconditioner
+0 0.000000000000e+00 0.000000000000e+00  384  3739 1649  9894 output-EntropySub_subduction_shear_zone/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.17371741e+03 3.50000000e+03 5.89004466e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.07830432e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.14816870e+12 0.00000000e+00 0.00000000e+00 0.00000000e+00 0 0 0 0          0 0 0   0    0    0 
+0 0.000000000000e+00 0.000000000000e+00  528  5376 2371 14226 output-EntropySub_subduction_shear_zone/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18585201e+03 3.50000000e+03 5.92764800e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08735386e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 5.74084349e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0 0 0 0          0 0 0   0    0    0 
+0 0.000000000000e+00 0.000000000000e+00  963  9982 4407 26442 output-EntropySub_subduction_shear_zone/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18571793e+03 3.50000000e+03 5.92723252e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08896260e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 2.87042174e+11 0.00000000e+00 1.00000000e+00 1.17905496e+10 0 0 0 0          0 0 0   0    0    0 
+0 0.000000000000e+00 0.000000000000e+00 1710 18091 7989 47934 output-EntropySub_subduction_shear_zone/solution/solution-00003 8.23044122e-03 1.22710537e-01 2.73000000e+02 2.18564357e+03 3.50000000e+03 5.92700207e-01 2.05009756e-05 2.99384482e-02 0.00000000e+00 6.68856278e-08 5.77925312e+02 2.75751926e+03 1.08918718e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 3.22872408e+03 5.59218976e+03 1.93974423e+17 0.00000000e+00 1.00000000e+00 1.44996672e+11 0.00000000e+00 1.00000000e+00 5.79150355e+11 0 0 0 0 4294967295 0 0 254 1663 1300 

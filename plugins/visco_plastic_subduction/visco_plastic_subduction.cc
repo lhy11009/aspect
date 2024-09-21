@@ -178,6 +178,11 @@ namespace aspect
                                                               this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::chemical_composition):
                                                               std::vector<unsigned int>());
 
+      if (use_entropy_method)
+        AssertThrow(composition_indices.size() == material_file_names.size() - 1,
+                    ExcMessage("The 'entropy model' material model assumes that there exists a background field in addition to the compositional fields, "
+                               "and therefore it requires one more lookup table than there are chemical compositional fields."));
+
       // In our entropy model, eos_outputs still represents the outputs
       // from different compositional fields. However, the number of
       // compositional fields is determined by the size of material_file_names.
@@ -220,7 +225,6 @@ namespace aspect
               // First, evaluate all the values required for the iteration to achieve the equilibrated temperature.
               std::vector<double> component_entropy (material_file_names.size());
               std::vector<double> composition_temperature_lookup (material_file_names.size()); // NEED TO CHANGE
-              std::vector<double> specific_heat_capacities_lookup (material_file_names.size()); // NEED TO CHANGE
               std::vector<double> composition_equalibrated_S(material_file_names.size());
               const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
 
@@ -234,7 +238,9 @@ namespace aspect
                   composition_temperature_lookup[j] = entropy_reader[j]->temperature(first, second);
                   // std::cout << "component_entropy = " <<component_entropy[j]<<" " << std::endl;
                   // std::cout << "densities = " << eos_outputs.densities[j]<<" " << std::endl;
-                  specific_heat_capacities_lookup[j] = entropy_reader[j]->specific_heat(first, second);
+                  eos_outputs.densities[j] = entropy_reader[j]->density(component_entropy[j], pressure);
+                  eos_outputs.thermal_expansion_coefficients[j] = entropy_reader[j]->thermal_expansivity(component_entropy[j],pressure);
+                  eos_outputs.specific_heat_capacities[j] = entropy_reader[j]->specific_heat(component_entropy[j],pressure);
                 }
               // Now, perform the iteration to achieve the equilibrated temperature.
               //temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);

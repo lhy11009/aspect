@@ -2,41 +2,43 @@
 Loading shared library <./libEntropySub_subduction_shear_zone.debug.so>
 
 Number of active cells: 384 (on 4 levels)
-Number of degrees of freedom: 11,984 (3,298+441+1,649+1,649+1,649+1,649+1,649)
+Number of degrees of freedom: 15,282 (3,298+441+1,649+1,649+1,649+1,649+1,649+1,649+1,649)
 
    Postprocessing:
      Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00000
      RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2174 K, 3500 K
      Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.078e+17 // 0/0/0 // 0/1/1.148e+12 // 0/0/0
+     Compositions min/max/mass:          577.9/2758/1.078e+17 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/1.148e+12 // 0/0/0
 
 Number of active cells: 528 (on 5 levels)
-Number of degrees of freedom: 17,231 (4,742+634+2,371+2,371+2,371+2,371+2,371)
+Number of degrees of freedom: 21,973 (4,742+634+2,371+2,371+2,371+2,371+2,371+2,371+2,371)
 
    Postprocessing:
      Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00001
      RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
      Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.087e+17 // 0/0/0 // 0/1/5.741e+11 // 0/0/0
+     Compositions min/max/mass:          577.9/2758/1.087e+17 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/5.741e+11 // 0/0/0
 
 Number of active cells: 963 (on 6 levels)
-Number of degrees of freedom: 32,017 (8,814+1,168+4,407+4,407+4,407+4,407+4,407)
+Number of degrees of freedom: 40,831 (8,814+1,168+4,407+4,407+4,407+4,407+4,407+4,407+4,407)
 
    Postprocessing:
      Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00002
      RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
      Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.089e+17 // 0/0/0 // 0/1/2.87e+11 // 0/1/1.179e+10
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/2.87e+11 // 0/1/1.179e+10
 
 Number of active cells: 1,710 (on 7 levels)
-Number of degrees of freedom: 58,036 (15,978+2,113+7,989+7,989+7,989+7,989+7,989)
+Number of degrees of freedom: 74,014 (15,978+2,113+7,989+7,989+7,989+7,989+7,989+7,989+7,989)
 
 *** Timestep 0:  t=0 years, dt=0 years
    Solving temperature system... 0 iterations.
    Solving entropy system ... 0 iterations.
+   Skipping entropy_sp_crust composition solve because RHS is zero.
+   Skipping entropy_sp_harz composition solve because RHS is zero.
    Copying properties into prescribed compositional field density_field... done.
    Solving sp_crust system ... 0 iterations.
    Solving sp_harz system ... 0 iterations.
@@ -48,7 +50,7 @@ Number of degrees of freedom: 58,036 (15,978+2,113+7,989+7,989+7,989+7,989+7,989
      RMS, max velocity:                  0.00823 m/year, 0.123 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
      Mass fluxes through boundary parts: 2.05e-05 kg/yr, 0.02994 kg/yr, 0 kg/yr, 6.689e-08 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.089e+17 // 3229/5592/1.94e+17 // 0/1/1.45e+11 // 0/1/5.792e+11
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 0/0/0 // 0/0/0 // 3229/5592/1.94e+17 // 0/1/1.45e+11 // 0/1/5.792e+11
 
 Termination requested by criterion: end time
 

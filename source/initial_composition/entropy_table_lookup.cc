@@ -63,25 +63,31 @@ namespace aspect
     initial_composition (const Point<dim> &position,
                          const unsigned int compositional_index) const
     {
-      if (compositional_index == entropy_indices[0])
-        {
-          // Use the adiabatic pressure instead of the real one,
-          // to stabilize against pressure oscillations in phase transitions.
-          // This is a requirement of the projected density approximation for
-          // the Stokes equation and not related to the entropy formulation.
-          // Also convert pressure from Pa to bar, bar is used in the table.
-          const double temperature = initial_temperature_manager->initial_temperature(position);
-          const double pressure = this->get_adiabatic_conditions().pressure(position);
+      bool find = false;
+      double entropy;
+      for (unsigned int i = 0; i < material_file_names.size(); ++i)
+        if (compositional_index == entropy_indices[0])
+          {
+            // Use the adiabatic pressure instead of the real one,
+            // to stabilize against pressure oscillations in phase transitions.
+            // This is a requirement of the projected density approximation for
+            // the Stokes equation and not related to the entropy formulation.
+            // Also convert pressure from Pa to bar, bar is used in the table.
+            const double temperature = initial_temperature_manager->initial_temperature(position);
+            const double pressure = this->get_adiabatic_conditions().pressure(position);
 
-          // The order in the lookup variable may be either pressure-first or temperature-first.
-          const double first = (pressure_first? pressure / 1.e5: temperature);
-          const double second = (pressure_first? temperature: pressure / 1.e5);
-          Point<2> temperature_pressure(first, second);
-          const double entropy = material_lookup[0]->get_data(temperature_pressure, 0);
-
-          return entropy;
-        }
-      return 0.0;
+            // The order in the lookup variable may be either pressure-first or temperature-first.
+            const double first = (pressure_first? pressure / 1.e5: temperature);
+            const double second = (pressure_first? temperature: pressure / 1.e5);
+            Point<2> temperature_pressure(first, second);
+            entropy = material_lookup[i]->get_data(temperature_pressure, 0);
+            find = true;
+            break;
+          }
+      if (find)
+        return entropy;
+      else
+        return 0.0;
     }
 
     template <int dim>

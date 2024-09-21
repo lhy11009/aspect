@@ -57,7 +57,7 @@
           "min depth": -10000.0,
           "max depth": 7500.0,
           "compositions": [
-            2
+            4
           ]
         },
         {
@@ -65,7 +65,7 @@
           "min depth": 7500.0,
           "max depth": 35200.0,
           "compositions": [
-            3
+            5
           ]
         }
       ]
@@ -119,7 +119,7 @@
           "min depth": -10000.0,
           "max depth": 7500.0,
           "compositions": [
-            2
+            4
           ]
         },
         {
@@ -127,7 +127,7 @@
           "min depth": 7500.0,
           "max depth": 35200.0,
           "compositions": [
-            3
+            5
           ]
         }
       ]
@@ -181,7 +181,7 @@
           "min depth": -10000.0,
           "max depth": 7500.0,
           "compositions": [
-            2
+            4
           ]
         },
         {
@@ -189,7 +189,7 @@
           "min depth": 7500.0,
           "max depth": 35200.0,
           "compositions": [
-            3
+            5
           ]
         }
       ]
@@ -228,14 +228,14 @@
             {
               "model": "uniform",
               "compositions": [
-                2
+                4
               ],
               "max distance slab top": 7500.0
             },
             {
               "model": "uniform",
               "compositions": [
-                3
+                5
               ],
               "min distance slab top": 7500.0,
               "max distance slab top": 35200.0

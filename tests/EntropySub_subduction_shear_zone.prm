@@ -91,10 +91,10 @@ end
 # 'entropy'. Temperature and density are then computed based on entropy and
 # pressure.
 subsection Compositional fields
-  set Number of fields = 4
-  set Names of fields = entropy, density_field, sp_crust, sp_harz
-  set Types of fields = entropy, density, unspecified, unspecified
-  set Compositional field methods = field, prescribed field, field, field
+  set Number of fields = 6
+  set Names of fields = entropy, entropy_sp_crust, entropy_sp_harz, density_field, sp_crust, sp_harz
+  set Types of fields = entropy, entropy, entropy, density, unspecified, unspecified
+  set Compositional field methods = field, field, field, prescribed field, field, field
 end
 
 
@@ -105,7 +105,7 @@ subsection Initial composition model
   set List of model operators = add
   subsection Entropy table lookup
     set Data directory = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/pyrtable/
-    set Material file name = material_table_temperature_pressure.txt
+    set Material file name = material_table_temperature_pressure.txt, material_table_temperature_pressure.txt, material_table_temperature_pressure.txt
   end
 end
 
@@ -124,20 +124,20 @@ subsection Material model
     set Viscous flow law = composite
     set Yield mechanism = drucker
     set Grain size = 1.0000e-02
-    set Prefactors for diffusion creep = 8.1787e-17, 8.1787e-17, 8.1787e-17, 5e-21, 8.1787e-17
-    set Grain size exponents for diffusion creep = 3.0, 3.0, 3.0, 0.0, 3.0
-    set Activation energies for diffusion creep = 2.8500e+05, 2.8500e+05, 2.8500e+05, 0.0, 2.8500e+05
-    set Activation volumes for diffusion creep = 6.9000e-06, 6.9000e-06, 6.9000e-06, 0.0, 6.9000e-06
-    set Prefactors for dislocation creep = 5.9076e-16, 5.9076e-16, 5.9076e-16, 5e-32, 5.9076e-16
-    set Stress exponents for dislocation creep = 3.5, 3.5, 3.5, 1.0, 3.5
-    set Activation energies for dislocation creep = 4.9000e+05, 4.9000e+05, 4.9000e+05, 0.0, 4.9000e+05
-    set Activation volumes for dislocation creep = 1.3400e-05, 1.3400e-05, 1.3400e-05, 0.0, 1.3400e-05
+    set Prefactors for diffusion creep = 8.1787e-17, 8.1787e-17, 8.1787e-17, 8.1787e-17, 8.1787e-17, 5e-21, 8.1787e-17
+    set Grain size exponents for diffusion creep = 3.0, 3.0, 3.0, 3.0, 3.0, 0.0, 3.0
+    set Activation energies for diffusion creep = 2.8500e+05, 2.8500e+05, 2.8500e+05, 2.8500e+05, 2.8500e+05, 0.0, 2.8500e+05
+    set Activation volumes for diffusion creep = 6.9000e-06, 6.9000e-06, 6.9000e-06, 6.9000e-06, 6.9000e-06, 0.0, 6.9000e-06
+    set Prefactors for dislocation creep = 5.9076e-16, 5.9076e-16, 5.9076e-16, 5.9076e-16, 5.9076e-16, 5e-32, 5.9076e-16
+    set Stress exponents for dislocation creep = 3.5, 3.5, 3.5, 3.5, 3.5, 1.0, 3.5
+    set Activation energies for dislocation creep = 4.9000e+05, 4.9000e+05, 4.9000e+05, 4.9000e+05, 4.9000e+05, 0.0, 4.9000e+05
+    set Activation volumes for dislocation creep = 1.3400e-05, 1.3400e-05, 1.3400e-05, 1.3400e-05, 1.3400e-05, 0.0, 1.3400e-05
     set Angles of internal friction = 25.0
     set Cohesions = 50.e6
     # for the entropy method
     set Use entropy method = true
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/pyrtable/
-    set Material file name               = material_table_entropy_pressure.txt # , material_table_entropy_pressure.txt, material_table_entropy_pressure.txt
+    set Material file name               = material_table_entropy_pressure.txt, material_table_entropy_pressure.txt, material_table_entropy_pressure.txt
   end
 end
 
