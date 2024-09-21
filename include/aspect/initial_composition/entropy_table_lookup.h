@@ -76,12 +76,12 @@ namespace aspect
          * Information about the location of data files.
          */
         std::string data_directory;
-        std::string material_file_name;
+        std::vector<std::string> material_file_names;
 
         /**
          * Index of the entropy in the compositional fields
          */
-        unsigned entropy_index;
+        std::vector<unsigned int> entropy_indices;
 
         /**
          * A shared pointer to the initial temperature object
@@ -102,7 +102,7 @@ namespace aspect
         /**
          * Pointer to the StructuredDataLookup object that holds the material data.
          */
-        std::unique_ptr<Utilities::StructuredDataLookup<2>> material_lookup;
+        std::vector<std::unique_ptr<Utilities::StructuredDataLookup<2>>> material_lookup;
 
         /*
           * whether pressure is the first indice in the table

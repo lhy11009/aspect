@@ -137,7 +137,7 @@ subsection Material model
     # for the entropy method
     set Use entropy method = true
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/pyrtable/
-    set Material file name               = material_table_entropy_pressure.txt
+    set Material file name               = material_table_entropy_pressure.txt # , material_table_entropy_pressure.txt, material_table_entropy_pressure.txt
   end
 end
 

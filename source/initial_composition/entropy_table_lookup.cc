@@ -46,11 +46,14 @@ namespace aspect
       // class releases its pointer to it.
       initial_composition_manager = this->get_initial_composition_manager_pointer();
 
-      entropy_index = this->introspection().compositional_index_for_name("entropy");
+      entropy_indices = this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::entropy);
 
-      material_lookup = std::make_unique<Utilities::StructuredDataLookup<2>>(7,1.0);
-      material_lookup->load_file(data_directory+material_file_name,
-                                 this->get_mpi_communicator());
+      for (unsigned int i = 0; i < material_file_names.size(); ++i)
+        {
+          material_lookup.push_back(std::make_unique<Utilities::StructuredDataLookup<2>>(7,1.0));
+          material_lookup[i]->load_file(data_directory+material_file_names[i],
+                                        this->get_mpi_communicator());
+        }
     }
 
 
@@ -60,23 +63,22 @@ namespace aspect
     initial_composition (const Point<dim> &position,
                          const unsigned int compositional_index) const
     {
-      if (compositional_index == entropy_index)
+      if (compositional_index == entropy_indices[0])
         {
+          // Use the adiabatic pressure instead of the real one,
+          // to stabilize against pressure oscillations in phase transitions.
+          // This is a requirement of the projected density approximation for
+          // the Stokes equation and not related to the entropy formulation.
+          // Also convert pressure from Pa to bar, bar is used in the table.
           const double temperature = initial_temperature_manager->initial_temperature(position);
           const double pressure = this->get_adiabatic_conditions().pressure(position);
 
-          // Convert pressure from Pa to bar, bar is used in the table.
-          double entropy;
-          if (pressure_first)
-            {
-              Point<2> temperature_pressure(pressure / 1.e5, temperature);
-              entropy = material_lookup->get_data(temperature_pressure, 0);
-            }
-          else
-            {
-              Point<2> temperature_pressure(temperature, pressure / 1.e5);
-              entropy = material_lookup->get_data(temperature_pressure, 0);
-            }
+          // The order in the lookup variable may be either pressure-first or temperature-first.
+          const double first = (pressure_first? pressure / 1.e5: temperature);
+          const double second = (pressure_first? temperature: pressure / 1.e5);
+          Point<2> temperature_pressure(first, second);
+          const double entropy = material_lookup[0]->get_data(temperature_pressure, 0);
+
           return entropy;
         }
       return 0.0;
@@ -119,7 +121,7 @@ namespace aspect
         prm.enter_subsection("Entropy table lookup");
         {
           data_directory              = Utilities::expand_ASPECT_SOURCE_DIR(prm.get("Data directory"));
-          material_file_name          = prm.get("Material file name");
+          material_file_names          = Utilities::split_string_list(prm.get ("Material file name"));
           pressure_first              = prm.get_bool ("Pressure first");
         }
         prm.leave_subsection();

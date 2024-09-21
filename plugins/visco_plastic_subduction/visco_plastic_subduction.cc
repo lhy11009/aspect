@@ -237,7 +237,7 @@ namespace aspect
                   specific_heat_capacities_lookup[j] = entropy_reader[j]->specific_heat(first, second);
                 }
               // Now, perform the iteration to achieve the equilibrated temperature.
-              // temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
+              //temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
             }
           else
             {
