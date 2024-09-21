@@ -164,6 +164,11 @@ namespace aspect
       // create a new MaterialModelInputs object
       MaterialModel::MaterialModelInputs<dim> in_new(in);
 
+      // Create compositional indices for density, entropy, and fields.
+      // Each component of entropy_indices corresponds to a specific composition.
+      // The values in entropy_indices collectively represent the total entropy.
+      // These values are calculated to ensure thermal equilibrium
+      // across different compositional fields.
       const unsigned int projected_density_index = (use_entropy_method? this->introspection().compositional_index_for_name("density_field"): 0);
       const unsigned int entropy_index = (use_entropy_method? this->introspection().compositional_index_for_name("entropy"): 0);
       const std::vector<unsigned int> &entropy_indices = (use_entropy_method?
@@ -172,46 +177,55 @@ namespace aspect
       const std::vector<unsigned int> &composition_indices = (use_entropy_method?
                                                               this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::chemical_composition):
                                                               std::vector<unsigned int>());
-      // for entropy model, with multiple compositions
+
+      // In our entropy model, eos_outputs still represents the outputs
+      // from different compositional fields. However, the number of
+      // compositional fields is determined by the size of material_file_names.
       EquationOfStateOutputs<dim> eos_outputs (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1); // for using visco-plastic consistently
       EquationOfStateOutputs<dim> eos_outputs_all_phases (n_phases);
 
       std::vector<double> average_elastic_shear_moduli (in.n_evaluation_points());
 
-      // Store value of phase function for each phase and composition
-      // While the number of phases is fixed, the value of the phase function is updated for every point
+      // If the entropy method is not used, we need a vector to
+      // store the phase function values for each phase and composition.
+      // While the number of phases is fixed, the phase function values
+      // are updated at every point.
       std::vector<double> phase_function_values(phase_function.n_phase_transitions(), 0.0);
-
-      std::vector<double> volume_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      // If the entropy method is used, we need an additional vector for the mass fractions.
+      // In this case, the values in the compositional fields represent mass fractions instead of volume fractions.
+      // The reason for this change is that mass fractions and thermal capacities are required
+      // in the iteration process to achieve an equilibrated temperature across different compositions.
       std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      // In both methods, the volume fractions are derived later. The difference is that in the normal method,
+      // they are directly obtained from the compositional fields,
+      // while in the entropy method, the volume fractions are derived from the mass fractions.
+      std::vector<double> volume_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
 
       double temperature_lookup;
 
       // Loop through all requested points
       for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
         {
-          // First get the eos_outputs
+          // First, retrieve the eos_outputs. In both methods, this process averages the phase properties
+          // to determine the properties of the compositional fields
           if (use_entropy_method)
             {
-              // Calculate volume fractions from mass fractions
-              // If there is only one lookup table, set the mass and volume fractions to 1
+              // If there is only one lookup table, set the mass and volume fractions to 1.
+              // Otherwise, compute them based on the composition fractions.
+
               mass_fractions = ( material_file_names.size() == 1?
                                  std::vector<double> {1.0}
                                  : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
-              // Use the adiabatic pressure instead of the real one,
-              // to stabilize against pressure oscillations in phase transitions.
-              // This is a requirement of the projected density approximation for
-              // the Stokes equation and not related to the entropy formulation.
-              // Also convert pressure from Pa to bar, bar is used in the table.
-              //const double entropy = in.composition[i][entropy_index];
+
+              // First, evaluate all the values required for the iteration to achieve the equilibrated temperature.
               std::vector<double> component_entropy (material_file_names.size());
               std::vector<double> composition_temperature_lookup (material_file_names.size()); // NEED TO CHANGE
               std::vector<double> specific_heat_capacities_lookup (material_file_names.size()); // NEED TO CHANGE
               std::vector<double> composition_equalibrated_S(material_file_names.size());
               const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
 
-              // Loop over all material files, and store the looked-up values for all compositions.
-              // The order in the lookup variable could be pressure first or entropy first
+              // Loop through all material files and store the retrieved values for all compositions.
+              // The order in the lookup variable may be either pressure-first or entropy-first.
               for (unsigned int j=0; j<material_file_names.size(); ++j)
                 {
                   const double first = pressure_first? pressure: component_entropy[j];
@@ -222,7 +236,7 @@ namespace aspect
                   // std::cout << "densities = " << eos_outputs.densities[j]<<" " << std::endl;
                   specific_heat_capacities_lookup[j] = entropy_reader[j]->specific_heat(first, second);
                 }
-              // new_comp
+              // Now, perform the iteration to achieve the equilibrated temperature.
               // temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
             }
           else
@@ -268,23 +282,26 @@ namespace aspect
                               MaterialUtilities::compute_volumes_from_masses(mass_fractions, eos_outputs.densities, true)
                               : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
 
-          // Then get the final outputs
+          // Then, retrieve the final output variable from the eos_outputs.
+          // This operation averages the properties of the compositional fields
+          // to determine the properties at the local point.
+
           if (use_entropy_method)
             {
-              // In case the entropy method is used
-              // Use the adiabatic pressure instead of the real one,
-              // to stabilize against pressure oscillations in phase transitions.
-              // This is a requirement of the projected density approximation for
-              // the Stokes equation and not related to the entropy formulation.
-              // Also convert pressure from Pa to bar, bar is used in the table.
+              // If the entropy method is used:
+              // Use the adiabatic pressure instead of the actual pressure
+              // to stabilize against pressure oscillations during phase transitions.
+              // This is required by the projected density approximation for
+              // the Stokes equation and is unrelated to the entropy formulation.
+              // Also, convert pressure from Pa to bar, as the table uses bar units.
+              // The first dimension in the table is either pressure or entropy.
+
               const double entropy = in.composition[i][entropy_index];
               const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
               const double first = pressure_first? pressure: entropy;
               const double second = pressure_first? entropy: pressure;
-              // const std::vector<double> unit_vector = pressure_first? {1.0, 0.0}: {0.0, 1.0}
               Tensor<1, 2> density_gradient;
 
-              // first dimension in table is pressure
               out.densities[i] = entropy_reader[0]->density(first, second);
               out.thermal_expansion_coefficients[i] = entropy_reader[0]->thermal_expansivity(first, second);
               out.specific_heat[i] = entropy_reader[0]->specific_heat(first, second);
