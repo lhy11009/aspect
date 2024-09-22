@@ -243,7 +243,7 @@ namespace aspect
                   eos_outputs.specific_heat_capacities[j] = entropy_reader[j]->specific_heat(component_entropy[j],pressure);
                 }
               // Now, perform the iteration to achieve the equilibrated temperature.
-              //temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
+              temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
             }
           else
             {
@@ -788,6 +788,115 @@ namespace aspect
         {
           viscosities[i] = new_viscosity;
         }
+    }
+
+    template <int dim>
+    double
+    ViscoPlasticSubduction<dim>::
+    equilibrate_temperature (std::vector<double> &composition_equalibrated_S,
+                             const std::vector<double> &temperature,
+                             const std::vector<double> &mass_fractions,
+                             const std::vector<double> &entropy,
+                             const std::vector<double> &Cp,
+                             const double pressure) const
+    {
+      AssertThrow(material_file_names.size() == temperature.size() && temperature.size() == mass_fractions.size() &&  temperature.size() == entropy.size() && temperature.size() == Cp.size(),
+                  ExcMessage("The temperature, chemical composition, entropy and specific heat capacity vectors"
+                             " must all have the same size as the number of look-up tables."));
+
+      std::vector<double> composition_initial_S  = entropy;
+      std::vector<double> composition_initial_T  = temperature;
+      std::vector<double> composition_initial_Cp = Cp;
+      std::vector<double> composition_lookup_T(temperature.size());
+      std::vector<double> composition_lookup_Cp(temperature.size());
+
+      // Option to enable debug output for the function.
+      // If enabled, this will log error values when the iteration fails
+      // to achieve final convergence.
+      bool equilibrate_temperature_debug_output = true;
+      std::ostringstream oss;
+
+      //lhy11009: output the initial values
+      if (equilibrate_temperature_debug_output)
+        {
+          oss << "Iteration begins:"  << std::endl;
+          for (unsigned int i = 0; i < material_file_names.size(); ++i)
+            {
+              oss << "\t Initial values" << ", i = " << i << ", p = " << pressure << ", comp S = " << composition_initial_S[i] << ", comp T = " << composition_initial_T[i] << std::endl;
+            }
+        }
+
+      bool equalibration = false;
+      unsigned int iteration = 0;
+      double ln_equalibrated_T = 0;
+
+      // lhy11009: add to output debug information
+
+      // Step1
+
+      // TODO: set the iteration number as a parameter
+      double max_error;
+      while (equalibration == false && iteration < 50)
+        {
+          double T_numerator = 0;
+          double T_denominator = 0;
+
+          iteration += 1;
+
+          for (unsigned int i = 0; i < material_file_names.size(); ++i)
+            {
+              T_numerator += mass_fractions[i] * composition_initial_Cp[i] * std::log(composition_initial_T[i]);
+              T_denominator += mass_fractions[i] * composition_initial_Cp[i];
+            }
+
+          ln_equalibrated_T = T_numerator/T_denominator;
+
+          // step2
+          for (unsigned int i = 0; i < material_file_names.size(); ++i)
+            {
+              composition_equalibrated_S[i] = composition_initial_S[i] + composition_initial_Cp[i] * (ln_equalibrated_T - std::log (composition_initial_T[i]));
+              // step3
+              composition_lookup_T[i] = entropy_reader[i]->temperature(composition_equalibrated_S[i], pressure);
+              if (equilibrate_temperature_debug_output)
+                {
+                  oss << "\tIteration = " << iteration << ", i = " << i << ", p = " << pressure << ", comp S = " << composition_equalibrated_S[i] << ", comp T = " << composition_lookup_T[i] << std::endl;
+                }
+
+              // composition_lookup_Cp[i] = entropy_reader[i]->specific_heat(composition_equalibrated_S[i], pressure);
+            }
+          // step4
+          // update the T0 and S0 to prepare for another iteration
+          composition_initial_T = composition_lookup_T;
+          composition_initial_S = composition_equalibrated_S;
+          //   composition_initial_Cp = composition_lookup_Cp;
+
+          max_error = 0.0;
+          for (unsigned int i = 0; i < material_file_names.size(); ++i)
+            {
+              // TODO: set the small value (currently 1e-5) as a parameter
+              // lhy11009: add debug outputs
+              max_error = std::max(std::abs(composition_lookup_T[i] - std::exp(ln_equalibrated_T)), max_error);
+            }
+          if (equilibrate_temperature_debug_output)
+            {
+              oss << "\tIteration = " << iteration << ", equalibrated T = " << std::exp(ln_equalibrated_T) << ", error = " << max_error << std::endl;
+            }
+          if (max_error < 1e-8)
+            {
+              equalibration = true;
+            }
+        }
+
+      // Debug information is logged if the iteration fails to converge.
+      if (equalibration == false)
+        {
+          oss << "Iteration fails " << ", p = " << pressure << ", equalibrated T = " << std::exp(ln_equalibrated_T) << "S for component = " << composition_equalibrated_S[0] <<" "<<composition_equalibrated_S[1] << ", error = " << max_error << std::endl;
+          std::string debug_outputs = oss.str();
+          std::cout << debug_outputs;
+        }
+      // std::cout << "S for component = " << composition_equalibrated_S[0] <<" "<<composition_equalibrated_S[1] <<std::endl;
+      //  entropy = composition_equalibrated_S;
+      return exp(ln_equalibrated_T); // vector composition_equalibrated_S could be modified while reading in reference
     }
   }
 }

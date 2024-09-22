@@ -246,6 +246,13 @@ namespace aspect
                                           std::vector<double> &viscosities,
                                           const MaterialModel::MaterialModelInputs<dim> &in) const;
 
+        double  equilibrate_temperature (std::vector<double> &composition_equalibrated_S,
+                                         const std::vector<double> &temperature,
+                                         const std::vector<double> &chemical_composition,
+                                         const std::vector<double> &entropy,
+                                         const std::vector<double> &Cp,
+                                         const double pressure) const;
+
       private:
 
         /**
