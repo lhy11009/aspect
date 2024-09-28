@@ -66,7 +66,7 @@ namespace aspect
       bool find = false;
       double entropy;
       for (unsigned int i = 0; i < material_file_names.size(); ++i)
-        if (compositional_index == entropy_indices[0])
+        if (compositional_index == entropy_indices[i])
           {
             // Use the adiabatic pressure instead of the real one,
             // to stabilize against pressure oscillations in phase transitions.

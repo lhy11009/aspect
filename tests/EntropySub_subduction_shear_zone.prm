@@ -149,7 +149,12 @@ end
 
 
 subsection Postprocess
-  set List of postprocessors = visualization, velocity statistics, temperature statistics, mass flux statistics, composition statistics
+  set List of postprocessors = visualization, velocity statistics, temperature statistics, mass flux statistics, composition statistics, depth average
+    subsection Depth average
+        set Number of zones = 50
+        set Output format = txt
+        set Time between graphical output = 0
+    end
   subsection Visualization
      set Time between graphical output = 1e6
      set List of output variables      = material properties, adiabat, nonadiabatic pressure, nonadiabatic temperature
