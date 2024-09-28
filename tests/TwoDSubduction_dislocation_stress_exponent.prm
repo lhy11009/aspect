@@ -1,0 +1,113 @@
+# This prm file is used to generate a phase diagram.
+# This could be useful for densities, viscosities in a material model.
+
+set Dimension                              = 2
+set CFL number                             = 1.0
+set End time                               = 0
+set Adiabatic surface temperature          = 1673.0
+set Output directory                       = output
+set Use years in output instead of seconds = true
+set Nonlinear solver scheme = no Advection, no Stokes
+
+# Model geometry
+subsection Geometry model
+  set Model name = box
+  subsection Box
+    set X repetitions = 50
+    set Y repetitions = 50
+    set X extent      = 800e3
+    set Y extent      = 800e3
+  end
+end
+
+# Mesh refinement specifications
+subsection Mesh refinement
+  set Initial adaptive refinement        = 0
+  set Initial global refinement          = 0
+  set Time steps between mesh refinement = 0
+end
+
+
+subsection Gravity model
+  set Model name = vertical
+  subsection Vertical
+    set Magnitude = 10.0
+  end
+end
+
+
+# Temperature boundary and initial conditions
+subsection Boundary temperature model
+  set Fixed temperature boundary indicators   = top, bottom
+  set List of model names = box
+  subsection Box
+    set Top temperature   = 1673
+    set Bottom temperature  = 1673
+  end
+end
+
+subsection Initial temperature model
+  set Model name = function
+  subsection Function
+    set Coordinate system = cartesian
+    set Variable names = x, y
+    set Function expression = 1673.0
+  end
+end
+
+# Comment the following 3 sections for steinberg model and pyrolitic lookup table
+# Fields of composition
+subsection Compositional fields
+    set Number of fields = 1
+    set Names of fields = right
+    set Compositional field methods = field
+end
+
+# Initial composition model
+subsection Initial composition model
+    set List of model names = function
+    subsection Function
+        set Coordinate system = cartesian
+        set Function expression = (x > 400e3)? 1.0: 0.0
+    end
+end
+
+# Value for material model
+# Set Densities to a constant value and thermal expansivity to 0.0 to have a constant pressure gradient
+# Set Values of Heat capacities to values of reference densities of pyrolitic phases
+subsection Material model
+    set Model name = visco plastic
+    subsection Visco Plastic
+        set Reference temperature = 273
+        set Maximum viscosity = 1e24
+        set Phase transition depths = background:410e3, right: 300e3|500e3
+        set Phase transition widths = background:5e3, right: 5e3|5e3
+        set Phase transition temperatures = background:1662.0, right: 1662.0|1662.0
+        set Phase transition Clapeyron slopes = 0.0
+        set Densities = 3300.0
+        set Heat capacities = background: 1000.0|2000.0, right: 3000.0|4000.0|5000.0
+        set Thermal expansivities = 0.0
+        set Reference strain rate = 1e-15
+        set Viscous flow law = dislocation
+        set Prefactors for dislocation creep = 5e-21
+        set Stress exponents for dislocation creep = 1.0
+        set Activation energies for dislocation creep = 0.0
+        set Activation volumes for dislocation creep = 0.0
+        set Reference stress exponents for dislocation creep = background:1.0, right:2.0|2.0|30.0
+        set Reference strain rates for dislocation creep = background:1e-15, right:1e-13|1e-14|1e-14
+    end
+end
+
+subsection Boundary velocity model
+  set Tangential velocity boundary indicators = top, bottom, left, right
+end
+
+subsection Postprocess
+  set List of postprocessors = visualization, material statistics, temperature statistics
+
+  subsection Visualization
+    set Output format                 = gnuplot
+    set List of output variables      = material properties
+    set Time between graphical output = 0e6
+  end
+end

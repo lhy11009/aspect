@@ -164,6 +164,7 @@ namespace aspect
       double              nonlinear_switch_tolerance;
 
       bool                use_Eisenstat_Walker_method_for_Picard_iterations;
+      bool                use_Eisenstat_Walker_method_with_new_version;
       unsigned int        max_pre_newton_nonlinear_iterations;
       unsigned int        max_newton_line_search_iterations;
       bool                use_newton_residual_scaling_method;

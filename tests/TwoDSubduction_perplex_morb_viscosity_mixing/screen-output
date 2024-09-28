@@ -1,0 +1,19 @@
+
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 74,008 (20,402+2,601+10,201+10,201+10,201+10,201+10,201)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_perplex_morb_viscosity_mixing/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3300 kg/m^3, 5.992e+21 Pa s, 2.112e+15 kg
+
+
+
+
+Termination requested by criterion: end time
+
+
+

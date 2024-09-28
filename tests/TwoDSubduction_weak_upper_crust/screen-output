@@ -1,0 +1,38 @@
+
+Loading shared library <ASPECT_DIR/tester-build/prescribe_field/libprescribed_temperature.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/isosurfaces_TwoD1/libisosurfaces_TwoD1.debug.so>
+
+Number of active cells: 320 (on 4 levels)
+Number of degrees of freedom: 21,780 (2,754+369+1,377+2,880+2,880+2,880+2,880+2,880+2,880)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_weak_upper_crust/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2184 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_weak_upper_crust/depth_average
+
+Number of active cells: 560 (on 5 levels)
+Number of degrees of freedom: 38,274 (4,922+651+2,461+5,040+5,040+5,040+5,040+5,040+5,040)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_weak_upper_crust/solution/solution-00001
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2196 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_weak_upper_crust/depth_average
+
+Number of active cells: 617 (on 6 levels)
+Number of degrees of freedom: 42,306 (5,506+729+2,753+5,553+5,553+5,553+5,553+5,553+5,553)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_weak_upper_crust/solution/solution-00002
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2197 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_weak_upper_crust/depth_average
+
+Termination requested by criterion: end time
+
+
+

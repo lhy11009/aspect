@@ -1,0 +1,20 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: Average density (kg/m^3)
+# 11: Average viscosity (Pa s)
+# 12: Total mass (kg)
+# 13: Minimal temperature (K)
+# 14: Average temperature (K)
+# 15: Maximal temperature (K)
+# 16: Average nondimensional temperature (K)
+0 0.000000000000e+00 0.000000000000e+00 1280 12003  5313 46080 0 output-TwoDSubduction_reference_12222023/solution/solution-00000 3.64905230e+03 8.89678367e+21 1.26952068e+17 2.73000000e+02 2.19539546e+03 3.50000000e+03 5.95722174e-01 
+0 0.000000000000e+00 0.000000000000e+00 1532 14877  6581 55152 0 output-TwoDSubduction_reference_12222023/solution/solution-00001 3.65133554e+03 7.16757881e+21 1.27031503e+17 2.73000000e+02 2.19541342e+03 3.50000000e+03 5.95727742e-01 
+0 0.000000000000e+00 0.000000000000e+00 2258 23247 10283 81288 0 output-TwoDSubduction_reference_12222023/solution/solution-00002 3.65179576e+03 8.03216204e+21 1.27047514e+17 2.73000000e+02 2.19539077e+03 3.50000000e+03 5.95720722e-01 
+0 0.000000000000e+00 0.000000000000e+00 2540 26444 11694 91440 0 output-TwoDSubduction_reference_12222023/solution/solution-00003 3.65370392e+03 8.13848587e+21 1.27113900e+17 2.73000000e+02 2.19539814e+03 3.50000000e+03 5.95723006e-01 

@@ -2238,59 +2238,67 @@ namespace aspect
                               solver_control_cheap.last_step():
                               0) << '+' << std::flush;
 
-        // use the value defined by the user
-        // OR
-        // at least a restart length of 100 for melt models
-        const unsigned int number_of_temporary_vectors = (this->get_parameters().include_melt_transport == false ?
-                                                          this->get_parameters().stokes_gmres_restart_length :
-                                                          std::max(this->get_parameters().stokes_gmres_restart_length, 100U));
-
-        SolverFGMRES<dealii::LinearAlgebra::distributed::BlockVector<double>>
-        solver(solver_control_expensive, mem,
-               SolverFGMRES<dealii::LinearAlgebra::distributed::BlockVector<double>>::
-               AdditionalData(number_of_temporary_vectors));
-
-        try
+        if (this->get_parameters().skip_expensive_stokes_solver)
           {
-            // if no expensive steps allowed, we have failed
-            if (this->get_parameters().n_expensive_stokes_solver_steps == 0)
-              {
-                this->get_pcout() << "0 iterations." << std::endl;
-                throw exc;
-              }
-
-            solver.solve(stokes_matrix,
-                         solution_copy,
-                         rhs_copy,
-                         preconditioner_expensive);
-
-            // Success. Print expensive iterations to screen.
-            this->get_pcout() << solver_control_expensive.last_step()
-                              << " iterations." << std::endl;
-
-            final_linear_residual = solver_control_expensive.last_value();
+            //tell stokes to succeed by skipping the expensive stokes
+            this->get_pcout() << "   skip expensive stokes by user choice (loc: solve_stokes)" << std::endl;
           }
-        // if the solver fails trigger the post stokes solver signal and throw an exception
-        catch (const std::exception &exc)
+        else
           {
-            this->get_signals().post_stokes_solver(sim,
-                                                   preconditioner_cheap.n_iterations_Schur_complement() + preconditioner_expensive.n_iterations_Schur_complement(),
-                                                   preconditioner_cheap.n_iterations_A_block() + preconditioner_expensive.n_iterations_A_block(),
-                                                   solver_control_cheap,
-                                                   solver_control_expensive);
+            // use the value defined by the user
+            // OR
+            // at least a restart length of 100 for melt models
+            const unsigned int number_of_temporary_vectors = (this->get_parameters().include_melt_transport == false ?
+                                                              this->get_parameters().stokes_gmres_restart_length :
+                                                              std::max(this->get_parameters().stokes_gmres_restart_length, 100U));
 
-            std::vector<SolverControl> solver_controls;
-            if (this->get_parameters().n_cheap_stokes_solver_steps > 0)
-              solver_controls.push_back(solver_control_cheap);
-            if (this->get_parameters().n_expensive_stokes_solver_steps > 0)
-              solver_controls.push_back(solver_control_expensive);
+            SolverFGMRES<dealii::LinearAlgebra::distributed::BlockVector<double>>
+            solver(solver_control_expensive, mem,
+                   SolverFGMRES<dealii::LinearAlgebra::distributed::BlockVector<double>>::
+                   AdditionalData(number_of_temporary_vectors));
 
-            Utilities::throw_linear_solver_failure_exception("iterative Stokes solver",
-                                                             "StokesMatrixFreeHandlerImplementation::solve",
-                                                             solver_controls,
-                                                             exc,
-                                                             this->get_mpi_communicator(),
-                                                             this->get_parameters().output_directory+"solver_history.txt");
+            try
+              {
+                // if no expensive steps allowed, we have failed
+                if (this->get_parameters().n_expensive_stokes_solver_steps == 0)
+                  {
+                    this->get_pcout() << "0 iterations." << std::endl;
+                    throw exc;
+                  }
+
+                solver.solve(stokes_matrix,
+                             solution_copy,
+                             rhs_copy,
+                             preconditioner_expensive);
+
+                // Success. Print expensive iterations to screen.
+                this->get_pcout() << solver_control_expensive.last_step()
+                                  << " iterations." << std::endl;
+
+                final_linear_residual = solver_control_expensive.last_value();
+              }
+            // if the solver fails trigger the post stokes solver signal and throw an exception
+            catch (const std::exception &exc)
+              {
+                this->get_signals().post_stokes_solver(sim,
+                                                       preconditioner_cheap.n_iterations_Schur_complement() + preconditioner_expensive.n_iterations_Schur_complement(),
+                                                       preconditioner_cheap.n_iterations_A_block() + preconditioner_expensive.n_iterations_A_block(),
+                                                       solver_control_cheap,
+                                                       solver_control_expensive);
+
+                std::vector<SolverControl> solver_controls;
+                if (this->get_parameters().n_cheap_stokes_solver_steps > 0)
+                  solver_controls.push_back(solver_control_cheap);
+                if (this->get_parameters().n_expensive_stokes_solver_steps > 0)
+                  solver_controls.push_back(solver_control_expensive);
+
+                Utilities::throw_linear_solver_failure_exception("iterative Stokes solver",
+                                                                 "StokesMatrixFreeHandlerImplementation::solve",
+                                                                 solver_controls,
+                                                                 exc,
+                                                                 this->get_mpi_communicator(),
+                                                                 this->get_parameters().output_directory+"solver_history.txt");
+              }
           }
       }
 

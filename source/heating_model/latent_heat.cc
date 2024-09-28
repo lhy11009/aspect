@@ -41,7 +41,9 @@ namespace aspect
           heating_model_outputs.heating_source_terms[q] = material_model_inputs.temperature[q]
                                                           * material_model_outputs.densities[q]
                                                           * material_model_outputs.entropy_derivative_pressure[q]
-                                                          * (material_model_inputs.velocity[q] * material_model_inputs.pressure_gradient[q]);
+                                                          * (material_model_inputs.velocity[q] * material_model_inputs.pressure_gradient[q])
+                                                          + material_model_inputs.temperature[q]
+                                                          * material_model_outputs.densities[q] * material_model_outputs.entropy_derivative_metastable[q];
 
           heating_model_outputs.lhs_latent_heat_terms[q] = - material_model_outputs.densities[q]
                                                            * material_model_inputs.temperature[q]

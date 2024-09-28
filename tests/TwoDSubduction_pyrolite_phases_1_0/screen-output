@@ -1,0 +1,33 @@
+
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 74,008 (20,402+2,601+10,201+10,201+10,201+10,201+10,201)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Skipping spcrust composition solve because RHS is zero.
+   Skipping spharz composition solve because RHS is zero.
+   Skipping opcrust composition solve because RHS is zero.
+   Skipping opharz composition solve because RHS is zero.
+   Solving Stokes system (GMG)... 0+1 iterations.
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 0.946941
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_pyrolite_phases_1_0/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3424 kg/m^3, 6.053e+23 Pa s, 2.192e+15 kg
+
+
+
+
+Termination requested by criterion: end time
+
+
+
+
+WARNING: During this computation 1 nonlinear solver failures occurred!

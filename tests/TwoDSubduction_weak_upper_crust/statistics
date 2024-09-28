@@ -1,0 +1,18 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+0 0.000000000000e+00 0.000000000000e+00 320 3123 1377 17280 0 output-TwoDSubduction_weak_upper_crust/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18431785e+03 3.50000000e+03 5.92289386e-01 
+0 0.000000000000e+00 0.000000000000e+00 560 5573 2461 30240 0 output-TwoDSubduction_weak_upper_crust/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19604043e+03 3.50000000e+03 5.95922043e-01 
+0 0.000000000000e+00 0.000000000000e+00 617 6235 2753 33318 0 output-TwoDSubduction_weak_upper_crust/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19656102e+03 3.50000000e+03 5.96083366e-01 

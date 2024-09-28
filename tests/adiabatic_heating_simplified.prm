@@ -128,7 +128,7 @@ subsection Postprocess
     set List of output variables = material properties, nonadiabatic temperature
 
     subsection Material properties
-      set List of material properties = viscosity, density
+      set List of material properties = material properties
     end
   end
 end
