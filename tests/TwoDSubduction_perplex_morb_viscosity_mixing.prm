@@ -1,6 +1,6 @@
 # This test tests for the implementation of HeFESTo lookup table in the plugin "visco plastic twod"
 # In addition to the test TwoDSubduction_perplex_morb_viscosity:
-#   1. recalibrated phase function values (devided by 0.8 and constrained between 0.0 and 1.0) 
+#   1. recalibrated phase function values (devided by 0.8 and constrained between 0.0 and 1.0)
 #   2. mixing models from phases
 
 set Dimension                              = 2

@@ -118,19 +118,19 @@ namespace aspect
 
         return viscosity_dislocation;
       }
-      
+
 
       template <int dim>
       double
       DislocationCreep<dim>::compute_viscosity_mixing (const double strain_rate,
-                                              const double pressure,
-                                              const double temperature,
-                                              const unsigned int composition,
-                                              const std::vector<double> &phase_function_values,
-                                              const std::vector<unsigned int> &n_phase_transitions_per_composition,
-                                              const int phase_rheology_mixing,
-                                              const double minimum_viscosity,
-                                              const double maximum_viscosity) const
+                                                       const double pressure,
+                                                       const double temperature,
+                                                       const unsigned int composition,
+                                                       const std::vector<double> &phase_function_values,
+                                                       const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                                       const int phase_rheology_mixing,
+                                                       const double minimum_viscosity,
+                                                       const double maximum_viscosity) const
       {
         // in case the mixing model is not assigned, call the old function
         if (phase_rheology_mixing == 0)
@@ -140,38 +140,38 @@ namespace aspect
         unsigned int start_phase_index = 0;
         for (unsigned int i=0; i<composition; ++i)
           start_phase_index += n_phase_transitions_per_composition[i] + 1;
-                
+
         const double prefactor = prefactors_dislocation[start_phase_index];
         const double activation_energy = activation_energies_dislocation[start_phase_index];
         const double activation_volume = activation_volumes_dislocation[start_phase_index];
         const double stress_exponent = stress_exponents_dislocation[start_phase_index];
         const double reference_stress_exponent = reference_stress_exponents_dislocation[start_phase_index];
         const double reference_strain_rate = reference_strain_rates_dislocation[start_phase_index];
-        
-        double viscosity_dislocation_base = 0.5 * std::pow(prefactor,-1/stress_exponent) *
-                                       std::exp((activation_energy + pressure*activation_volume)/
-                                                (constants::gas_constant*temperature*stress_exponent)) *
-                                       std::pow(strain_rate,((1. - stress_exponent)/stress_exponent)) *
-                                       std::pow(strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent)) /
-                                       std::pow(reference_strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent));
-        
-        viscosity_dislocation_base = std::min(std::max(viscosity_dislocation_base, minimum_viscosity),
-                                             maximum_viscosity);
 
-        double temp = 0.0; 
+        double viscosity_dislocation_base = 0.5 * std::pow(prefactor,-1/stress_exponent) *
+                                            std::exp((activation_energy + pressure*activation_volume)/
+                                                     (constants::gas_constant*temperature*stress_exponent)) *
+                                            std::pow(strain_rate,((1. - stress_exponent)/stress_exponent)) *
+                                            std::pow(strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent)) /
+                                            std::pow(reference_strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent));
+
+        viscosity_dislocation_base = std::min(std::max(viscosity_dislocation_base, minimum_viscosity),
+                                              maximum_viscosity);
+
+        double temp = 0.0;
         if (phase_rheology_mixing == 1)
           temp = 1.0 / viscosity_dislocation_base;
         else if (phase_rheology_mixing == 2)
           temp = viscosity_dislocation_base;
         else if (phase_rheology_mixing == 3)
           temp = log(viscosity_dislocation_base);
-        
+
         if (n_phase_transitions_per_composition[composition] > 0)
           {
             for (unsigned int i=0; i<n_phase_transitions_per_composition[composition]; ++i)
               {
                 const unsigned int phase_index = start_phase_index + i;
-                
+
                 // Power law creep equation
                 //    viscosity = 0.5 * A^(-1) * d^(m) * exp((E + P*V)/(RT))
                 // A: prefactor,
@@ -183,19 +183,19 @@ namespace aspect
                 const double stress_exponent = stress_exponents_dislocation[phase_index+1];
                 const double reference_stress_exponent = reference_stress_exponents_dislocation[phase_index+1];
                 const double reference_strain_rate = reference_strain_rates_dislocation[phase_index+1];
-        
+
                 double viscosity_dislocation_phase = 0.5 * std::pow(prefactor,-1/stress_exponent) *
-                                       std::exp((activation_energy + pressure*activation_volume)/
-                                                (constants::gas_constant*temperature*stress_exponent)) *
-                                       std::pow(strain_rate,((1. - stress_exponent)/stress_exponent)) *
-                                       std::pow(strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent)) /
-                                       std::pow(reference_strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent));
-        
+                                                     std::exp((activation_energy + pressure*activation_volume)/
+                                                              (constants::gas_constant*temperature*stress_exponent)) *
+                                                     std::pow(strain_rate,((1. - stress_exponent)/stress_exponent)) *
+                                                     std::pow(strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent)) /
+                                                     std::pow(reference_strain_rate,((1. - reference_stress_exponent)/reference_stress_exponent));
+
                 Assert (viscosity_dislocation_phase > 0.0,
                         ExcMessage ("Negative dislocation viscosity detected. This is unphysical and should not happen. "
                                     "Check for negative parameters. Temperature and pressure are "
                                     + Utilities::to_string(temperature) + " K, " + Utilities::to_string(pressure) + " Pa. "));
-        
+
                 // Creep viscosities become extremely large at low
                 // temperatures and can therefore provoke floating-point overflow errors. In
                 // real rocks, other deformation mechanisms become dominant at low temperatures,
@@ -203,20 +203,20 @@ namespace aspect
                 // and desirable to require the single-mechanism viscosity to be smaller than
                 // std::sqrt(max_double).
                 viscosity_dislocation_phase = std::min(std::max(viscosity_dislocation_phase, minimum_viscosity),
-                                                    maximum_viscosity);
+                                                       maximum_viscosity);
 
                 if (phase_rheology_mixing == 1)
-                {
-                  temp += phase_function_values[phase_index-composition] * (1.0 / viscosity_dislocation_phase - 1.0 / viscosity_dislocation_base); 
-                }
+                  {
+                    temp += phase_function_values[phase_index-composition] * (1.0 / viscosity_dislocation_phase - 1.0 / viscosity_dislocation_base);
+                  }
                 else if (phase_rheology_mixing == 2)
-                {
-                  temp += phase_function_values[phase_index-composition] * (viscosity_dislocation_phase - viscosity_dislocation_base);
-                }
+                  {
+                    temp += phase_function_values[phase_index-composition] * (viscosity_dislocation_phase - viscosity_dislocation_base);
+                  }
                 else if (phase_rheology_mixing == 3)
-                {
-                  temp += phase_function_values[phase_index-composition] * (log(viscosity_dislocation_phase) - log(viscosity_dislocation_base));
-                }
+                  {
+                    temp += phase_function_values[phase_index-composition] * (log(viscosity_dislocation_phase) - log(viscosity_dislocation_base));
+                  }
 
                 viscosity_dislocation_base = viscosity_dislocation_phase;
               }

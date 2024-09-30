@@ -2,6 +2,7 @@ set Dimension = 2
 set Use years in output instead of seconds = true
 set Start time = 0
 set End time = 0
+set Output directory = output
 set Timing output frequency = 10
 set Additional shared libraries = $ASPECT_SOURCE_DIR/tester-build/prescribe_field/libprescribed_temperature.so, $ASPECT_SOURCE_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.so, $ASPECT_SOURCE_DIR/tester-build/isosurfaces_TwoD1/libisosurfaces_TwoD1.so
 set Pressure normalization = surface
@@ -14,7 +15,7 @@ set CFL number = 0.8
 set Max nonlinear iterations = 30
 set Max nonlinear iterations in pre-refinement = 0
 set Nonlinear solver tolerance = 1e-4
-set World builder file = $ASPECT_SOURCE_DIR/tests/TwoDSubduction_weak_upper_crust.wb
+set World builder file = $ASPECT_SOURCE_DIR/tests/TwoDSubduction_test_sz_distribution.wb
 
 subsection Discretization
     set Composition polynomial degree = 2
@@ -23,8 +24,8 @@ subsection Discretization
     set Use discontinuous composition discretization = true
     subsection Stabilization parameters
         set Use limiter for discontinuous composition solution = true
-        set Global composition maximum =  1,   1,  1,  1,   1,   1
-        set Global composition minimum =  0,   0,  0,  0,   0,   0
+        set Global composition maximum = 1, 1, 1, 1
+        set Global composition minimum = 0, 0, 0, 0
     end
 end
 
@@ -73,7 +74,7 @@ end
 
 subsection Mesh refinement
     set Initial global refinement = 3
-    set Initial adaptive refinement = 2
+    set Initial adaptive refinement = 3
     set Minimum refinement level = 3
     set Strategy = isosurfaces_twod1, minimum refinement function, viscosity
     set Time steps between mesh refinement = 10
@@ -82,16 +83,16 @@ subsection Mesh refinement
     set Run postprocessors on initial refinement = true
     set Skip solvers on initial refinement = true
     subsection IsosurfacesTwoD1
-        set Isosurfaces =  max-1, max, spharz: 0.5 | 1.0; max-2, max, opharz: 0.5 | 1.0; max-1, max, Temperature: 270.0 | 1173.0;max, max, spcrust_up: 0.5 | 1.0;max, max, spcrust_low: 0.5 | 1.0;  max-1, max, opcrust_up: 0.5 | 1.0;  max-1, max, opcrust_low: 0.5 | 1.0
+        set Isosurfaces = max, max, spcrust: 0.5 | 1.0; max-1, max, spharz: 0.5 | 1.0;  max-1, max, opcrust: 0.5 | 1.0; max-2, max, opharz: 0.5 | 1.0; max-1, max, Temperature: 270.0 | 1173.0
         set Depth for coarsening the lower mantle = 750e3
         set Level for coarsening the lower mantle = 3
     end
     subsection Minimum refinement function
         set Coordinate system = spherical
         set Variable names = r,phi,t
-        set Function constants = Ro=6.3710e+06, UM=670e3, DD=100e3
+        set Function constants = Ro=6.3710e+06, UM=670e3, DD=200e3, phiT=0.6278, dphi=0.1745
         set Function expression = ((Ro-r<UM)? \
-                                   ((Ro-r<DD)? 4: 3): 0.0)
+                                   ((Ro-r<DD)? (((phi-phiT>-dphi)&&(phi-phiT<dphi))? 11: 9): 7): 0.0)
     end
 end
 
@@ -111,7 +112,7 @@ subsection Initial temperature model
     set List of model operators = add
     subsection Adiabatic
         subsection Function
-            set Function expression = 0.0; 0.0; 0.0; 0.0; 0.0; 0.0
+            set Function expression = 0.0; 0.0; 0.0; 0.0
         end
     end
 end
@@ -128,14 +129,18 @@ end
 
 
 subsection Compositional fields
-    set Number of fields = 6
-    set Names of fields = spharz,opharz,spcrust_up,spcrust_low,opcrust_up,opcrust_low
-    set Compositional field methods = field,field,field,field,field,field
+    set Number of fields = 4
+    set Names of fields = spcrust,spharz,opcrust,opharz
+    set Compositional field methods = field,field,field,field
 end
 
 
 subsection Initial composition model
-    set List of model names = world builder
+    set List of model names = world builder, world builder feature surface
+    set List of model operators = maximum
+    subsection World builder feature surface
+        set Distribution function = linear
+    end
 end
 
 
@@ -161,31 +166,31 @@ subsection Material model
         set Maximum viscosity = 1e24
         set Minimum temperature for viscosity = 273.0
         set Use adiabatic pressure in creep viscosity = true
-        set Phase transition depths = background:4.1000e+05|5.2000e+05|5.6000e+05|6.6000e+05|6.6000e+05|6.6000e+05|6.6000e+05, spharz:4.1000e+05|5.2000e+05|5.6000e+05|6.6000e+05|6.6000e+05|6.6000e+05|6.6000e+05, spcrust_up:8.0000e+04|6.6500e+05|7.2000e+05, spcrust_low:8.0000e+04|6.6500e+05|7.2000e+05
-        set Phase transition widths = background:1.3000e+04|2.5000e+04|6.0000e+04|5.0000e+03|5.0000e+03|5.0000e+03|5.0000e+03, spharz:1.3000e+04|2.5000e+04|6.0000e+04|5.0000e+03|5.0000e+03|5.0000e+03|5.0000e+03, spcrust_up:5.0000e+03|6.0000e+04|5.0000e+03, spcrust_low:5.0000e+03|6.0000e+04|5.0000e+03
-        set Phase transition temperatures = background:1.7800e+03|1.8500e+03|1.8700e+03|1.9100e+03|2.0000e+03|2.0000e+03|2.0000e+03, spharz:1.7800e+03|1.8500e+03|1.8700e+03|1.9100e+03|2.0000e+03|2.0000e+03|2.0000e+03, spcrust_up:1.1730e+03|1.8700e+03|2.0000e+03, spcrust_low:1.1730e+03|1.8700e+03|2.0000e+03
-        set Phase transition Clapeyron slopes = background:2.0000e+06|4.1000e+06|4.0000e+06|-1.0000e+06|0.0000e+00|-1.0000e+06|2.0000e+06, spharz:2.0000e+06|4.1000e+06|4.0000e+06|-1.0000e+06|0.0000e+00|-1.0000e+06|2.0000e+06, spcrust_up:0.0000e+00|4.0000e+06|2.0000e+06, spcrust_low:0.0000e+00|4.0000e+06|2.0000e+06
-        set Manually define phase method crust = background:0.0000e+00, spharz:0.0000e+00, spcrust_up:1.3000e+00, spcrust_low:1.3000e+00
-        set Manually define phase method pyrolite = background:1.0000e+00, spharz:0.0000e+00, spcrust_up:0.0000e+00, spcrust_low:0.0000e+00
-        set Manually define phase method harzburgite = background:0.0000e+00, spharz:1.0000e+00, spcrust_up:0.0000e+00, spcrust_low:0.0000e+00
+        set Phase transition depths = background:410e3|520e3|560e3|660e3|660e3|660e3|660e3, spcrust: 80e3|665e3|720e3, spharz: 410e3|520e3|560e3|660e3|660e3|660e3|660e3
+        set Phase transition widths = background:13e3|25e3|60e3|5e3|5e3|5e3|5e3, spcrust: 5e3|60e3|5e3, spharz: 13e3|25e3|60e3|5e3|5e3|5e3|5e3
+        set Phase transition temperatures = background:1780.0|1850.0|1870.0|1910.0|2000.0|2000.0|2000.0, spcrust: 1173.0|1870.0|2000.0, spharz: 1780.0|1850.0|1870.0|1910.0|2000.0|2000.0|2000.0
+        set Phase transition Clapeyron slopes = background:2e6|4.1e6|4e6|-1e6|0|-1e6|2e6, spcrust: 0.0|4e6|2e6, spharz: 2e6|4.1e6|4e6|-1e6|0|-1e6|2e6
+        set Manually define phase method crust = background: 0.0, spcrust: 1.3, spharz:0.0
+        set Manually define phase method pyrolite = background:1.0, spcrust: 0.0, spharz:0.0
+        set Manually define phase method harzburgite = background:0.0, spcrust: 0.0, spharz:1.0
         set Decoupling eclogite viscosity = true
-        set Compute latent heat = background:1.0000e+00|1.0000e+00|1.0000e+00|8.6200e-01|0.0000e+00|0.0000e+00|0.0000e+00, spharz:1.0000e+00|1.0000e+00|1.0000e+00|8.6200e-01|0.0000e+00|0.0000e+00|0.0000e+00, spcrust_up:0.0000e+00|2.0000e+00|0.0000e+00, spcrust_low:0.0000e+00|2.0000e+00|0.0000e+00
+        set Compute latent heat = background:1.0|1.0|1.0|0.862|0.0|0.0|0.0, spcrust:0.0|2.0|0.0, spharz:1.0|1.0|1.0|0.862|0.0|0.0|0.0
         set Thermal diffusivities = 1.0e-6
         set Heat capacities = 1250.0
-        set Densities = background:3.3000e+03|3.3944e+03|3.4421e+03|3.4532e+03|3.6176e+03|3.6915e+03|3.7747e+03|3.9291e+03, spharz:3.2350e+03|3.3723e+03|3.4417e+03|3.4417e+03|3.6808e+03|3.7178e+03|3.7594e+03|3.8366e+03, opharz:3.2350e+03, spcrust_up:3.0000e+03|3.5400e+03|3.6130e+03|3.8717e+03, spcrust_low:3.0000e+03|3.5400e+03|3.6130e+03|3.8717e+03, opcrust_up:3.0000e+03, opcrust_low:3.0000e+03
+        set Densities = background: 3300.0|3394.4|3442.1|3453.2|3617.6|3691.5|3774.7|3929.1, spharz: 3235.0|3372.3|3441.7|3441.7|3680.8|3717.8|3759.4|3836.6, spcrust: 3000.0|3540.0|3613.0|3871.7, opcrust: 3000.0, opharz: 3235.0
         set Thermal expansivities = 3.1e-5
         set Viscosity averaging scheme = harmonic
         set Viscous flow law = composite
         set Yield mechanism = drucker
         set Grain size = 1.0000e-02
-        set Prefactors for diffusion creep = background:2.1392e-16|2.1392e-16|2.1392e-16|2.1392e-16|5.2255e-18|5.2255e-18|5.2255e-18|5.2255e-18, spharz:2.1392e-16|2.1392e-16|2.1392e-16|2.1392e-16|5.2255e-18|5.2255e-18|5.2255e-18|5.2255e-18, opharz:2.1392e-16, spcrust_up:5.0000e-21|2.1392e-16|5.2255e-18|5.2255e-18, spcrust_low:2.1392e-16|2.1392e-16|5.2255e-18|5.2255e-18, opcrust_up:2.1392e-16, opcrust_low:2.1392e-16
-        set Grain size exponents for diffusion creep = background:3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00, spharz:3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00, opharz:3.0000e+00, spcrust_up:0.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00, spcrust_low:3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00, opcrust_up:3.0000e+00, opcrust_low:3.0000e+00
-        set Activation energies for diffusion creep = background:3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05, spharz:3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05, opharz:3.3500e+05, spcrust_up:0.0000e+00|3.3500e+05|3.3500e+05|3.3500e+05, spcrust_low:3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05, opcrust_up:3.3500e+05, opcrust_low:3.3500e+05
-        set Activation volumes for diffusion creep = background:1.9000e-06|1.9000e-06|1.9000e-06|1.9000e-06|3.0000e-06|3.0000e-06|3.0000e-06|3.0000e-06, spharz:1.9000e-06|1.9000e-06|1.9000e-06|1.9000e-06|3.0000e-06|3.0000e-06|3.0000e-06|3.0000e-06, opharz:1.9000e-06, spcrust_up:0.0000e+00|1.9000e-06|3.0000e-06|3.0000e-06, spcrust_low:1.9000e-06|1.9000e-06|3.0000e-06|3.0000e-06, opcrust_up:1.9000e-06, opcrust_low:1.9000e-06
-        set Prefactors for dislocation creep = background:2.1017e-16|2.1017e-16|2.1017e-16|2.1017e-16|5.0000e-32|5.0000e-32|5.0000e-32|5.0000e-32, spharz:2.1017e-16|2.1017e-16|2.1017e-16|2.1017e-16|5.0000e-32|5.0000e-32|5.0000e-32|5.0000e-32, opharz:2.1017e-16, spcrust_up:5.0000e-32|2.1017e-16|5.0000e-32|5.0000e-32, spcrust_low:2.1017e-16|2.1017e-16|5.0000e-32|5.0000e-32, opcrust_up:2.1017e-16, opcrust_low:2.1017e-16
-        set Stress exponents for dislocation creep = background:3.5000e+00|3.5000e+00|3.5000e+00|3.5000e+00|1.0000e+00|1.0000e+00|1.0000e+00|1.0000e+00, spharz:3.5000e+00|3.5000e+00|3.5000e+00|3.5000e+00|1.0000e+00|1.0000e+00|1.0000e+00|1.0000e+00, opharz:3.5000e+00, spcrust_up:1.0000e+00|3.5000e+00|1.0000e+00|1.0000e+00, spcrust_low:3.5000e+00|3.5000e+00|1.0000e+00|1.0000e+00, opcrust_up:3.5000e+00, opcrust_low:3.5000e+00
-        set Activation energies for dislocation creep = background:4.8000e+05|4.8000e+05|4.8000e+05|4.8000e+05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00, spharz:4.8000e+05|4.8000e+05|4.8000e+05|4.8000e+05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00, opharz:4.8000e+05, spcrust_up:0.0000e+00|4.8000e+05|0.0000e+00|0.0000e+00, spcrust_low:4.8000e+05|4.8000e+05|0.0000e+00|0.0000e+00, opcrust_up:4.8000e+05, opcrust_low:4.8000e+05
-        set Activation volumes for dislocation creep = background:1.4000e-05|1.4000e-05|1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00, spharz:1.4000e-05|1.4000e-05|1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00, opharz:1.4000e-05, spcrust_up:0.0000e+00|1.4000e-05|0.0000e+00|0.0000e+00, spcrust_low:1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00, opcrust_up:1.4000e-05, opcrust_low:1.4000e-05
+        set Prefactors for diffusion creep = background: 2.1392e-16|2.1392e-16|2.1392e-16|2.1392e-16|5.2255e-18|5.2255e-18|5.2255e-18|5.2255e-18,spcrust: 5.0000e-21|2.1392e-16|5.2255e-18|5.2255e-18,spharz: 2.1392e-16|2.1392e-16|2.1392e-16|2.1392e-16|5.2255e-18|5.2255e-18|5.2255e-18|5.2255e-18,opcrust: 2.1392e-16, opharz: 2.1392e-16
+        set Grain size exponents for diffusion creep = background: 3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00,spcrust: 0.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00,spharz: 3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00|3.0000e+00,opcrust: 3.0000e+00, opharz: 3.0000e+00
+        set Activation energies for diffusion creep = background: 3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05,spcrust: 0.0000e+00|3.3500e+05|3.3500e+05|3.3500e+05,spharz: 3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05|3.3500e+05,opcrust: 3.3500e+05, opharz: 3.3500e+05
+        set Activation volumes for diffusion creep = background: 1.9000e-06|1.9000e-06|1.9000e-06|1.9000e-06|3.0000e-06|3.0000e-06|3.0000e-06|3.0000e-06,spcrust: 0.0000e+00|1.9000e-06|3.0000e-06|3.0000e-06,spharz: 1.9000e-06|1.9000e-06|1.9000e-06|1.9000e-06|3.0000e-06|3.0000e-06|3.0000e-06|3.0000e-06,opcrust: 1.9000e-06, opharz: 1.9000e-06
+        set Prefactors for dislocation creep = background: 2.1017e-16|2.1017e-16|2.1017e-16|2.1017e-16|5.0000e-32|5.0000e-32|5.0000e-32|5.0000e-32,spcrust: 5.0000e-32|2.1017e-16|5.0000e-32|5.0000e-32,spharz: 2.1017e-16|2.1017e-16|2.1017e-16|2.1017e-16|5.0000e-32|5.0000e-32|5.0000e-32|5.0000e-32,opcrust: 2.1017e-16, opharz: 2.1017e-16
+        set Stress exponents for dislocation creep = background: 3.5000e+00|3.5000e+00|3.5000e+00|3.5000e+00|1.0000e+00|1.0000e+00|1.0000e+00|1.0000e+00,spcrust: 1.0000e+00|3.5000e+00|1.0000e+00|1.0000e+00,spharz: 3.5000e+00|3.5000e+00|3.5000e+00|3.5000e+00|1.0000e+00|1.0000e+00|1.0000e+00|1.0000e+00,opcrust: 3.5000e+00, opharz: 3.5000e+00
+        set Activation energies for dislocation creep = background: 4.8000e+05|4.8000e+05|4.8000e+05|4.8000e+05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00,spcrust: 0.0000e+00|4.8000e+05|0.0000e+00|0.0000e+00,spharz: 4.8000e+05|4.8000e+05|4.8000e+05|4.8000e+05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00,opcrust: 4.8000e+05, opharz: 4.8000e+05
+        set Activation volumes for dislocation creep = background: 1.4000e-05|1.4000e-05|1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00,spcrust: 0.0000e+00|1.4000e-05|0.0000e+00|0.0000e+00,spharz: 1.4000e-05|1.4000e-05|1.4000e-05|1.4000e-05|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00,opcrust: 1.4000e-05, opharz: 1.4000e-05
         set Angles of internal friction = 25.0
         set Cohesions = 50.e6
         set Maximum yield stress = 500e6
@@ -206,7 +211,7 @@ subsection Material model
         set Peierls shear modulus derivative = 0.0
         set Peierls strain rate residual tolerance = 1.0000e-22
         set Maximum Peierls strain rate iterations = 100
-        set Cutoff pressures for Peierls creep = background:2.5000e+10|2.5000e+10|2.5000e+10|2.5000e+10|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00, spharz:2.5000e+10|2.5000e+10|2.5000e+10|2.5000e+10|0.0000e+00|0.0000e+00|0.0000e+00|0.0000e+00, opharz:2.5000e+10, spcrust_up:0.0000e+00|2.5000e+10|0.0000e+00|0.0000e+00, spcrust_low:0.0000e+00|2.5000e+10|0.0000e+00|0.0000e+00, opcrust_up:2.5000e+10, opcrust_low:2.5000e+10
+        set Cutoff pressures for Peierls creep = background: 2.5e+10|2.5e+10|2.5e+10|2.5e+10|0.0|0.0|0.0|0.0, spcrust: 0.0|2.5e+10|0.0|0.0, spharz: 2.5e+10|2.5e+10|2.5e+10|2.5e+10|0.0|0.0|0.0|0.0, opcrust: 2.5e+10, opharz: 2.5e+10
         set Reset viscosity = true
         subsection Reset viscosity function
             set Coordinate system = spherical
@@ -241,14 +246,13 @@ subsection Material model
             set Max pressure width for eclogite transition = 1.5e9
         end
         subsection Eclogite decoupled viscosity
-            set Decoupled depth = 150000.0
+            set Decoupled depth = 100000.0
             set Decoupled depth width = 10e3
-      set Crust index = 3
         end
         subsection Lookup table
             set Data directory = ./
             set Material file names = test_table_pyrolite, test_table_basalt, test_table_hartzburgite
-            set Material lookup indexes = 0,   2,   2,   1,   1,   1,   1
+            set Material lookup indexes = 0, 1, 2, 1, 2
             set Bilinear interpolation = true
             set Latent heat = false
         end
@@ -280,16 +284,19 @@ end
 
 
 subsection Postprocess
-    set List of postprocessors = visualization, velocity statistics, temperature statistics, depth average
+    set List of postprocessors = visualization, velocity statistics, temperature statistics, material statistics, depth average, heat flux map
     subsection Depth average
         set Number of zones = 50
         set Output format = txt
         set Time between graphical output = 0
     end
     subsection Visualization
-        set List of output variables = density, viscosity, named additional outputs, nonadiabatic pressure, strain rate, stress, heating
-        set Output format = vtu
+        set List of output variables = density, viscosity, named additional outputs, nonadiabatic pressure, strain rate, stress, heating, heat flux map
+        set Output format = gnuplot
         set Time between graphical output = 0.1e6
+        subsection Heat flux map
+            set Output point wise heat flux = true
+        end
     end
 end
 

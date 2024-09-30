@@ -111,14 +111,14 @@ namespace aspect
            */
           double
           compute_viscosity_mixing (const double strain_rate,
-                             const double pressure,
-                             const double temperature,
-                             const unsigned int composition,
-                             const std::vector<double> &phase_function_values,
-                             const std::vector<unsigned int> &n_phase_transitions_per_composition,
-                             const int,
-                             const double,
-                             const double) const;
+                                    const double pressure,
+                                    const double temperature,
+                                    const unsigned int composition,
+                                    const std::vector<double> &phase_function_values,
+                                    const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                    const int,
+                                    const double,
+                                    const double) const;
 
           /**
            * Compute the strain rate and first stress derivative

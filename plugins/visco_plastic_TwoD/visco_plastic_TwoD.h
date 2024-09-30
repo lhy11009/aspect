@@ -552,6 +552,18 @@ namespace aspect
                                        std::vector<std::vector<double> > &reaction_terms,
                                        ReactionRateOutputs<dim> *reaction_rate_out,
                                        const MaterialModel::MaterialModelInputs<dim> &in) const;
+        
+        /**
+         * A function that react the composition fields in mor region
+         * If reaction_mor is false, this is skipped.
+         * For values that are non-realistic (negative or bigger than one), a condition is
+         * implemented to react these values to 0.0 or 1.0. This has higher priority than
+         * reaction in mor region.
+         */
+        void reaction_metastable_compositions(const unsigned int point_index,
+                                       std::vector<std::vector<double> > &reaction_terms,
+                                       ReactionRateOutputs<dim> *reaction_rate_out,
+                                       const MaterialModel::MaterialModelInputs<dim> &in) const;
 
 
         /**
@@ -742,6 +754,17 @@ namespace aspect
         * before viscosity calculation
         */
         double eclogite_phase_volume_fraction_divisor;
+
+        /**
+         * Apply metastable reaction
+         */
+        // todo_metastable
+        bool reaction_metastable;
+        
+        /**
+         * Object for metastable kinetics.
+         */
+        std::unique_ptr<MaterialUtilities::MO_KINETICS> Mo_Kinetics;
 
     };
 

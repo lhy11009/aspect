@@ -521,6 +521,10 @@ namespace aspect
                                 "of the parsed map for "
                                 + options.property_name
                                 + " and check that structure against a given structure."));
+        if (options.check_values_per_key && 
+                     options.n_values_per_key.size() != options.list_of_required_keys.size()){
+                std::cout << "Find the point 0." << std::endl; // debug
+                     }
         AssertThrow (options.check_values_per_key == false ||
                      options.n_values_per_key.size() == options.list_of_required_keys.size(),
                      ExcMessage("parse_map_to_double_array can only check the structure "

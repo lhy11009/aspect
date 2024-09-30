@@ -1176,6 +1176,8 @@ namespace aspect
   \
   template class PhaseOutputs<dim>; \
   \
+  template class PhaseFractionAdditionalOutputs<dim>;\
+  \
   template class PrescribedPlasticDilation<dim>; \
   \
   template class PrescribedFieldOutputs<dim>; \

@@ -1892,6 +1892,7 @@ namespace aspect
       for (unsigned int i=0; i<n_compositional_fields; ++i)
         if (x_compositional_field_types[i] == "unspecified")
           {
+            // todo_metastable
             // Loop over various possibilities before
             // choosing "chemical composition" as the standard field name
             // stress, strain, grain_size, porosity, density
@@ -1908,6 +1909,8 @@ namespace aspect
               x_compositional_field_types[i] = "porosity";
             else if (names_of_compositional_fields[i] == "density_field")
               x_compositional_field_types[i] = "density";
+            else if (names_of_compositional_fields[i].find("meta") != std::string::npos)
+              x_compositional_field_types[i] = "generic";
             else
               x_compositional_field_types[i] = "chemical composition";
           }

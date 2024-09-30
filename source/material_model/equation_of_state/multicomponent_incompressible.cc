@@ -114,7 +114,8 @@ namespace aspect
         std::vector<std::string> compositional_field_names = this->introspection().get_composition_names();
         compositional_field_names.insert(compositional_field_names.begin(),"background");
 
-        Utilities::MapParsing::Options options(chemical_field_names, "Densities");
+        // Utilities::MapParsing::Options options(chemical_field_names, "Densities");
+        Utilities::MapParsing::Options options(compositional_field_names, "Densities");
         options.list_of_allowed_keys = compositional_field_names;
         options.allow_multiple_values_per_key = true;
         if (expected_n_phases_per_composition)

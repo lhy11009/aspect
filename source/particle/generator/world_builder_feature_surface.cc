@@ -33,6 +33,7 @@ namespace aspect
       void
       WorldBuilderFeatureSurface<2>::generate_particles(Particles::ParticleHandler<2> &particle_handler)
       {
+        //todo_wb
         double x = 0.0;
         double y = 0.0;
         double x_last = 0.0;

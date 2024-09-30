@@ -69,6 +69,19 @@ namespace aspect
       /* initialize eos for lookup morb tables*/
       if (use_lookup_table_morb)
         equation_of_state_morb_lookup.initialize();
+
+      if (reaction_metastable)
+      {
+        // todo_metastable
+        const double PT410_P = 14e9;   // Equilibrium pressure (Pa)
+        const double PT410_T = 1760.0; // Equilibrium temperature (K)
+        const double PT410_cl = 4e6;   // Clapeyron slope
+        
+        Mo_Kinetics = std::make_unique<MaterialUtilities::MO_KINETICS>();
+      
+        Mo_Kinetics->setPTEq(PT410_P, PT410_T, PT410_cl);
+        Mo_Kinetics->setKineticsModel(MaterialUtilities::metastable_hosoya_06_eq2, MaterialUtilities::nucleation_rate_yoshioka_2015);
+      }
     }
 
     template <int dim>
@@ -135,11 +148,12 @@ namespace aspect
               reference_density = eos_outputs_all_phases.densities[0];
             }
 
-          MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(in.temperature[0],
+          MaterialUtilities::PhaseFunctionInputs1<dim> phase_inputs(in.temperature[0],
                                                                    in.pressure[0],
                                                                    this->get_geometry_model().depth(in.position[0]),
                                                                    gravity_norm*reference_density,
-                                                                   numbers::invalid_unsigned_int);
+                                                                   numbers::invalid_unsigned_int,
+                                                                   in.composition[0]);
 
 
           for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++)
@@ -718,7 +732,7 @@ namespace aspect
     ComponentMask
     ViscoPlasticTwoD<dim>::
     get_volumetric_composition_mask() const
-    {
+    { 
       // Store which components to exclude during the volume fraction computation.
       ComponentMask composition_mask = strain_rheology.get_strain_composition_mask();
 
@@ -727,6 +741,27 @@ namespace aspect
           for (unsigned int i = 0; i < SymmetricTensor<2,dim>::n_independent_components ; ++i)
             composition_mask.set(i,false);
         }
+      // todo_metastable 
+      if (phase_function.get_is_using_metastable_kinetics())
+      {
+        composition_mask.set(this->introspection().compositional_index_for_name("metastable"),false);
+        if (this->introspection().compositional_name_exists("meta_x0"))
+          {
+            composition_mask.set(this->introspection().compositional_index_for_name("meta_x0"),false);
+          }
+        if (this->introspection().compositional_name_exists("meta_x1"))
+          {
+            composition_mask.set(this->introspection().compositional_index_for_name("meta_x1"),false);
+          }
+        if (this->introspection().compositional_name_exists("meta_x2"))
+          {
+            composition_mask.set(this->introspection().compositional_index_for_name("meta_x2"),false);
+          }
+        if (this->introspection().compositional_name_exists("meta_x3"))
+          {
+            composition_mask.set(this->introspection().compositional_index_for_name("meta_x3"),false);
+          }
+      }
 
       return composition_mask;
     }
@@ -781,11 +816,12 @@ namespace aspect
 
           // The phase index is set to invalid_unsigned_int, because it is only used internally
           // in phase_average_equation_of_state_outputs to loop over all existing phases
-          MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(in.temperature[i],
+          MaterialUtilities::PhaseFunctionInputs1<dim> phase_inputs(in.temperature[i],
                                                                    in.pressure[i],
                                                                    this->get_geometry_model().depth(in.position[i]),
                                                                    gravity_norm*reference_density,
-                                                                   numbers::invalid_unsigned_int);
+                                                                   numbers::invalid_unsigned_int,
+                                                                   in.composition[i]);
 
           // Compute value of phase functions
           for (unsigned int j=0; j < phase_function.n_phase_transitions(); j++)
@@ -914,12 +950,13 @@ namespace aspect
                   const double pressure_depth_derivative = gravity_norm*reference_density;
 
                   // compute the derivatives of phase functions, and parse the value of claperyon slope
-                  const MaterialUtilities::PhaseFunctionInputs<dim> phase_in(in.temperature[i],
+                  const MaterialUtilities::PhaseFunctionInputs1<dim> phase_in(in.temperature[i],
                                                                              in.pressure[i],
                                                                              depth,
                                                                              pressure_depth_derivative,
-                                                                             phase);
-                  const double PhaseFunctionDerivative = phase_function.compute_derivative(phase_in);
+                                                                             phase,
+                                                                             in.composition[i]);
+                  const double PhaseFunctionDerivative = phase_function.compute_derivative1(phase_in);
                   const double clapeyron_slope = phase_function.get_transition_slope(phase);
 
                   // figure out the index of composition in the vector of 'volume_fractions'
@@ -1082,6 +1119,16 @@ namespace aspect
               reaction_mor_compositions(i, out.reaction_terms, reaction_rate_out, in);
             }
         }
+      
+      // todo_metastable
+      if (reaction_metastable){
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim> >();
+              reaction_metastable_compositions(i, out.reaction_terms, reaction_rate_out, in);
+            }
+
+      }
 
       // Morb phases
       if (use_lookup_table_morb)    
@@ -1201,6 +1248,11 @@ namespace aspect
                              "Whether to use the composite rheology to compute the Peierls creep"
                              "if false, use a minimum between the Peierls and the diffusion + dislocation"
                              "creep");
+          
+          prm.declare_entry ("Reaction metastable", "false",
+                             Patterns::Bool (),
+                             "Whether to use chemical reaction to compute the metastable reaction"
+                             "if true, a reaction term will be computed for the metastable composition");
               
 
           // Diffusion creep parameters
@@ -1740,6 +1792,8 @@ namespace aspect
           use_adiabatic_pressure_in_creep = prm.get_bool("Use adiabatic pressure in creep viscosity");
           composite_peierls_creep = prm.get_bool("Use composite peierls creep");
 
+          reaction_metastable = prm.get_bool("Reaction metastable");
+
           // Entries for phase rheology mixing
           use_phase_rheology_mixing = prm.get_bool("Use phase rheology mixing");
           phase_rheology_mixing_models   = Utilities::string_to_int(Utilities::split_string_list(prm.get("Phase rheology mixing models")));
@@ -2025,6 +2079,104 @@ namespace aspect
         }
 
     }
+   
+    // todo_metastable
+    template <int dim>
+    void
+    ViscoPlasticTwoD<dim>::reaction_metastable_compositions(const unsigned int i,
+                                                 std::vector<std::vector<double> > &reaction_terms,
+                                                 ReactionRateOutputs<dim> *reaction_rate_out,
+                                                 const MaterialModel::MaterialModelInputs<dim> &in) const
+    {
+      for (unsigned c=0; c<this->n_compositional_fields(); ++c)
+        {          
+          reaction_terms[i][c] = 0.0;
+        }
+      
+      if  ((in.current_cell.state() != IteratorState::valid) || this->get_timestep_number() == 0)
+        return;
+
+      // get values of composition
+      const std::vector<double> &composition = in.composition[i];
+     
+      unsigned int metastable_index = this->introspection().compositional_index_for_name("metastable");
+      const double metastable_old = composition[metastable_index];
+      const double X0_old = composition[metastable_index + 1]; 
+      const double X1_old = composition[metastable_index + 2]; 
+      const double X2_old = composition[metastable_index + 3]; 
+      const double X3_old = composition[metastable_index + 4]; 
+      std::vector<double> X_old = {X0_old, X1_old, X2_old, X3_old};
+
+      // figure out the right condition by function
+      // convert to coordinate system used by the function
+      // Utilities::NaturalCoordinate<dim> point =
+        // this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], reaction_mor_function_coordinate_system);
+
+      // solve the metastable kinetics
+      
+      const double Coh = 1000.0;
+      Mo_Kinetics->setKineticsFixed(in.pressure[i], in.temperature[i], Coh);
+      const double P_eq = Mo_Kinetics->computeEqP(in.temperature[i]);
+
+      const double time_step = this->get_timestep();
+
+      const unsigned n_t = 1;
+      const unsigned n_span = 10;
+      const bool debug = true;
+      const bool is_saturated_old = false;
+      std::vector<std::vector<double>> results = Mo_Kinetics->solve(in.pressure[i], in.temperature[i], 0.0, time_step, n_t, n_span, false, X_old, is_saturated_old);
+
+      std::vector<double> result_last = results[n_t * n_span];
+      const double X0 = result_last[1]; 
+      const double X1 = result_last[2]; 
+      const double X2 = result_last[3]; 
+      const double X3 = result_last[4]; 
+      const double metastable = result_last[5]; 
+
+      // modify the reaction term accordingly
+      reaction_terms[i][metastable_index] = metastable - metastable_old;
+      reaction_terms[i][metastable_index+1] = X0 - X0_old;
+      reaction_terms[i][metastable_index+2] = X1 - X1_old;
+      reaction_terms[i][metastable_index+3] = X2 - X2_old;
+      reaction_terms[i][metastable_index+4] = X3 - X3_old;
+      
+
+      for (unsigned c=0; c<this->n_compositional_fields(); ++c)
+        {          
+          // Fill reaction rate outputs instead of the reaction terms if we use operator splitting
+          // (and then set the latter to zero).
+          if (this->get_parameters().use_operator_splitting)
+            {
+              if (reaction_rate_out != nullptr)
+                reaction_rate_out->reaction_rates[i][c] = (this->get_timestep_number() > 0
+                                                           ?
+                                                           reaction_terms[i][c] / this->get_timestep()
+                                                           :
+                                                           0.0);
+              reaction_terms[i][c] = 0.0;
+            }
+        }
+
+        if (debug && in.pressure[i] > P_eq)
+        {
+          // additional output
+          std::cout << "P_eq: " <<  P_eq << "\n";  
+          std::cout << "P: " <<  in.pressure[i] << "\n";  
+          std::cout << "T: " <<  in.temperature[i] << "\n";  
+          std::cout << "X0_old: " << X0_old << "\n"
+              << "X1_old: " << X1_old << "\n"
+              << "X2_old: " << X2_old << "\n"
+              << "X3_old: " << X3_old << "\n"
+              << "Metastable_old: " << metastable_old << "\n"; 
+          std::cout << "X0: " << X0 << "\n"
+              << "X1: " << X1 << "\n"
+              << "X2: " << X2 << "\n"
+              << "X3: " << X3 << "\n"
+              << "Metastable: " << metastable << "\n" << "\n";
+        }
+
+
+    }
 
     //hardwire
     template <int dim>
@@ -2113,7 +2265,7 @@ namespace aspect
     {
       unsigned int base = 0;
       // only need to set the first phase of crust to 1.0
-      for (unsigned int i=0; i<comp_crust; ++i)
+      for (int i=0; i<comp_crust; ++i)
         base += n_phases_per_composition[i] + 1;
       re_phase_function_values[base-comp_crust] = 0.5*(1.0 + std::tanh((depth - decoupled_depth) / decoupled_depth_width));
     }

@@ -1,0 +1,29 @@
+
+Loading shared library <ASPECT_DIR/tester-build/subduction_temperature2d/libsubduction_temperature2d.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/prescribe_field/libprescribed_temperature.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 258,204 (20,402+2,601+10,201+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Initial Newton Stokes residual = 2.93156e+15, v = 2.93156e+15, p = 0
+
+   Rebuilding Stokes preconditioner...
+   Solving Stokes system... 0+0 iterations.
+      Relative nonlinear residual (total Newton system) after nonlinear iteration 1: 1, norm of the rhs: 2.93156e+15
+
+
+   Postprocessing:
+     Writing graphical output:  output-TwoDSubduction_metastable/solution/solution-00000
+     RMS, max velocity:         0 m/year, 0 m/year
+     Temperature min/avg/max:   273.1 K, 1273 K, 2273 K
+     Compositions min/max/mass: 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/3.734e+11 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0
+     Writing depth average:     output-TwoDSubduction_metastable/depth_average
+     Writing particle output:   output-TwoDSubduction_metastable/particles/particles-00000
+
+Termination requested by criterion: end time
+
+
+

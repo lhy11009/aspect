@@ -23,6 +23,7 @@
 #include <aspect/utilities.h>
 #include <aspect/simulator_access.h>
 #include <aspect/adiabatic_conditions/interface.h>
+#include <aspect/material_model/interface.h>
 
 namespace aspect
 {

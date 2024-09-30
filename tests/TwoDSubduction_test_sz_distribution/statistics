@@ -1,0 +1,22 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+# 16: Average density (kg/m^3)
+# 17: Average viscosity (Pa s)
+# 18: Total mass (kg)
+0 0.000000000000e+00 0.000000000000e+00  320  3123  1377  11520 0 output-TwoDSubduction_test_sz_distribution/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18491465e+03 3.50000000e+03 5.92474327e-01 3.65183149e+03 2.06945009e+22 1.27048757e+17 
+0 0.000000000000e+00 0.000000000000e+00  560  5573  2461  20160 0 output-TwoDSubduction_test_sz_distribution/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19735089e+03 3.50000000e+03 5.96328134e-01 3.64885429e+03 1.48464464e+22 1.26945179e+17 
+0 0.000000000000e+00 0.000000000000e+00 1640 15878  7031  59040 0 output-TwoDSubduction_test_sz_distribution/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19740330e+03 3.50000000e+03 5.96344377e-01 3.65306218e+03 1.32505155e+22 1.27091573e+17 
+0 0.000000000000e+00 0.000000000000e+00 5000 47273 20965 180000 0 output-TwoDSubduction_test_sz_distribution/solution/solution-00003 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19739474e+03 3.50000000e+03 5.96341722e-01 3.65350882e+03 1.41260558e+22 1.27107112e+17 

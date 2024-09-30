@@ -116,13 +116,13 @@ namespace aspect
       template <int dim>
       double
       DiffusionCreep<dim>::compute_viscosity_mixing (const double pressure,
-                                              const double temperature,
-                                              const unsigned int composition,
-                                              const std::vector<double> &phase_function_values,
-                                              const std::vector<unsigned int> &n_phase_transitions_per_composition,
-                                              const int phase_rheology_mixing,
-                                              const double minimum_viscosity,
-                                              const double maximum_viscosity) const
+                                                     const double temperature,
+                                                     const unsigned int composition,
+                                                     const std::vector<double> &phase_function_values,
+                                                     const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                                     const int phase_rheology_mixing,
+                                                     const double minimum_viscosity,
+                                                     const double maximum_viscosity) const
       {
         // in case the mixing model is not assigned, call the old function
         if (phase_rheology_mixing == 0)
@@ -132,35 +132,35 @@ namespace aspect
         unsigned int start_phase_index = 0;
         for (unsigned int i=0; i<composition; ++i)
           start_phase_index += n_phase_transitions_per_composition[i] + 1;
-                
+
         const double prefactor = prefactors_diffusion[start_phase_index];
         const double activation_energy = activation_energies_diffusion[start_phase_index];
         const double activation_volume = activation_volumes_diffusion[start_phase_index];
         const double grain_size_exponent = grain_size_exponents_diffusion[start_phase_index];
-        
-        double viscosity_diffusion_base = 0.5 / prefactor *
-                                             std::exp((activation_energy +
-                                                       pressure*activation_volume)/
-                                                      (constants::gas_constant*temperature)) *
-                                             std::pow(grain_size, grain_size_exponent);
-        
-        viscosity_diffusion_base = std::min(std::max(viscosity_diffusion_base, minimum_viscosity),
-                                             maximum_viscosity);
 
-        double temp = 0.0; 
+        double viscosity_diffusion_base = 0.5 / prefactor *
+                                          std::exp((activation_energy +
+                                                    pressure*activation_volume)/
+                                                   (constants::gas_constant*temperature)) *
+                                          std::pow(grain_size, grain_size_exponent);
+
+        viscosity_diffusion_base = std::min(std::max(viscosity_diffusion_base, minimum_viscosity),
+                                            maximum_viscosity);
+
+        double temp = 0.0;
         if (phase_rheology_mixing == 1)
           temp = 1.0 / viscosity_diffusion_base;
         else if (phase_rheology_mixing == 2)
           temp = viscosity_diffusion_base;
         else if (phase_rheology_mixing == 3)
           temp = log(viscosity_diffusion_base);
-        
+
         if (n_phase_transitions_per_composition[composition] > 0)
           {
             for (unsigned int i=0; i<n_phase_transitions_per_composition[composition]; ++i)
               {
                 const unsigned int phase_index = start_phase_index + i;
-                
+
                 // Power law creep equation
                 //    viscosity = 0.5 * A^(-1) * d^(m) * exp((E + P*V)/(RT))
                 // A: prefactor,
@@ -172,16 +172,16 @@ namespace aspect
                 const double grain_size_exponent = grain_size_exponents_diffusion[phase_index+1];
 
                 double viscosity_diffusion_phase = 0.5 / prefactor *
-                                             std::exp((activation_energy +
-                                                       pressure*activation_volume)/
-                                                      (constants::gas_constant*temperature)) *
-                                             std::pow(grain_size, grain_size_exponent);
-        
+                                                   std::exp((activation_energy +
+                                                             pressure*activation_volume)/
+                                                            (constants::gas_constant*temperature)) *
+                                                   std::pow(grain_size, grain_size_exponent);
+
                 Assert (viscosity_diffusion_phase > 0.0,
                         ExcMessage ("Negative diffusion viscosity detected. This is unphysical and should not happen. "
                                     "Check for negative parameters. Temperature and pressure are "
                                     + Utilities::to_string(temperature) + " K, " + Utilities::to_string(pressure) + " Pa. "));
-        
+
                 // Creep viscosities become extremely large at low
                 // temperatures and can therefore provoke floating-point overflow errors. In
                 // real rocks, other deformation mechanisms become dominant at low temperatures,
@@ -189,20 +189,20 @@ namespace aspect
                 // and desirable to require the single-mechanism viscosity to be smaller than
                 // std::sqrt(max_double).
                 viscosity_diffusion_phase = std::min(std::max(viscosity_diffusion_phase, minimum_viscosity),
-                                                    maximum_viscosity);
+                                                     maximum_viscosity);
 
                 if (phase_rheology_mixing == 1)
-                {
-                  temp += phase_function_values[phase_index-composition] * (1.0 / viscosity_diffusion_phase - 1.0 / viscosity_diffusion_base); 
-                }
+                  {
+                    temp += phase_function_values[phase_index-composition] * (1.0 / viscosity_diffusion_phase - 1.0 / viscosity_diffusion_base);
+                  }
                 else if (phase_rheology_mixing == 2)
-                {
-                  temp += phase_function_values[phase_index-composition] * (viscosity_diffusion_phase - viscosity_diffusion_base);
-                }
+                  {
+                    temp += phase_function_values[phase_index-composition] * (viscosity_diffusion_phase - viscosity_diffusion_base);
+                  }
                 else if (phase_rheology_mixing == 3)
-                {
-                  temp += phase_function_values[phase_index-composition] * (log(viscosity_diffusion_phase) - log(viscosity_diffusion_base));
-                }
+                  {
+                    temp += phase_function_values[phase_index-composition] * (log(viscosity_diffusion_phase) - log(viscosity_diffusion_base));
+                  }
 
                 viscosity_diffusion_base = viscosity_diffusion_phase;
               }

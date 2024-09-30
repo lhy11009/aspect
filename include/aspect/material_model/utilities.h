@@ -578,6 +578,41 @@ namespace aspect
         unsigned int phase_index;
       };
 
+      template <int dim>
+      struct PhaseFunctionInputs1
+      {
+        /**
+         * Constructor. Initializes the various variables of this
+         * structure with the input values.
+         */
+        PhaseFunctionInputs1(const double temperature,
+                             const double pressure,
+                             const double depth,
+                             const double pressure_depth_derivative,
+                             const unsigned int phase_index,
+                             const std::vector<double> &composition);
+
+        double temperature;
+        double pressure;
+        double depth;
+        double pressure_depth_derivative;
+
+        /**
+         * This parameter determines which phase function of all the stored
+         * functions to compute. Phase functions are numbered consecutively,
+         * starting at 0 and the interpretation of their output is up to the
+         * calling side. For example the first phase function could be used to
+         * indicate a viscosity jump in the first compositional field,
+         * while the second function indicates a density jump in all
+         * compositions. None of this is known to the PhaseFunction object,
+         * which only has information that there are two phase functions
+         * and what their properties are.
+         */
+        unsigned int phase_index;
+        std::shared_ptr<std::vector<double>> composition;
+      };
+
+
       // hardwire
       // A class to deal with eclogite transtiion
       template <int dim>
@@ -609,7 +644,7 @@ namespace aspect
            * version 1.0
            */
           double
-          compute_value_crust_1_0 (const PhaseFunctionInputs<dim> &in,
+          compute_value_crust_1_0 (const PhaseFunctionInputs1<dim> &in,
                                    const std::vector<double> &manually_method_crust,
                                    const std::vector<double> &transition_depths,
                                    const std::vector<double> &transition_temperatures,
@@ -620,7 +655,7 @@ namespace aspect
            * version 1.1
            */
           double
-          compute_value_crust_1_1 (const PhaseFunctionInputs<dim> &in,
+          compute_value_crust_1_1 (const PhaseFunctionInputs1<dim> &in,
                                    const std::vector<double> &manually_method_crust,
                                    const std::vector<double> &transition_depths,
                                    const std::vector<double> &transition_temperatures,
@@ -631,7 +666,7 @@ namespace aspect
            * version 1.2
            */
           double
-          compute_value_crust_1_2 (const PhaseFunctionInputs<dim> &in,
+          compute_value_crust_1_2 (const PhaseFunctionInputs1<dim> &in,
                                    const std::vector<double> &manually_method_crust,
                                    const std::vector<double> &transition_depths,
                                    const std::vector<double> &transition_temperatures,
@@ -642,7 +677,7 @@ namespace aspect
            * version 1.3
            */
           double
-          compute_value_crust_1_3 (const PhaseFunctionInputs<dim> &in,
+          compute_value_crust_1_3 (const PhaseFunctionInputs1<dim> &in,
                                    const std::vector<double> &manually_method_crust,
                                    const std::vector<double> &transition_depths,
                                    const std::vector<double> &transition_temperatures,
@@ -698,7 +733,7 @@ namespace aspect
            * version 1.0
            */
           double
-          compute_value_pyrolite_1_0 (const PhaseFunctionInputs<dim> &in,
+          compute_value_pyrolite_1_0 (const PhaseFunctionInputs1<dim> &in,
                                       const std::vector<double> &manually_method_pyrolite,
                                       const std::vector<double> &transition_depths,
                                       const std::vector<double> &transition_temperatures,
@@ -710,7 +745,7 @@ namespace aspect
            * version 1.1
            */
           double
-          compute_value_pyrolite_1_1 (const PhaseFunctionInputs<dim> &in,
+          compute_value_pyrolite_1_1 (const PhaseFunctionInputs1<dim> &in,
                                       const std::vector<double> &manually_method_pyrolite,
                                       const std::vector<double> &transition_depths,
                                       const std::vector<double> &transition_temperatures,
@@ -722,7 +757,7 @@ namespace aspect
            * version 1.0
            */
           double
-          compute_value_harzburgite_1_0 (const PhaseFunctionInputs<dim> &in,
+          compute_value_harzburgite_1_0 (const PhaseFunctionInputs1<dim> &in,
                                          const std::vector<double> &manually_method_harzburgite,
                                          const std::vector<double> &transition_depths,
                                          const std::vector<double> &transition_temperatures,
@@ -753,13 +788,15 @@ namespace aspect
 
           /* I made this other version to avoid messing up the original one
           */
-          double compute_value1 (const PhaseFunctionInputs<dim> &in) const;
+          double compute_value1 (const PhaseFunctionInputs1<dim> &in) const;
 
           /**
            * Return the derivative of the phase function with respect to
            * pressure.
            */
           double compute_derivative (const PhaseFunctionInputs<dim> &in) const;
+
+          double compute_derivative1 (const PhaseFunctionInputs1<dim> &in) const;
 
           /**
            * Return the total number of phase transitions.
@@ -815,6 +852,12 @@ namespace aspect
           void
           parse_parameters (ParameterHandler &prm);
 
+          /**
+           * return whether the metastable kinetics is used
+           */
+          bool
+          get_is_using_metastable_kinetics() const;
+
 
         private:
           /**
@@ -841,6 +884,12 @@ namespace aspect
            * depth of the phase transition.
            */
           bool use_depth_instead_of_pressure;
+
+          /*
+          * Whether to include metastable kinetics, this is true if any entry in
+          * the vector use_metastable_kinetics is true
+          */
+          bool is_using_metastable_kinetics;
 
           /**
            * A vector that stores how many phase transitions there are for each compositional field.
@@ -878,6 +927,16 @@ namespace aspect
           std::vector<double> compute_latent_heats;
 
           /**
+           * Whether to use metastable kinetics
+           */
+          std::vector<bool> use_metastable_kinetics;
+
+          /**
+           * Match the metastable composition to a normal composition
+           */
+          std::vector<unsigned int> metastable_comp_indexes;
+
+          /**
            * hardwire
            * An instantiation of the Eclogite_Transition class to deal with eclogite transition
            */
@@ -895,7 +954,7 @@ namespace aspect
        */
       template <int dim>
       std::pair<bool, double>
-      compute_point_to_line (const PhaseFunctionInputs<dim> &in,
+      compute_point_to_line (const PhaseFunctionInputs1<dim> &in,
                              const double T, const double P, const double W, const double slope,
                              bool by_depth, bool is_negative, bool is_vertical);
 
@@ -904,6 +963,93 @@ namespace aspect
        * This is used to smooth the corner of phase diagram where two lines intercepts
        */
       double average_deviation(double x1, double x2, double pinpoint);
+
+      //todo_metastable
+      class IRK4Solver
+      {
+        public:
+          IRK4Solver();
+
+          std::pair<std::vector<double>, std::vector<std::vector<double>>>
+          solve(const std::function<std::vector<double>(double, const std::vector<double>&)> &f,
+                const std::vector<double> &y0, const std::pair<double, double> &t_span, double h, bool debug=false);
+
+        private:
+          std::vector<std::vector<double>> A;  // IRK4 A coefficients
+          std::vector<double> b;               // IRK4 b coefficients
+          std::vector<double> c;               // IRK4 c coefficients
+      };
+
+      // Function prototypes
+      double metastable_hosoya_06_eq2_P1(double P, double T, double Coh);
+      double metastable_hosoya_06_eq2(double P, double T, double P_eq, double Coh);
+
+      double nucleation_rate_yoshioka_2015(double P, double T, double P_eq);
+
+      double calculate_avrami_number_yoshioka_2015(double I_max, double Y_max, double kappa = 1e-6, double D = 100e3);
+
+      double calculate_sigma_s(double I_PT, double Y_PT, double d_0, double kappa = 1e-6, double D = 100e3);
+      double calculate_sigma_s(const std::vector<double> &I_array, const std::vector<double> &Y_array, double d_0, double kappa = 1e-6, double D = 100e3);
+
+      double solve_extended_volume_post_saturation(double Y, double s, double kappa = 1e-6, double D = 100e3, double d0 = 1e-2);
+      std::vector<double> solve_extended_volume_post_saturation(const double Y, const std::vector<double> &s, double kappa = 1e-6, double D = 100e3, double d0 = 1e-2);
+
+      // Solve the Modified Equation (18)
+      std::vector<std::vector<double>> solve_modified_equations_eq18(
+        double Av,
+        const std::function<double(double)> &Y_prime_func,
+        const std::function<double(double)> &I_prime_func,
+        const std::pair<double, double> &s_span,
+        const std::vector<double> &X_ini,
+        int n_span = 100,
+        bool debug = false);
+
+      // Class for MO kinetics
+      class MO_KINETICS
+      {
+        public:
+          MO_KINETICS();
+
+          void setKineticsModel(std::function<double(double, double, double, double)> Y_func_ori,
+                                std::function<double(double, double, double)> I_func_ori);
+          void setKineticsFixed(double P, double T, double Coh);
+          void setPTEq(double P0, double T0, double cl);
+
+          std::pair<std::vector<std::vector<double>>, std::vector<bool>>
+          solveModifiedEquation(const std::pair<double, double> &t_span, const std::vector<double> &X_ini,
+                                bool is_saturated, int n_span = 10, bool debug = false);
+
+          double computeEqP(double T);
+
+          std::vector<std::vector<double>>
+          solve(double P, double T, double t_min, double t_max, int n_t, int n_span, bool debug = false, std::vector<double> X = {0.0, 0.0, 0.0, 0.0}, bool is_saturated = false);
+
+          class MO_INITIATION_Error : public std::runtime_error
+          {
+            public:
+              explicit MO_INITIATION_Error(const std::string &message) : std::runtime_error(message) {}
+          };
+
+        private:
+          std::function<double(double, double, double, double)> Y_func_ori;
+          std::function<double(double, double, double)> I_func_ori;
+          std::function<double(double)> Y_func;
+          std::function<double(double)> I_func;
+
+          double kappa = 1e-6; // Thermal diffusivity
+          double D = 100e3;    // Slab thickness
+          double d0 = 1e-2;    // Parental grain size
+          double t_scale = D *D/kappa;
+          int n_col = 7;     // Number of result columns
+
+          std::vector<double> X_scale_array;
+
+          std::function<double(double)> Y_prime_func;
+          std::function<double(double)> I_prime_func;
+
+          std::vector<double> PT_eq;
+
+      };
     }
   }
 }
