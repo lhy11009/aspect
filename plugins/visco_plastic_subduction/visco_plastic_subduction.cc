@@ -204,7 +204,7 @@ namespace aspect
       // In both methods, the volume fractions are derived later. The difference is that in the normal method,
       // they are directly obtained from the compositional fields,
       // while in the entropy method, the volume fractions are derived from the mass fractions.
-      std::vector<double> volume_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      // std::vector<double> volume_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
 
       double temperature_lookup;
 
@@ -283,9 +283,9 @@ namespace aspect
 
           // Then get the volume fractions
           // TODO: Update rheology to only compute viscosity for chemical compositional fields
-          // Then remove volume_fractions_for_rheology
-          const std::vector<double> volume_fractions_for_rheology = MaterialUtilities::compute_composition_fractions(in.composition[i], volumetric_compositions);
-          volume_fractions = (use_entropy_method?
+          // Then remove volume_fractions
+          // const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[i], volumetric_compositions);
+          const std::vector<double> volume_fractions = (use_entropy_method?
                               MaterialUtilities::compute_volumes_from_masses(mass_fractions, eos_outputs.densities, true)
                               : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
 
@@ -406,26 +406,26 @@ namespace aspect
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
               isostrain_viscosities =
-                rheology->calculate_isostrain_viscosities(in_new, i, volume_fractions_for_rheology, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
+                rheology->calculate_isostrain_viscosities(in_new, i, volume_fractions, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
               // creep (where n_diff=1) viscosities are stress and strain-rate independent, so the calculation
               // of compositional field viscosities is consistent with any averaging scheme.
-              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions_for_rheology, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging);
+              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging);
 
               // Decide based on the maximum composition if material is yielding.
               // This avoids for example division by zero for harmonic averaging (as plastic_yielding
               // holds values that are either 0 or 1), but might not be consistent with the viscosity
               // averaging chosen.
-              std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions_for_rheology.begin(), volume_fractions_for_rheology.end());
-              plastic_yielding = isostrain_viscosities.composition_yielding[std::distance(volume_fractions_for_rheology.begin(), max_composition)];
+              std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(), volume_fractions.end());
+              plastic_yielding = isostrain_viscosities.composition_yielding[std::distance(volume_fractions.begin(), max_composition)];
 
               // Compute viscosity derivatives if they are requested
               if (MaterialModel::MaterialModelDerivatives<dim> *derivatives =
                     out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim>>())
 
-                rheology->compute_viscosity_derivatives(i, volume_fractions_for_rheology,
+                rheology->compute_viscosity_derivatives(i, volume_fractions,
                                                         isostrain_viscosities.composition_viscosities,
                                                         in_new, out, phase_function_values,
                                                         phase_function.n_phase_transitions_for_each_composition());
@@ -463,12 +463,12 @@ namespace aspect
           // the ElasticAdditionalOutputs.
           // add one if condition to prevent it from failing
           if (in_new.requests_property(MaterialProperties::viscosity))
-            rheology->fill_plastic_outputs(i, volume_fractions_for_rheology, plastic_yielding, in_new, out, isostrain_viscosities);
+            rheology->fill_plastic_outputs(i, volume_fractions, plastic_yielding, in_new, out, isostrain_viscosities);
 
           if (this->get_parameters().enable_elasticity)
             {
               // Compute average elastic shear modulus
-              average_elastic_shear_moduli[i] = MaterialUtilities::average_value(volume_fractions_for_rheology,
+              average_elastic_shear_moduli[i] = MaterialUtilities::average_value(volume_fractions,
                                                                                  rheology->elastic_rheology.get_elastic_shear_moduli(),
                                                                                  rheology->viscosity_averaging);
 
