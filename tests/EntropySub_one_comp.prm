@@ -196,7 +196,7 @@ subsection Material model
     # for the entropy method
     set Use entropy method = true
     set Data directory                   = $ASPECT_SOURCE_DIR/lookup_tables/hefesto_pyrolite_P_S/
-    set Material file name               = pyrolite_PS.txt
+    set Material file name               = pyrolite_PS.txt, pyrolite_PS.txt
     set Pressure first = true
   end
 end

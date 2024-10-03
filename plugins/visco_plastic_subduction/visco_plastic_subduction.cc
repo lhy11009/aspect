@@ -232,17 +232,18 @@ namespace aspect
               // The order in the lookup variable may be either pressure-first or entropy-first.
               for (unsigned int j=0; j<material_file_names.size(); ++j)
                 {
+                  component_entropy[j] = in.composition[i][entropy_indices[j]];
                   const double first = pressure_first? pressure: component_entropy[j];
                   const double second = pressure_first? component_entropy[j]: pressure;
-                  component_entropy[j] = in.composition[i][entropy_indices[j]];
                   composition_temperature_lookup[j] = entropy_reader[j]->temperature(first, second);
                   // std::cout << "component_entropy = " <<component_entropy[j]<<" " << std::endl;
                   // std::cout << "densities = " << eos_outputs.densities[j]<<" " << std::endl;
-                  eos_outputs.densities[j] = entropy_reader[j]->density(component_entropy[j], pressure);
-                  eos_outputs.thermal_expansion_coefficients[j] = entropy_reader[j]->thermal_expansivity(component_entropy[j],pressure);
-                  eos_outputs.specific_heat_capacities[j] = entropy_reader[j]->specific_heat(component_entropy[j],pressure);
+                  eos_outputs.densities[j] = entropy_reader[j]->density(first, second);
+                  eos_outputs.thermal_expansion_coefficients[j] = entropy_reader[j]->thermal_expansivity(first, second);
+                  eos_outputs.specific_heat_capacities[j] = entropy_reader[j]->specific_heat(first, second);
                 }
               // Now, perform the iteration to achieve the equilibrated temperature.
+              // todo_equal
               // temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
             }
           else
