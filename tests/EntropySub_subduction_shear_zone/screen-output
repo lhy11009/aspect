@@ -5,56 +5,80 @@ Number of active cells: 384 (on 4 levels)
 Number of degrees of freedom: 15,282 (3,298+441+1,649+1,649+1,649+1,649+1,649+1,649+1,649)
 
    Postprocessing:
-     Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00000
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00000
      RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2174 K, 3500 K
      Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.078e+17 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/1.148e+12 // 0/0/0
-     Writing depth average:              output-EntropySub_subduction_shear_zone/depth_average
+     Compositions min/max/mass:          577.9/2758/1.078e+17 // 577.9/2758/1.078e+17 // 577.9/2758/1.078e+17 // 0/0/0 // 0/1/1.148e+12 // 0/0/0
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
 
 Number of active cells: 528 (on 5 levels)
 Number of degrees of freedom: 21,973 (4,742+634+2,371+2,371+2,371+2,371+2,371+2,371+2,371)
 
    Postprocessing:
-     Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00001
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00001
      RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
      Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.087e+17 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/5.741e+11 // 0/0/0
-     Writing depth average:              output-EntropySub_subduction_shear_zone/depth_average
+     Compositions min/max/mass:          577.9/2758/1.087e+17 // 577.9/2758/1.087e+17 // 577.9/2758/1.087e+17 // 0/0/0 // 0/1/5.741e+11 // 0/0/0
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
 
 Number of active cells: 963 (on 6 levels)
 Number of degrees of freedom: 40,831 (8,814+1,168+4,407+4,407+4,407+4,407+4,407+4,407+4,407)
 
    Postprocessing:
-     Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00002
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00002
      RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
      Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.089e+17 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/2.87e+11 // 0/1/1.179e+10
-     Writing depth average:              output-EntropySub_subduction_shear_zone/depth_average
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 0/0/0 // 0/1/2.87e+11 // 0/1/1.179e+10
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
 
 Number of active cells: 1,710 (on 7 levels)
 Number of degrees of freedom: 74,014 (15,978+2,113+7,989+7,989+7,989+7,989+7,989+7,989+7,989)
 
-*** Timestep 0:  t=0 years, dt=0 years
-   Solving temperature system... 0 iterations.
-   Solving entropy system ... 0 iterations.
-   Skipping entropy_sp_crust composition solve because RHS is zero.
-   Skipping entropy_sp_harz composition solve because RHS is zero.
-   Copying properties into prescribed compositional field density_field... done.
-   Solving sp_crust system ... 0 iterations.
-   Solving sp_harz system ... 0 iterations.
-   Rebuilding Stokes preconditioner...
-   Solving Stokes system... 200+84 iterations.
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00003
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2186 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 0/0/0 // 0/1/1.45e+11 // 0/1/5.792e+11
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
+
+Number of active cells: 5,034 (on 8 levels)
+Number of degrees of freedom: 208,061 (44,940+5,831+22,470+22,470+22,470+22,470+22,470+22,470+22,470)
 
    Postprocessing:
-     Writing graphical output:           output-EntropySub_subduction_shear_zone/solution/solution-00003
-     RMS, max velocity:                  0.00634 m/year, 0.116 m/year
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00004
+     RMS, max velocity:                  0 m/year, 0 m/year
      Temperature min/avg/max:            273 K, 2186 K, 3500 K
-     Mass fluxes through boundary parts: 1.796e-05 kg/yr, 0.0007084 kg/yr, 0 kg/yr, 6.699e-08 kg/yr
-     Compositions min/max/mass:          577.9/2758/1.089e+17 // 0/0/0 // 0/0/0 // 3229/5592/1.94e+17 // 0/1/1.45e+11 // 0/1/5.792e+11
-     Writing depth average:              output-EntropySub_subduction_shear_zone/depth_average
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 0/0/0 // 0/1/7.503e+10 // 0/1/7.21e+11
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
+
+Number of active cells: 12,903 (on 9 levels)
+Number of degrees of freedom: 521,211 (112,606+14,484+56,303+56,303+56,303+56,303+56,303+56,303+56,303)
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00005
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2186 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 0/0/0 // 0/1/1.818e+11 // 0/1.125/5.102e+11
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
+
+Number of active cells: 37,755 (on 10 levels)
+Number of degrees of freedom: 1,485,080 (320,926+40,913+160,463+160,463+160,463+160,463+160,463+160,463+160,463)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:           output-EntropySub_subduction_shear_zone_1/solution/solution-00006
+     RMS, max velocity:                  0 m/year, 0 m/year
+     Temperature min/avg/max:            273 K, 2186 K, 3500 K
+     Mass fluxes through boundary parts: 0 kg/yr, 0 kg/yr, 0 kg/yr, 0 kg/yr
+     Compositions min/max/mass:          577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 577.9/2758/1.089e+17 // 0/0/0 // 0/1/1.283e+11 // -0.125/1.125/5.45e+11
+     Writing depth average:              output-EntropySub_subduction_shear_zone_1/depth_average
 
 Termination requested by criterion: end time
 
