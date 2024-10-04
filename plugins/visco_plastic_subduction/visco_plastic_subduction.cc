@@ -84,7 +84,7 @@ namespace aspect
       // first compute the mass fraction, then derive the volume fraction from it.
       const std::vector<double> volume_fractions
         = MaterialUtilities::compute_composition_fractions(composition,
-                                                          rheology->get_volumetric_composition_mask());
+                                                           rheology->get_volumetric_composition_mask());
       /*
       std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       std::vector<double> densities (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
@@ -217,7 +217,6 @@ namespace aspect
       // These values are calculated to ensure thermal equilibrium
       // across different compositional fields.
       const unsigned int projected_density_index = (use_entropy_method? this->introspection().compositional_index_for_name("density_field"): 0);
-      const unsigned int entropy_index = (use_entropy_method? this->introspection().compositional_index_for_name("entropy"): 0);
       const std::vector<unsigned int> &entropy_indices = (use_entropy_method?
                                                           this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::entropy):
                                                           std::vector<unsigned int>());
@@ -247,11 +246,18 @@ namespace aspect
       // In this case, the values in the compositional fields represent mass fractions instead of volume fractions.
       // The reason for this change is that mass fractions and thermal capacities are required
       // in the iteration process to achieve an equilibrated temperature across different compositions.
-      std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       // In both methods, the volume fractions are derived later. The difference is that in the normal method,
       // they are directly obtained from the compositional fields,
       // while in the entropy method, the volume fractions are derived from the mass fractions.
+      std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       // std::vector<double> volume_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      // If the entropy method is used, we also need some other additional vectors, there are used to store compositional values
+      std::vector<double> component_entropy (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      std::vector<double> composition_temperature_lookup (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1); // NEED TO CHANGE
+      std::vector<double> composition_equalibrated_S(use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      std::vector<double> vps(use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      std::vector<double> vss(use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      std::vector<Tensor<1, 2>> density_gradients(use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
 
       double temperature_lookup;
 
@@ -270,9 +276,6 @@ namespace aspect
                                  : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
 
               // First, evaluate all the values required for the iteration to achieve the equilibrated temperature.
-              std::vector<double> component_entropy (material_file_names.size());
-              std::vector<double> composition_temperature_lookup (material_file_names.size()); // NEED TO CHANGE
-              std::vector<double> composition_equalibrated_S(material_file_names.size());
               const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
 
               // Loop through all material files and store the retrieved values for all compositions.
@@ -288,10 +291,17 @@ namespace aspect
                   eos_outputs.densities[j] = entropy_reader[j]->density(first, second);
                   eos_outputs.thermal_expansion_coefficients[j] = entropy_reader[j]->thermal_expansivity(first, second);
                   eos_outputs.specific_heat_capacities[j] = entropy_reader[j]->specific_heat(first, second);
+                  eos_outputs.entropy_derivative_pressure[j] = 0.0;
+                  eos_outputs.entropy_derivative_temperature[j] = 0.0;
+                  density_gradients[j] = entropy_reader[j]->density_gradient(first, second);
+                  vps[j] = entropy_reader[j]->seismic_vp(first, second);
+                  vss[j] = entropy_reader[j]->seismic_vs(first, second);
                 }
               // Now, perform the iteration to achieve the equilibrated temperature.
+              // Alternative: use the temperature of the background composition
               // todo_equal
               // temperature_lookup = equilibrate_temperature (composition_equalibrated_S, composition_temperature_lookup, mass_fractions, component_entropy, eos_outputs.specific_heat_capacities, pressure);
+              temperature_lookup =  composition_temperature_lookup[0];
             }
           else
             {
@@ -344,112 +354,89 @@ namespace aspect
           // Then, retrieve the final output variable from the eos_outputs.
           // This operation averages the properties of the compositional fields
           // to determine the properties at the local point.
+          // lhy11009: Here, I ensure consistency in the output values between the two different implementations.
+          // Note that the definitions of volume fractions differ between these implementations.
+          out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic);
+          out.thermal_expansion_coefficients[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.thermal_expansion_coefficients, MaterialUtilities::arithmetic);
+          out.specific_heat[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.specific_heat_capacities, MaterialUtilities::arithmetic);
 
-          if (use_entropy_method)
+          // Density gradient and compressibility
+          // lhy11009: These currently don't affect the computation of the model.
+          // TODO: Determine the appropriate method to average the density gradient.
+          // For now, the background value is used as a placeholder.
+          Tensor<1, 2> density_gradient = density_gradients[0];
+          // pressure gradient in the first
+          const Tensor<1, 2> pressure_unit_vector = (pressure_first? Tensor<1, 2>({1.0, 0.0}): Tensor<1, 2>({0.0, 1.0}));
+          // 1e5: converting from bar^-1 to pa^-s, ongoing conversation with Rene and Ranpeng
+          out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
+          // todo_compress
+          if (use_pa_in_compressibilities)
+            out.compressibilities[i] /= 1e5;
+
+          // Thermal conductivity can be calculated or looked up by different methods
+          // including pressure-temperature dependency or using a constant value
+          // TODO: test using the background value as a placeholder
+          out.thermal_conductivities[i] = thermal_conductivities[0]; // test
+          // out.thermal_conductivities[i] = thermal_conductivity(temperature_lookup, in.pressure[i], in.position[i]);
+          // TODO: we still use the thermal conductivity value from the prm file
+          /*
+          if (define_conductivities == false)
             {
-              // If the entropy method is used:
-              // Use the adiabatic pressure instead of the actual pressure
-              // to stabilize against pressure oscillations during phase transitions.
-              // This is required by the projected density approximation for
-              // the Stokes equation and is unrelated to the entropy formulation.
-              // Also, convert pressure from Pa to bar, as the table uses bar units.
-              // The first dimension in the table is either pressure or entropy.
+              double thermal_diffusivity = 0.0;
 
-              const double entropy = in.composition[i][entropy_index];
-              const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
-              const double first = pressure_first? pressure: entropy;
-              const double second = pressure_first? entropy: pressure;
-              Tensor<1, 2> density_gradient;
+              for (unsigned int j=0; j < volume_fractions.size(); ++j)
+                thermal_diffusivity += volume_fractions[j] * thermal_diffusivities[j];
 
-              out.densities[i] = entropy_reader[0]->density(first, second);
-              out.thermal_expansion_coefficients[i] = entropy_reader[0]->thermal_expansivity(first, second);
-              out.specific_heat[i] = entropy_reader[0]->specific_heat(first, second);
-              density_gradient = entropy_reader[0]->density_gradient(first, second);
-              temperature_lookup =  entropy_reader[0]->temperature(first, second);
-              // fill seismic velocities outputs if they exist
-              if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
-                {
-                  seismic_out->vp[i] = entropy_reader[0]->seismic_vp(first, second);
-                  seismic_out->vs[i] = entropy_reader[0]->seismic_vs(first, second);
-                }
-              // pressure gradient in the first
-              const Tensor<1, 2> pressure_unit_vector = (pressure_first? Tensor<1, 2>({1.0, 0.0}): Tensor<1, 2>({0.0, 1.0}));
-              // 1e5: converting from bar^-1 to pa^-s, ongoing conversation with Rene and Ranpeng
-              out.compressibilities[i] = (density_gradient * pressure_unit_vector) / out.densities[i];
-              // todo_compress
-              if (use_pa_in_compressibilities)
-                out.compressibilities[i] /= 1e5;
-
-              // Thermal conductivity can be pressure temperature dependent
-              // todo_conduct
-              out.thermal_conductivities[i] = thermal_conductivities[0]; // test
-              // out.thermal_conductivities[i] = thermal_conductivity(temperature_lookup, in.pressure[i], in.position[i]);
-
-              out.entropy_derivative_pressure[i]    = 0.;
-              out.entropy_derivative_temperature[i] = 0.;
-
-              // set up variable to interpolate prescribed field outputs onto compositional fields
-              if (PrescribedFieldOutputs<dim> *prescribed_field_out = out.template get_additional_output<PrescribedFieldOutputs<dim>>())
-                {
-                  prescribed_field_out->prescribed_field_outputs[i][projected_density_index] = out.densities[i];
-                }
-
-              // set up variable to interpolate prescribed field outputs onto temperature field
-              if (PrescribedTemperatureOutputs<dim> *prescribed_temperature_out = out.template get_additional_output<PrescribedTemperatureOutputs<dim>>())
-                {
-                  prescribed_temperature_out->prescribed_temperature_outputs[i] = temperature_lookup;
-                }
-
-              // update the value of temperature
-              in_new.temperature[i] = std::max(temperature_lookup, min_temperature_for_viscosity);
+              // Thermal conductivity at the given positions. If the temperature equation uses
+              // the reference density profile formulation, use the reference density to
+              // calculate thermal conductivity. Otherwise, use the real density. If the adiabatic
+              // conditions are not yet initialized, the real density will still be used.
+              if (this->get_parameters().formulation_temperature_equation ==
+                  Parameters<dim>::Formulation::TemperatureEquation::reference_density_profile &&
+                  this->get_adiabatic_conditions().is_initialized())
+                out.thermal_conductivities[i] = thermal_diffusivity * out.specific_heat[i] *
+                                                this->get_adiabatic_conditions().density(in.position[i]);
+              else
+                out.thermal_conductivities[i] = thermal_diffusivity * out.specific_heat[i] * out.densities[i];
             }
           else
             {
-              // In case the entropy method is not used
-              // not strictly correct if thermal expansivities are different, since we are interpreting
-              // these compositions as volume fractions, but the error introduced should not be too bad.
-              out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic);
-              out.thermal_expansion_coefficients[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.thermal_expansion_coefficients, MaterialUtilities::arithmetic);
-              out.specific_heat[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.specific_heat_capacities, MaterialUtilities::arithmetic);
+              // Use thermal conductivity values specified in the parameter file, if this
+              // option was selected.
+              out.thermal_conductivities[i] = MaterialUtilities::average_value (volume_fractions, thermal_conductivities, MaterialUtilities::arithmetic);
+            }
+            */
 
-
-              out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.compressibilities, MaterialUtilities::arithmetic);
-              out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
-              out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
-
-              // we still use the thermal conductivity value from the prm file
-              if (define_conductivities == false)
-                {
-                  double thermal_diffusivity = 0.0;
-
-                  for (unsigned int j=0; j < volume_fractions.size(); ++j)
-                    thermal_diffusivity += volume_fractions[j] * thermal_diffusivities[j];
-
-                  // Thermal conductivity at the given positions. If the temperature equation uses
-                  // the reference density profile formulation, use the reference density to
-                  // calculate thermal conductivity. Otherwise, use the real density. If the adiabatic
-                  // conditions are not yet initialized, the real density will still be used.
-                  if (this->get_parameters().formulation_temperature_equation ==
-                      Parameters<dim>::Formulation::TemperatureEquation::reference_density_profile &&
-                      this->get_adiabatic_conditions().is_initialized())
-                    out.thermal_conductivities[i] = thermal_diffusivity * out.specific_heat[i] *
-                                                    this->get_adiabatic_conditions().density(in.position[i]);
-                  else
-                    out.thermal_conductivities[i] = thermal_diffusivity * out.specific_heat[i] * out.densities[i];
-                }
-              else
-                {
-                  // Use thermal conductivity values specified in the parameter file, if this
-                  // option was selected.
-                  out.thermal_conductivities[i] = MaterialUtilities::average_value (volume_fractions, thermal_conductivities, MaterialUtilities::arithmetic);
-                }
+          // Entropy derivatives: these are used to compute latent heat without entropy method
+          // and with the conventional phase transition functions
+          out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
+          out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+          
+          // fill seismic velocities outputs if they exist
+          if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
+            {
+              seismic_out->vp[i] = MaterialUtilities::average_value (volume_fractions, vps, MaterialUtilities::arithmetic);
+              seismic_out->vs[i] = MaterialUtilities::average_value (volume_fractions, vss, MaterialUtilities::arithmetic);
             }
 
+          // set up variable to interpolate prescribed field outputs onto compositional fields
+          if (PrescribedFieldOutputs<dim> *prescribed_field_out = out.template get_additional_output<PrescribedFieldOutputs<dim>>())
+            {
+              prescribed_field_out->prescribed_field_outputs[i][projected_density_index] = out.densities[i];
+            }
+
+          // set up variable to interpolate prescribed field outputs onto temperature field
+          if (PrescribedTemperatureOutputs<dim> *prescribed_temperature_out = out.template get_additional_output<PrescribedTemperatureOutputs<dim>>())
+            {
+              prescribed_temperature_out->prescribed_temperature_outputs[i] = temperature_lookup;
+            }
 
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding.
           // Also always compute the viscosity if additional outputs are requested, because the viscosity is needed
           // to compute the elastic force term.
           bool plastic_yielding = false;
+          // update the value of temperature
+          in_new.temperature[i] = std::max(temperature_lookup, min_temperature_for_viscosity);
           IsostrainViscosities isostrain_viscosities;
           if (in_new.requests_property(MaterialProperties::viscosity) || in_new.requests_property(MaterialProperties::additional_outputs))
             {
