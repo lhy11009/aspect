@@ -5,46 +5,37 @@
 # 5: Number of Stokes degrees of freedom
 # 6: Number of temperature degrees of freedom
 # 7: Number of degrees of freedom for all compositions
-# 8: Visualization file name
-# 9: RMS velocity (m/year)
-# 10: Max. velocity (m/year)
-# 11: Minimal temperature (K)
-# 12: Average temperature (K)
-# 13: Maximal temperature (K)
-# 14: Average nondimensional temperature (K)
-# 15: Outward mass flux through boundary with indicator 0 ("bottom") (kg/yr)
-# 16: Outward mass flux through boundary with indicator 1 ("top") (kg/yr)
-# 17: Outward mass flux through boundary with indicator 2 ("west") (kg/yr)
-# 18: Outward mass flux through boundary with indicator 3 ("east") (kg/yr)
-# 19: Minimal value for composition entropy
-# 20: Maximal value for composition entropy
-# 21: Global mass for composition entropy
-# 22: Minimal value for composition entropy_sp_crust
-# 23: Maximal value for composition entropy_sp_crust
-# 24: Global mass for composition entropy_sp_crust
-# 25: Minimal value for composition entropy_sp_harz
-# 26: Maximal value for composition entropy_sp_harz
-# 27: Global mass for composition entropy_sp_harz
-# 28: Minimal value for composition density_field
-# 29: Maximal value for composition density_field
-# 30: Global mass for composition density_field
-# 31: Minimal value for composition sp_crust
-# 32: Maximal value for composition sp_crust
-# 33: Global mass for composition sp_crust
-# 34: Minimal value for composition sp_harz
-# 35: Maximal value for composition sp_harz
-# 36: Global mass for composition sp_harz
-# 37: Iterations for temperature solver
-# 38: Iterations for composition solver 1
-# 39: Iterations for composition solver 2
-# 40: Iterations for composition solver 3
-# 41: Iterations for composition solver 4
-# 42: Iterations for composition solver 5
-# 43: Iterations for composition solver 6
-# 44: Iterations for Stokes solver
-# 45: Velocity iterations in Stokes preconditioner
-# 46: Schur complement iterations in Stokes preconditioner
-0 0.000000000000e+00 0.000000000000e+00  384  3739 1649  9894 output-EntropySub_subduction_shear_zone/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.17371741e+03 3.50000000e+03 5.89004466e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.07830432e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.14816870e+12 0.00000000e+00 0.00000000e+00 0.00000000e+00 0 0 0 0          0 0 0   0    0    0 
-0 0.000000000000e+00 0.000000000000e+00  528  5376 2371 14226 output-EntropySub_subduction_shear_zone/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18585201e+03 3.50000000e+03 5.92764800e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08735386e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 5.74084349e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0 0 0 0          0 0 0   0    0    0 
-0 0.000000000000e+00 0.000000000000e+00  963  9982 4407 26442 output-EntropySub_subduction_shear_zone/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18571793e+03 3.50000000e+03 5.92723252e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08896260e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 2.87042174e+11 0.00000000e+00 1.00000000e+00 1.17905496e+10 0 0 0 0          0 0 0   0    0    0 
-0 0.000000000000e+00 0.000000000000e+00 1710 18091 7989 47934 output-EntropySub_subduction_shear_zone/solution/solution-00003 6.34075385e-03 1.16276812e-01 2.73000000e+02 2.18564357e+03 3.50000000e+03 5.92700207e-01 1.79561941e-05 7.08448653e-04 0.00000000e+00 6.69916448e-08 5.77925312e+02 2.75751926e+03 1.08918718e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 3.22872408e+03 5.59218976e+03 1.93974423e+17 0.00000000e+00 1.00000000e+00 1.44996672e+11 0.00000000e+00 1.00000000e+00 5.79150355e+11 0 0 0 0 4294967295 0 0 284 2325 1449 
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+# 16: Outward mass flux through boundary with indicator 0 ("bottom") (kg/yr)
+# 17: Outward mass flux through boundary with indicator 1 ("top") (kg/yr)
+# 18: Outward mass flux through boundary with indicator 2 ("west") (kg/yr)
+# 19: Outward mass flux through boundary with indicator 3 ("east") (kg/yr)
+# 20: Minimal value for composition entropy
+# 21: Maximal value for composition entropy
+# 22: Global mass for composition entropy
+# 23: Minimal value for composition entropy_sp_crust
+# 24: Maximal value for composition entropy_sp_crust
+# 25: Global mass for composition entropy_sp_crust
+# 26: Minimal value for composition entropy_sp_harz
+# 27: Maximal value for composition entropy_sp_harz
+# 28: Global mass for composition entropy_sp_harz
+# 29: Minimal value for composition density_field
+# 30: Maximal value for composition density_field
+# 31: Global mass for composition density_field
+# 32: Minimal value for composition sp_crust
+# 33: Maximal value for composition sp_crust
+# 34: Global mass for composition sp_crust
+# 35: Minimal value for composition sp_harz
+# 36: Maximal value for composition sp_harz
+# 37: Global mass for composition sp_harz
+0 0.000000000000e+00 0.000000000000e+00  384  3739 1649  9894 0 output-EntropySub_subduction_shear_zone/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.17371741e+03 3.50000000e+03 5.89004466e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.07830432e+17 5.77925312e+02 2.75751926e+03 1.07830432e+17 5.77925312e+02 2.75751926e+03 1.07830432e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.14816870e+12 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+0 0.000000000000e+00 0.000000000000e+00  528  5376 2371 14226 0 output-EntropySub_subduction_shear_zone/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18585201e+03 3.50000000e+03 5.92764800e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08735386e+17 5.77925312e+02 2.75751926e+03 1.08735386e+17 5.77925312e+02 2.75751926e+03 1.08735386e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 5.74084349e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+0 0.000000000000e+00 0.000000000000e+00  963  9982 4407 26442 0 output-EntropySub_subduction_shear_zone/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18571793e+03 3.50000000e+03 5.92723252e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08896260e+17 5.77925312e+02 2.75751926e+03 1.08896260e+17 5.77925312e+02 2.75751926e+03 1.08896260e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 2.87042174e+11 0.00000000e+00 1.00000000e+00 1.17905496e+10 
+0 0.000000000000e+00 0.000000000000e+00 1710 18091 7989 47934 0 output-EntropySub_subduction_shear_zone/solution/solution-00003 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.18564357e+03 3.50000000e+03 5.92700207e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.77925312e+02 2.75751926e+03 1.08918718e+17 5.77925312e+02 2.75751926e+03 1.08918718e+17 5.77925312e+02 2.75751926e+03 1.08918718e+17 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.44996672e+11 0.00000000e+00 1.00000000e+00 5.79150355e+11 

@@ -79,12 +79,13 @@ namespace aspect
       in.composition[i] = composition;
       in.strain_rate[i] = strain_rate;
 
-      // lhy11009: Modify the volume fractions everywhere:
-      // When using the entropy method with a projected density approximation,
+      // lhy11009: Modify the volume fractions everywhere: after we handle the interface of phase functions first
+      // TODO: When using the entropy method with a projected density approximation,
       // first compute the mass fraction, then derive the volume fraction from it.
-      //const std::vector<double> volume_fractions
-      //  = MaterialUtilities::compute_composition_fractions(composition,
-      //                                                    rheology->get_volumetric_composition_mask());
+      const std::vector<double> volume_fractions
+        = MaterialUtilities::compute_composition_fractions(composition,
+                                                          rheology->get_volumetric_composition_mask());
+      /*
       std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       std::vector<double> densities (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       if (use_entropy_method)
@@ -103,6 +104,7 @@ namespace aspect
       const std::vector<double> volume_fractions = (use_entropy_method?
                                                     MaterialUtilities::compute_volumes_from_masses(mass_fractions, densities, true)
                                                     : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
+      */
 
       const IsostrainViscosities isostrain_viscosities
         = rheology->calculate_isostrain_viscosities(in, i, volume_fractions);
@@ -125,11 +127,12 @@ namespace aspect
     {
       Assert(in.n_evaluation_points() == 1, ExcInternalError());
 
-      // lhy11009: Modify the volume fractions everywhere:
+      // lhy11009: Modify the volume fractions everywhere: after we handle the interface of phase functions first
       // When using the entropy method with a projected density approximation,
       // first compute the mass fraction, then derive the volume fraction from it.
 
-      // const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[0], rheology->get_volumetric_composition_mask());
+      const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[0], rheology->get_volumetric_composition_mask());
+      /*
       const std::vector<unsigned int> &entropy_indices = this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::entropy);
       std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       std::vector<double> densities (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
@@ -148,6 +151,7 @@ namespace aspect
       const std::vector<double> volume_fractions = (use_entropy_method?
                                                     MaterialUtilities::compute_volumes_from_masses(mass_fractions, densities, true)
                                                     : MaterialUtilities::compute_only_composition_fractions(in.composition[0], this->introspection().chemical_composition_field_indices()));
+      */
 
       /* The following handles phases in a similar way as in the 'evaluate' function.
        * Results then enter the calculation of plastic yielding.

@@ -11,7 +11,7 @@ set Pressure normalization = surface
 set Surface pressure = 0
 set Adiabatic surface temperature = 1573.0
 set Resume computation = false
-set Nonlinear solver scheme                = single Advection, single Stokes
+set Nonlinear solver scheme                = no Advection, no Stokes
 set Additional shared libraries            = $ASPECT_SOURCE_DIR/tester-build/entropy_advection_subduction/libentropy_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/visco_plastic_subduction/libvisco_plastic_subduction_plugins.so, $ASPECT_SOURCE_DIR/tester-build/adiabat_table_lookup/libadiabat_table_lookup_plugins.so
 set World builder file = $ASPECT_SOURCE_DIR/tests/EntropySub_subduction_shear_zone.wb
 
@@ -158,7 +158,7 @@ subsection Postprocess
   subsection Visualization
      set Time between graphical output = 1e6
      set List of output variables      = material properties, adiabat, nonadiabatic pressure, nonadiabatic temperature
-     set Output format = vtu  # todo_equal: modify back to gnuplot after finished
+     set Output format = gnuplot
      subsection Material properties
        set List of material properties = density,thermal expansivity,specific heat,viscosity, compressibility
      end
