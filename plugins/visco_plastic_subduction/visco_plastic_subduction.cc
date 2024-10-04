@@ -79,9 +79,30 @@ namespace aspect
       in.composition[i] = composition;
       in.strain_rate[i] = strain_rate;
 
-      const std::vector<double> volume_fractions
-        = MaterialUtilities::compute_composition_fractions(composition,
-                                                           rheology->get_volumetric_composition_mask());
+      // lhy11009: Modify the volume fractions everywhere:
+      // When using the entropy method with a projected density approximation,
+      // first compute the mass fraction, then derive the volume fraction from it.
+      //const std::vector<double> volume_fractions
+      //  = MaterialUtilities::compute_composition_fractions(composition,
+      //                                                    rheology->get_volumetric_composition_mask());
+      std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      std::vector<double> densities (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      if (use_entropy_method)
+        {
+          const std::vector<unsigned int> &entropy_indices = this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::entropy);
+          mass_fractions = ( material_file_names.size() == 1?
+                             std::vector<double> {1.0}
+                             : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
+          for (unsigned int j=0; j<material_file_names.size(); ++j)
+            {
+              const double first = pressure_first? pressure/1e5: in.composition[i][entropy_indices[j]];
+              const double second = pressure_first? in.composition[i][entropy_indices[j]]: pressure/1e5;
+              densities[j] = entropy_reader[j]->density(first, second);
+            }
+        }
+      const std::vector<double> volume_fractions = (use_entropy_method?
+                                                    MaterialUtilities::compute_volumes_from_masses(mass_fractions, densities, true)
+                                                    : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
 
       const IsostrainViscosities isostrain_viscosities
         = rheology->calculate_isostrain_viscosities(in, i, volume_fractions);
@@ -104,7 +125,29 @@ namespace aspect
     {
       Assert(in.n_evaluation_points() == 1, ExcInternalError());
 
-      const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[0], rheology->get_volumetric_composition_mask());
+      // lhy11009: Modify the volume fractions everywhere:
+      // When using the entropy method with a projected density approximation,
+      // first compute the mass fraction, then derive the volume fraction from it.
+
+      // const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[0], rheology->get_volumetric_composition_mask());
+      const std::vector<unsigned int> &entropy_indices = this->introspection().get_indices_for_fields_of_type(CompositionalFieldDescription::entropy);
+      std::vector<double> mass_fractions (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      std::vector<double> densities (use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
+      if (use_entropy_method)
+        {
+          mass_fractions = ( material_file_names.size() == 1?
+                             std::vector<double> {1.0}
+                             : MaterialUtilities::compute_only_composition_fractions(in.composition[0], this->introspection().chemical_composition_field_indices()));
+          for (unsigned int j=0; j<material_file_names.size(); ++j)
+            {
+              const double first = pressure_first? in.pressure[0]/1e5: in.composition[0][entropy_indices[j]];
+              const double second = pressure_first? in.composition[0][entropy_indices[j]]: in.pressure[0]/1e5;
+              densities[j] = entropy_reader[j]->density(first, second);
+            }
+        }
+      const std::vector<double> volume_fractions = (use_entropy_method?
+                                                    MaterialUtilities::compute_volumes_from_masses(mass_fractions, densities, true)
+                                                    : MaterialUtilities::compute_only_composition_fractions(in.composition[0], this->introspection().chemical_composition_field_indices()));
 
       /* The following handles phases in a similar way as in the 'evaluate' function.
        * Results then enter the calculation of plastic yielding.
@@ -282,12 +325,17 @@ namespace aspect
             }
 
           // Then get the volume fractions
+          // At this point, we need to separate the two definitions of volume_fractions.
+          // The reason for this is that our interface for viscosity computation is inherited,
+          // and it requires an entropy value for each compositional field.
+          // If this interface has not been updated yet, fields like "entrop_sp_crust"
+          // must still be present in the viscosity input entries.
           // TODO: Update rheology to only compute viscosity for chemical compositional fields
-          // Then remove volume_fractions
-          // const std::vector<double> volume_fractions = MaterialUtilities::compute_composition_fractions(in.composition[i], volumetric_compositions);
+          // Then remove volume_fractions_for_rheology
+          const std::vector<double> volume_fractions_for_rheology = MaterialUtilities::compute_composition_fractions(in.composition[i], volumetric_compositions);
           const std::vector<double> volume_fractions = (use_entropy_method?
-                              MaterialUtilities::compute_volumes_from_masses(mass_fractions, eos_outputs.densities, true)
-                              : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
+                                                        MaterialUtilities::compute_volumes_from_masses(mass_fractions, eos_outputs.densities, true)
+                                                        : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
 
           // Then, retrieve the final output variable from the eos_outputs.
           // This operation averages the properties of the compositional fields
@@ -406,26 +454,26 @@ namespace aspect
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
               isostrain_viscosities =
-                rheology->calculate_isostrain_viscosities(in_new, i, volume_fractions, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
+                rheology->calculate_isostrain_viscosities(in_new, i, volume_fractions_for_rheology, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
               // creep (where n_diff=1) viscosities are stress and strain-rate independent, so the calculation
               // of compositional field viscosities is consistent with any averaging scheme.
-              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging);
+              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions_for_rheology, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging);
 
               // Decide based on the maximum composition if material is yielding.
               // This avoids for example division by zero for harmonic averaging (as plastic_yielding
               // holds values that are either 0 or 1), but might not be consistent with the viscosity
               // averaging chosen.
-              std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions.begin(), volume_fractions.end());
-              plastic_yielding = isostrain_viscosities.composition_yielding[std::distance(volume_fractions.begin(), max_composition)];
+              std::vector<double>::const_iterator max_composition = std::max_element(volume_fractions_for_rheology.begin(), volume_fractions_for_rheology.end());
+              plastic_yielding = isostrain_viscosities.composition_yielding[std::distance(volume_fractions_for_rheology.begin(), max_composition)];
 
               // Compute viscosity derivatives if they are requested
               if (MaterialModel::MaterialModelDerivatives<dim> *derivatives =
                     out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim>>())
 
-                rheology->compute_viscosity_derivatives(i, volume_fractions,
+                rheology->compute_viscosity_derivatives(i, volume_fractions_for_rheology,
                                                         isostrain_viscosities.composition_viscosities,
                                                         in_new, out, phase_function_values,
                                                         phase_function.n_phase_transitions_for_each_composition());
@@ -463,12 +511,12 @@ namespace aspect
           // the ElasticAdditionalOutputs.
           // add one if condition to prevent it from failing
           if (in_new.requests_property(MaterialProperties::viscosity))
-            rheology->fill_plastic_outputs(i, volume_fractions, plastic_yielding, in_new, out, isostrain_viscosities);
+            rheology->fill_plastic_outputs(i, volume_fractions_for_rheology, plastic_yielding, in_new, out, isostrain_viscosities);
 
           if (this->get_parameters().enable_elasticity)
             {
               // Compute average elastic shear modulus
-              average_elastic_shear_moduli[i] = MaterialUtilities::average_value(volume_fractions,
+              average_elastic_shear_moduli[i] = MaterialUtilities::average_value(volume_fractions_for_rheology,
                                                                                  rheology->elastic_rheology.get_elastic_shear_moduli(),
                                                                                  rheology->viscosity_averaging);
 
