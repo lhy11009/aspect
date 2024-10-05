@@ -259,11 +259,14 @@ namespace aspect
       std::vector<double> vss(use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
       std::vector<Tensor<1, 2>> density_gradients(use_entropy_method? material_file_names.size(): this->introspection().n_chemical_composition_fields()+1);
 
-      double temperature_lookup;
-
       // Loop through all requested points
       for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
         {
+          // lhy11009: In both methods, I maintain the use of the variable `temperature_lookup` in the rheological interfaces.
+          // This variable is initialized with the input temperature.
+          // In the case of the entropy method, `temperature_lookup` is modified based on table outputs.
+          double temperature_lookup = in.temperature[i];
+
           // First, retrieve the eos_outputs. In both methods, this process averages the phase properties
           // to determine the properties of the compositional fields
           if (use_entropy_method)
@@ -411,7 +414,7 @@ namespace aspect
           // and with the conventional phase transition functions
           out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
           out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
-          
+
           // fill seismic velocities outputs if they exist
           if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
             {
@@ -517,6 +520,67 @@ namespace aspect
                   elastic_out->elastic_shear_moduli[i] = average_elastic_shear_moduli[i];
                 }
             }
+
+          // Calculate the reaction terms
+          // lhy11009: This step modifies the compositional entropies by adjusting the composition terms
+          // when operator splitting is used.
+          // TODO: check the reaction_rate_out instead of out.reaction_terms is being used
+          // TODO: Consider adding an assertion to ensure that operator splitting is activated.
+          if (material_file_names.size()==1)
+            {
+              for (unsigned int c=0; c<in.composition[i].size(); ++c)
+                {
+                  out.reaction_terms[i][c] = 0.;
+                }
+            }
+          else
+            {
+              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim>>();
+              // Calculate the reaction rates for the operator splitting
+              for (unsigned int c = 0; c < in.composition[i].size(); ++c)
+                {
+                  if (this->get_parameters().use_operator_splitting)
+                    {
+                      if (reaction_rate_out != nullptr)
+                        {
+                          //AssertThrow(this->get_parameters().use_operator_splitting == 1,
+                          //ExcMessage("The 'entropy model' material model requires the use of operator splitting for multiple chemical composition."));
+                          reaction_rate_out->reaction_rates[i][c] = 0.0;
+
+                          for (unsigned int c = 0; c < in.composition[i].size(); ++c)
+                            {
+                              bool c_is_entropy_field = false;
+                              unsigned int c_is_nth_entropy_field = 0;
+
+                              unsigned int nth_entropy_index = 0;
+                              for (unsigned int entropy_index : entropy_indices)
+                                {
+                                  if (c == entropy_index)
+                                    {
+                                      c_is_entropy_field = true;
+                                      c_is_nth_entropy_field = nth_entropy_index;
+                                    }
+                                  ++nth_entropy_index;
+                                }
+                              const unsigned int timestep_number = this->simulator_is_past_initialization()
+                                                                   ?
+                                                                   this->get_timestep_number()
+                                                                   :
+                                                                   0;
+
+                              if (c_is_entropy_field == true && timestep_number > 0)
+                                reaction_rate_out->reaction_rates[i][c] = (composition_equalibrated_S[c_is_nth_entropy_field] - in.composition[i][entropy_indices[c_is_nth_entropy_field]]) / this->get_timestep();
+                            }
+                        }
+                      out.reaction_terms[i][c] = 0.0;
+                    }
+                  else
+                    {
+                      // lhy11009: add this
+                      out.reaction_terms[i][c] = 0.0;
+                    }
+                }
+            }
         }
 
       // If we use the full strain tensor, compute the change in the individual tensor components.
@@ -541,6 +605,7 @@ namespace aspect
                 }
             }
         }
+
     }
 
 
@@ -779,11 +844,14 @@ namespace aspect
     }
 
 
-
     template <int dim>
     void
     ViscoPlasticSubduction<dim>::create_additional_named_outputs (MaterialModel::MaterialModelOutputs<dim> &out) const
     {
+      // lhy11009: These include the prescribed density and temperature.
+      // Additionally, reaction terms are required to adjust the compositional entropies.
+      // As for the seismic output, I intend to use it with another method,
+      // so it is left outside the scope of the entropy method.
       rheology->create_plastic_outputs(out);
 
       if (this->get_parameters().enable_elasticity)
@@ -807,6 +875,21 @@ namespace aspect
                 std::make_unique<MaterialModel::PrescribedTemperatureOutputs<dim>>
                 (n_points));
             }
+
+          if (this->get_parameters().use_operator_splitting
+              && out.template get_additional_output<ReactionRateOutputs<dim>>() == nullptr)
+            {
+              const unsigned int n_points = out.n_evaluation_points();
+              out.additional_outputs.push_back(
+                std::make_unique<MaterialModel::ReactionRateOutputs<dim>> (n_points, this->n_compositional_fields()));
+            }
+        }
+
+      if (out.template get_additional_output<SeismicAdditionalOutputs<dim>>() == nullptr)
+        {
+          const unsigned int n_points = out.n_evaluation_points();
+          out.additional_outputs.push_back(
+            std::make_unique<MaterialModel::SeismicAdditionalOutputs<dim>> (n_points));
         }
     }
 
