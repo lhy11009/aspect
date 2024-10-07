@@ -348,7 +348,6 @@ namespace aspect
         */
         bool use_pa_in_compressibilities;
 
-        // todo_adiabat
         /**
         * lhy11009: The pressure field is going to be reset based on whether the adiabatic pressure 
         * (instead of the full pressure) is being used. Specific options could be assigned to the
