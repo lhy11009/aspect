@@ -208,8 +208,12 @@ namespace aspect
       // Store which components do not represent volumetric compositions (e.g. strain components).
       const ComponentMask volumetric_compositions = rheology->get_volumetric_composition_mask();
 
-      // create a new MaterialModelInputs object
-      MaterialModel::MaterialModelInputs<dim> in_new(in);
+      // lhy11009: Create copies of MaterialModelInputs object
+      // These copies are used to reassign the values of input fields.
+      // Currently, only the pressure field is reset based on whether the adiabatic pressure 
+      // (instead of the full pressure) is being used.
+      MaterialModel::MaterialModelInputs<dim> in_eos(in);
+      MaterialModel::MaterialModelInputs<dim> in_rheology(in);
 
       // Create compositional indices for density, entropy, and fields.
       // Each component of entropy_indices corresponds to a specific composition.
@@ -267,6 +271,10 @@ namespace aspect
           // In the case of the entropy method, `temperature_lookup` is modified based on table outputs.
           double temperature_lookup = in.temperature[i];
 
+          // lhy11009: For the EoS, the pressure field is reset based on whether the adiabatic pressure 
+          // (instead of the full pressure) is being used.    
+          in_eos.pressure[i] = use_adiabatic_pressure_in_eos? this->get_adiabatic_conditions().pressure(in.position[i]): in.pressure[i];
+
           // First, retrieve the eos_outputs. In both methods, this process averages the phase properties
           // to determine the properties of the compositional fields
           if (use_entropy_method)
@@ -276,18 +284,19 @@ namespace aspect
 
               mass_fractions = ( material_file_names.size() == 1?
                                  std::vector<double> {1.0}
-                                 : MaterialUtilities::compute_only_composition_fractions(in.composition[i], this->introspection().chemical_composition_field_indices()));
+                                 : MaterialUtilities::compute_only_composition_fractions(in_eos.composition[i], this->introspection().chemical_composition_field_indices()));
 
               // First, evaluate all the values required for the iteration to achieve the equilibrated temperature.
-              const double pressure = this->get_adiabatic_conditions().pressure(in.position[i]) / 1.e5;
+              // The unit of pressure is in ba (1e5 Pa)
+              const double pressure_in_ba = in_eos.pressure[i] / 1.e5;
 
               // Loop through all material files and store the retrieved values for all compositions.
               // The order in the lookup variable may be either pressure-first or entropy-first.
               for (unsigned int j=0; j<material_file_names.size(); ++j)
                 {
-                  component_entropy[j] = in.composition[i][entropy_indices[j]];
-                  const double first = pressure_first? pressure: component_entropy[j];
-                  const double second = pressure_first? component_entropy[j]: pressure;
+                  component_entropy[j] = in_eos.composition[i][entropy_indices[j]];
+                  const double first = pressure_first? pressure_in_ba: component_entropy[j];
+                  const double second = pressure_first? component_entropy[j]: pressure_in_ba;
                   composition_temperature_lookup[j] = entropy_reader[j]->temperature(first, second);
                   // std::cout << "component_entropy = " <<component_entropy[j]<<" " << std::endl;
                   // std::cout << "densities = " << eos_outputs.densities[j]<<" " << std::endl;
@@ -310,20 +319,20 @@ namespace aspect
             {
               // In case the entropy method is not used
               // First compute the equation of state variables and thermodynamic properties
-              equation_of_state.evaluate(in, i, eos_outputs_all_phases);
+              equation_of_state.evaluate(in_eos, i, eos_outputs_all_phases);
 
-              const double gravity_norm = this->get_gravity_model().gravity_vector(in.position[i]).norm();
+              const double gravity_norm = this->get_gravity_model().gravity_vector(in_eos.position[i]).norm();
               const double reference_density = (this->get_adiabatic_conditions().is_initialized())
                                                ?
-                                               this->get_adiabatic_conditions().density(in.position[i])
+                                               this->get_adiabatic_conditions().density(in_eos.position[i])
                                                :
                                                eos_outputs_all_phases.densities[0];
 
               // The phase index is set to invalid_unsigned_int, because it is only used internally
               // in phase_average_equation_of_state_outputs to loop over all existing phases
-              MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(in.temperature[i],
-                                                                       in.pressure[i],
-                                                                       this->get_geometry_model().depth(in.position[i]),
+              MaterialUtilities::PhaseFunctionInputs<dim> phase_inputs(in_eos.temperature[i],
+                                                                       in_eos.pressure[i],
+                                                                       this->get_geometry_model().depth(in_eos.position[i]),
                                                                        gravity_norm*reference_density,
                                                                        numbers::invalid_unsigned_int);
 
@@ -412,18 +421,8 @@ namespace aspect
 
           // Entropy derivatives: these are used to compute latent heat without entropy method
           // and with the conventional phase transition functions.
-          // In the entropy method, these values must be directly assigned 0.0.
-          // Otherwise, the eos_outputs containing 0.0 may cause errors in the harmonic averaging scheme.
-          if (use_entropy_method)
-            {
-              out.entropy_derivative_pressure[i] = 0.0;
-              out.entropy_derivative_temperature[i] = 0.0;
-            }
-          else
-            {
               out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
               out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
-            }
 
           // fill seismic velocities outputs if they exist
           if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
@@ -448,17 +447,20 @@ namespace aspect
           // Also always compute the viscosity if additional outputs are requested, because the viscosity is needed
           // to compute the elastic force term.
           bool plastic_yielding = false;
-          // update the value of temperature
-          in_new.temperature[i] = std::max(temperature_lookup, min_temperature_for_viscosity);
+          // lhy11009: Update the value of temperature based on table lookup
+          // The pressure field is reset based on whether the adiabatic pressure 
+          // (instead of the full pressure) is being used.
+          in_rheology.temperature[i] = std::max(temperature_lookup, min_temperature_for_viscosity);
+          in_rheology.pressure[i] = use_adiabatic_pressure_in_rheology? this->get_adiabatic_conditions().pressure(in.position[i]): in.pressure[i];
           IsostrainViscosities isostrain_viscosities;
-          if (in_new.requests_property(MaterialProperties::viscosity) || in_new.requests_property(MaterialProperties::additional_outputs))
+          if (in_rheology.requests_property(MaterialProperties::viscosity) || in_rheology.requests_property(MaterialProperties::additional_outputs))
             {
               // Currently, the viscosities for each of the compositional fields are calculated assuming
               // isostrain amongst all compositions, allowing calculation of the viscosity ratio.
               // TODO: This is only consistent with viscosity averaging if the arithmetic averaging
               // scheme is chosen. It would be useful to have a function to calculate isostress viscosities.
               isostrain_viscosities =
-                rheology->calculate_isostrain_viscosities(in_new, i, volume_fractions_for_rheology, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
+                rheology->calculate_isostrain_viscosities(in_rheology, i, volume_fractions_for_rheology, phase_function_values, phase_function.n_phase_transitions_for_each_composition());
 
               // The isostrain condition implies that the viscosity averaging should be arithmetic (see above).
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
@@ -479,7 +481,7 @@ namespace aspect
 
                 rheology->compute_viscosity_derivatives(i, volume_fractions_for_rheology,
                                                         isostrain_viscosities.composition_viscosities,
-                                                        in_new, out, phase_function_values,
+                                                        in_rheology, out, phase_function_values,
                                                         phase_function.n_phase_transitions_for_each_composition());
             }
           else
@@ -502,11 +504,11 @@ namespace aspect
             }
 
           // Now compute changes in the compositional fields (i.e. the accumulated strain).
-          for (unsigned int c=0; c<in_new.composition[i].size(); ++c)
+          for (unsigned int c=0; c<in_rheology.composition[i].size(); ++c)
             out.reaction_terms[i][c] = 0.0;
 
           // Calculate changes in strain invariants and update the reaction terms
-          rheology->strain_rheology.fill_reaction_outputs(in_new, i, rheology->min_strain_rate, plastic_yielding, out);
+          rheology->strain_rheology.fill_reaction_outputs(in_rheology, i, rheology->min_strain_rate, plastic_yielding, out);
 
           // Fill plastic outputs if they exist.
           // The values in isostrain_viscosities only make sense when the calculate_isostrain_viscosities function
@@ -514,8 +516,8 @@ namespace aspect
           // TODO do we even need a separate function? We could compute the PlasticAdditionalOutputs here like
           // the ElasticAdditionalOutputs.
           // add one if condition to prevent it from failing
-          if (in_new.requests_property(MaterialProperties::viscosity))
-            rheology->fill_plastic_outputs(i, volume_fractions_for_rheology, plastic_yielding, in_new, out, isostrain_viscosities);
+          if (in_rheology.requests_property(MaterialProperties::viscosity))
+            rheology->fill_plastic_outputs(i, volume_fractions_for_rheology, plastic_yielding, in_rheology, out, isostrain_viscosities);
 
           if (this->get_parameters().enable_elasticity)
             {
@@ -594,12 +596,12 @@ namespace aspect
         }
 
       // If we use the full strain tensor, compute the change in the individual tensor components.
-      rheology->strain_rheology.compute_finite_strain_reaction_terms(in_new, out);
+      rheology->strain_rheology.compute_finite_strain_reaction_terms(in_rheology, out);
 
       if (this->get_parameters().enable_elasticity)
         {
-          rheology->elastic_rheology.fill_elastic_force_outputs(in_new, average_elastic_shear_moduli, out);
-          rheology->elastic_rheology.fill_reaction_outputs(in_new, average_elastic_shear_moduli, out);
+          rheology->elastic_rheology.fill_elastic_force_outputs(in_rheology, average_elastic_shear_moduli, out);
+          rheology->elastic_rheology.fill_reaction_outputs(in_rheology, average_elastic_shear_moduli, out);
         }
 
       //todo_re_visc
@@ -694,6 +696,25 @@ namespace aspect
           prm.declare_entry ("Use pa in compressibility","false",
                              Patterns::Bool (),
                              "Whether to use the unit pa in compressibility.");
+          // lhy11009: The pressure field is going to be reset based on whether the adiabatic pressure 
+          // (instead of the full pressure) is being used. Specific options could be assigned to the
+          // EOS equation and the rheologic formula. By default, these are set to true.
+          prm.declare_entry ("Use adiabatic pressure in rheology", "true",
+                             Patterns::Bool (),
+                             "Whether to use the adiabatic pressure instead of the full "
+                             "pressure (default) when calculating rheology (diffusion, dislocation, "
+                             "yielding and peierls) viscosity. This may be helpful in models where the "
+                             "full pressure has an unusually large negative value arising from "
+                             "large negative dynamic pressure, resulting in solver convergence "
+                             "issue and in some cases a viscosity of zero.");
+          prm.declare_entry ("Use adiabatic pressure in EoS", "true",
+                             Patterns::Bool (),
+                             "Whether to use the adiabatic pressure instead of the full "
+                             "pressure (default) when evaluating the eos outputs "
+                             "This may be helpful in models where the "
+                             "full pressure has an unusually large negative value arising from "
+                             "large negative dynamic pressure, resulting in solver convergence");
+          
 
           // additional entries
           // todo_re_visc
@@ -804,6 +825,12 @@ namespace aspect
           pressure_first = prm.get_bool ("Pressure first");
           min_temperature_for_viscosity = prm.get_double("Minimum temperature for viscosity");
           use_pa_in_compressibilities = prm.get_bool ("Use pa in compressibility"); // todo_compress
+          
+          // lhy11009: The pressure field is going to be reset based on whether the adiabatic pressure 
+          // (instead of the full pressure) is being used. Specific options could be assigned to the
+          // EOS equation and the rheologic formula. By default, these are set to true
+          use_adiabatic_pressure_in_eos = prm.get_bool("Use adiabatic pressure in EoS");
+          use_adiabatic_pressure_in_rheology = prm.get_bool("Use adiabatic pressure in rheology");
 
           // Additional inputs
           // todo_re_visc
