@@ -411,9 +411,19 @@ namespace aspect
             */
 
           // Entropy derivatives: these are used to compute latent heat without entropy method
-          // and with the conventional phase transition functions
-          out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
-          out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+          // and with the conventional phase transition functions.
+          // In the entropy method, these values must be directly assigned 0.0.
+          // Otherwise, the eos_outputs containing 0.0 may cause errors in the harmonic averaging scheme.
+          if (use_entropy_method)
+            {
+              out.entropy_derivative_pressure[i] = 0.0;
+              out.entropy_derivative_temperature[i] = 0.0;
+            }
+          else
+            {
+              out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
+              out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+            }
 
           // fill seismic velocities outputs if they exist
           if (SeismicAdditionalOutputs<dim> *seismic_out = out.template get_additional_output<SeismicAdditionalOutputs<dim>>())
