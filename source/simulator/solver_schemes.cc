@@ -603,12 +603,22 @@ namespace aspect
         if (!use_picard || newton_handler->parameters.use_Eisenstat_Walker_method_for_Picard_iterations)
           {
             const bool EisenstatWalkerChoiceOne = true;
-            parameters.linear_stokes_solver_tolerance = compute_Eisenstat_Walker_linear_tolerance(EisenstatWalkerChoiceOne,
-                                                        newton_handler->parameters.maximum_linear_stokes_solver_tolerance,
-                                                        parameters.linear_stokes_solver_tolerance,
-                                                        dcr.stokes_residuals.second,
-                                                        dcr.residual,
-                                                        dcr.residual_old);
+            //todo_ew
+            //
+            if (newton_handler->parameters.use_Eisenstat_Walker_method_with_new_version)
+              {
+                pcout << "    use new version of Eisenstat Walker method" << std::endl;
+                parameters.linear_stokes_solver_tolerance = std::min(1./(std::pow(0.55,log(dcr.residual/dcr.initial_residual))),newton_handler->parameters.maximum_linear_stokes_solver_tolerance);
+              }
+            else
+              {
+                parameters.linear_stokes_solver_tolerance = compute_Eisenstat_Walker_linear_tolerance(EisenstatWalkerChoiceOne,
+                                                            newton_handler->parameters.maximum_linear_stokes_solver_tolerance,
+                                                            parameters.linear_stokes_solver_tolerance,
+                                                            dcr.stokes_residuals.second,
+                                                            dcr.residual,
+                                                            dcr.residual_old);
+              }
 
             pcout << "   The linear solver tolerance is set to "
                   << parameters.linear_stokes_solver_tolerance
@@ -640,6 +650,18 @@ namespace aspect
       }
     catch (const std::exception &exc)
       {
+        // tell stokes to succeed by skipping the expensive stokes
+        // doesn't work for the 0th non-linear iteration because the residual is not
+        // set yet and you will get nan value
+        // If it's the 0th non-linear iteration, resume the default way
+        pcout << "    skip expensive stokes by user choice (loc: defect correct)" << std::endl;
+        if (parameters.skip_nonlinear_interation_with_expensive_stokes_solver
+            && nonlinear_iteration >= parameters.skip_nonlinear_interation_with_expensive_stokes_solver_iteration)
+          {
+            pcout << "    also skip the whole nonlinear iteration by user choice (loc: defect correct)" << std::endl;
+            dcr.nonlinear_iteration_complete = true;
+          }
+
         // Test that we are trying to handle exceptions and that
         // the exception we got is one of the two documented by
         // throw_linear_solver_failure_exception(). If not, we have a genuine
@@ -1290,6 +1312,7 @@ namespace aspect
   }
 
 
+// todo_rebase
   template <int dim>
   void Simulator<dim>::solve_single_advection_and_iterated_newton_stokes (bool use_newton_iterations)
   {
@@ -1374,6 +1397,14 @@ namespace aspect
           postprocess ();
 
         ++nonlinear_iteration;
+
+        if (dcr.nonlinear_iteration_complete)
+          {
+            // lhy11009
+            // check the option to end nonlinear iterations by user choice
+            pcout <<  "    nonlinear iteration complete by user choice" << std::endl;
+            break;
+          }
       }
     while (nonlinear_solver_control.check(nonlinear_iteration, relative_residual) == SolverControl::iterate);
 

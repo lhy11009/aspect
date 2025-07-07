@@ -1,4 +1,4 @@
-# This test checks that the addition of phase transitions with no change 
+# This test checks that the addition of phase transitions with no change
 # in material properties across phases boundaries does not change the
 # results of the test multicomponent_compressible_averaging.prm
 include $ASPECT_SOURCE_DIR/tests/multicomponent_compressible_averaging.prm

@@ -35,7 +35,8 @@ namespace aspect
       specific_heat_capacities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
       compressibilities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
       entropy_derivative_pressure(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      entropy_derivative_temperature(n_individual_compositions_and_phases, numbers::signaling_nan<double>())
+      entropy_derivative_temperature(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
+      eos_eclogite_phase_volume_fraction(0.0)
     {}
 
 
@@ -63,6 +64,30 @@ namespace aspect
             MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.entropy_derivative_temperature, c);
         }
     }
+
+    template <int dim>
+    void
+    phase_average_equation_of_state_outputs_1(const EquationOfStateOutputs<dim> &eos_outputs_all_phases,
+                                              const std::vector<double> &phase_function_values,
+                                              const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                              EquationOfStateOutputs<dim> &eos_outputs)
+    {
+      for (unsigned int c=0; c<eos_outputs.densities.size(); ++c)
+        {
+          eos_outputs.densities[c] =
+            MaterialModel::MaterialUtilities::phase_average_value1(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.densities, c);
+          eos_outputs.thermal_expansion_coefficients[c] =
+            MaterialModel::MaterialUtilities::phase_average_value1(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.thermal_expansion_coefficients, c);
+          eos_outputs.specific_heat_capacities[c] =
+            MaterialModel::MaterialUtilities::phase_average_value1(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.specific_heat_capacities, c);
+          eos_outputs.compressibilities[c] =
+            MaterialModel::MaterialUtilities::phase_average_value1(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.compressibilities, c);
+          eos_outputs.entropy_derivative_pressure[c] =
+            MaterialModel::MaterialUtilities::phase_average_value1(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.entropy_derivative_pressure, c);
+          eos_outputs.entropy_derivative_temperature[c] =
+            MaterialModel::MaterialUtilities::phase_average_value1(phase_function_values, n_phase_transitions_per_composition, eos_outputs_all_phases.entropy_derivative_temperature, c);
+        }
+    }
   }
 }
 
@@ -76,7 +101,11 @@ namespace aspect
   template void phase_average_equation_of_state_outputs<dim> (const EquationOfStateOutputs<dim> &, \
                                                               const std::vector<double> &phase_function_values, \
                                                               const std::vector<unsigned int> &n_phase_transitions_per_composition, \
-                                                              EquationOfStateOutputs<dim> &);
+                                                              EquationOfStateOutputs<dim> &);\
+  template void phase_average_equation_of_state_outputs_1<dim> (const EquationOfStateOutputs<dim> &, \
+                                                                const std::vector<double> &phase_function_values, \
+                                                                const std::vector<unsigned int> &n_phase_transitions_per_composition, \
+                                                                EquationOfStateOutputs<dim> &);
 
     ASPECT_INSTANTIATE(INSTANTIATE)
 

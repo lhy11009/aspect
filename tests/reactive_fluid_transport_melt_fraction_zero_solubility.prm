@@ -1,6 +1,6 @@
-# This test checks that the zero solubility reaction model correctly 
+# This test checks that the zero solubility reaction model correctly
 # outputs the melt fractions. The initial bound water is 1 wt%, and there is
-# also an initial porosity of 1% (volume fraction). 
+# also an initial porosity of 1% (volume fraction).
 # The melt fraction within the tian reaction model is calculated with:
 # m_f = wt%_bound_water + wt%_free_water
 # So we need to compute the wt%_free_water. The porosity is a volume fraction,

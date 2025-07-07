@@ -1,0 +1,38 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/isosurfaces_TwoD1/libisosurfaces_TwoD1.release.so>
+
+Number of active cells: 5,120 (on 6 levels)
+Number of degrees of freedom: 252,228 (41,730+5,313+20,865+46,080+46,080+46,080+46,080)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_peierls_new_dv/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2194 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_peierls_new_dv/depth_average
+
+Number of active cells: 5,615 (on 7 levels)
+Number of degrees of freedom: 278,116 (46,670+5,971+23,335+50,535+50,535+50,535+50,535)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_peierls_new_dv/solution/solution-00001
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2194 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_peierls_new_dv/depth_average
+
+Number of active cells: 5,930 (on 8 levels)
+Number of degrees of freedom: 294,570 (49,802+6,387+24,901+53,370+53,370+53,370+53,370)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_peierls_new_dv/solution/solution-00002
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2194 K, 3500 K
+     Writing depth average:    output-TwoDSubduction_peierls_new_dv/depth_average
+
+Termination requested by criterion: end time
+
+
+

@@ -11,26 +11,26 @@
 # with beta = alpha lambda^2/L^2 = 1.0553483e-3 1/s
 
 # Some check values
-# t(s)	T(K)	
-# 0	360.93
-# 250	345.18
-# 500	333.08
-# 1000	316.65
-# 2000	301.23
+# t(s)  T(K)
+# 0  360.93
+# 250  345.18
+# 500  333.08
+# 1000  316.65
+# 2000  301.23
 # Can be compared to output from the point values postprocessor.
 
-# The heat flux is 
+# The heat flux is
 # qout​(t) = 7175.64495 exp(- beta t) [W/m^2] * 0.01 m
 # (since it is a 2-D model, the unit of the heat flux computed here is
 # technically W/m, but the postprocessor reports it as W)
 
 # Some check values
-# t(s)	Heat flux(W)
-# 0	71.756
-# 250	55.116
-# 500	42.335
-# 1000	24.976
-# 2000	 8.694
+# t(s)  Heat flux(W)
+# 0  71.756
+# 250  55.116
+# 500  42.335
+# 1000  24.976
+# 2000   8.694
 # Can be compared to output from the heat flux postprocessor.
 
 set Dimension                              = 2
@@ -61,12 +61,12 @@ end
 # Set velocity to zero: no convection
 subsection Prescribed Stokes solution
   set Model name = function
-  
+
   subsection Pressure function
     set Variable names      = x,z
     set Function expression = 1e4*(1-z)
   end
-  
+
   subsection Velocity function
     set Function expression = 0; 0
   end
@@ -85,7 +85,7 @@ end
 subsection Boundary temperature model
   set Fixed temperature boundary indicators = bottom
   set List of model names = box
-  
+
   subsection Box
     set Bottom temperature = 293
     set Top temperature    = 293
@@ -98,7 +98,7 @@ subsection Boundary convective heating model
   set List of heat transfer coefficient model names = function
   set List of boundary temperature model names = box
   set List of boundary heat flux model names = function
-  
+
   subsection Function
     set Variable names      = x,z
     set Function constants  = p=0.01, L=1, pi=3.1415926536, k=1
@@ -108,10 +108,10 @@ end
 
 subsection Boundary heat flux model
   set Model name = function
-  
+
   subsection Function
     set Variable names      = x,z
-    set Function constants  = 
+    set Function constants  =
     set Function expression = 0
   end
 end
@@ -150,7 +150,7 @@ subsection Postprocess
   subsection Visualization
     set Time between graphical output = 0
   end
-  
+
   subsection Point values
     set Evaluation points = 0.005, 0.05
     set Time between point values output = 250

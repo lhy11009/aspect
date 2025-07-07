@@ -1,4 +1,4 @@
-# This is a test for the "reference profile" average density scheme of the 
+# This is a test for the "reference profile" average density scheme of the
 # density anomaly postprocessor.
 
 set Output directory                       = output-visualization_density_anomaly_2
@@ -22,16 +22,16 @@ subsection Material model
   end
 end
 
-# Prescribe the initial temperature. 
+# Prescribe the initial temperature.
 subsection Initial temperature model
   set List of model names = function
-  
+
   subsection Function
     set Coordinate system   = cartesian
     set Variable names      = x, y
     set Function expression = ( (y>50 && x>50) ? \
-    		 	      (1750) : (y<=50 && x>50) ?\
-			      (1850) : (y<=50 && x<=50) ?\
+                 (1750) : (y<=50 && x>50) ?\
+            (1850) : (y<=50 && x<=50) ?\
                               (1550) : (1600) )
   end
 end
@@ -53,7 +53,7 @@ subsection Postprocess
       set Average density scheme = lateral average
     end
   end
-  
+
 end
 
 

@@ -8,7 +8,7 @@
 # no other heat sources, only diffusion
 
 # Solution: T(z) = 373 - 400 z [K]
-# Temperature at the top should be 333 K 
+# Temperature at the top should be 333 K
 # and can be compared to min value from temperature statistics postprocessor.
 
 # The heat flux through the top boundary should be
@@ -44,12 +44,12 @@ end
 # Set velocity to zero: no convection
 subsection Prescribed Stokes solution
   set Model name = function
-  
+
   subsection Pressure function
     set Variable names      = x,z
     set Function expression = 1e4*(1-z)
   end
-  
+
   subsection Velocity function
     set Function expression = 0; 0
   end
@@ -66,7 +66,7 @@ end
 subsection Boundary temperature model
   set Fixed temperature boundary indicators = bottom
   set List of model names = box
-  
+
   subsection Box
     set Bottom temperature = 373
     set Top temperature    = 293
@@ -75,11 +75,11 @@ end
 
 subsection Boundary convective heating model
   set Convective heating boundary indicators = top
-  
+
   set List of heat transfer coefficient model names = function
   set List of boundary temperature model names = box
   set List of boundary heat flux model names = function
-  
+
   subsection Function
     set Variable names      = x,z
     set Function constants  = p=0.01, L=1, pi=3.1415926536, k=1
@@ -89,10 +89,10 @@ end
 
 subsection Boundary heat flux model
   set Model name = function
-  
+
   subsection Function
     set Variable names      = x,z
-    set Function constants  = 
+    set Function constants  =
     set Function expression = 0
   end
 end

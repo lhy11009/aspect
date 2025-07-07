@@ -1,14 +1,14 @@
-# This model tests the implementation of phase transitions in the 
-# multicomponent compressible material model, where there are two 
-# compositional fields and a background field that each experience 
-# a different number of phase transitions. 
-# 
+# This model tests the implementation of phase transitions in the
+# multicomponent compressible material model, where there are two
+# compositional fields and a background field that each experience
+# a different number of phase transitions.
+#
 # The viscosity and density change across specified phase boundaries,
-# while other material properties stay constant. The correct changes 
+# while other material properties stay constant. The correct changes
 # in density and viscosity across the phase boundaries are readily
 # apparent in the test solution file.
 #
-# The test is a modified copy of visco_plastic_phases_compositions.prm, 
+# The test is a modified copy of visco_plastic_phases_compositions.prm,
 # which uses the incompressible multicomponent equation of state model.
 
 
@@ -99,8 +99,8 @@ subsection Material model
 
     set Enable phase transitions = true
 
-    set Phase transition depths = upper_crust: 10e3, background: 70e3|90e3    
-    
+    set Phase transition depths = upper_crust: 10e3, background: 70e3|90e3
+
     set Phase transition widths = upper_crust: 1e3, background: 1e3|1e3
 
     set Phase transition temperatures = upper_crust: 273, background: 273|273
@@ -114,8 +114,8 @@ subsection Material model
     set Isothermal bulk modulus pressure derivatives = 4
 
     set Reference thermal expansivities = 2e-5
- 
-    set Isochoric specific heats = 1000 
+
+    set Isochoric specific heats = 1000
 
     set Thermal conductivities = 3
 
@@ -138,7 +138,7 @@ end
 # Post processing
 subsection Postprocess
   set List of postprocessors = composition statistics, mass flux statistics, material statistics, \
-                               velocity statistics, visualization 
+                               velocity statistics, visualization
 
   subsection Visualization
     set List of output variables = material properties

@@ -145,6 +145,8 @@ namespace aspect
     double switch_initial_residual;
     double newton_residual_for_derivative_scaling_factor;
     std::pair<double,double> stokes_residuals;
+    // todo_skip_solve
+    bool nonlinear_iteration_complete = false;
   };
 
   /**

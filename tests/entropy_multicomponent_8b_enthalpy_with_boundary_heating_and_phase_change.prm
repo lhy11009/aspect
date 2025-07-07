@@ -1,4 +1,4 @@
-# This setup is the same as test 8, but with a sharp phase transition appearing. It tests 
+# This setup is the same as test 8, but with a sharp phase transition appearing. It tests
 # whether the heat added to the model can be correctly converted to enthalpy.
 # At constant pressure, Delta q = Delta H = T * Delta S
 # The error converges to zero as the time step length reduces.
@@ -93,9 +93,9 @@ subsection Boundary heat flux model
 
   set Fixed heat flux boundary indicators = bottom
   set Model name = function
-  
+
   subsection Function
-    set Coordinate system = cartesian 
+    set Coordinate system = cartesian
     set  Function expression  = -0.05
   end
 end
@@ -111,7 +111,7 @@ subsection Material model
     set Lateral viscosity file name      = constant_lateral_vis_prefactor.txt
     set Thermal conductivity formulation = constant
     set Thermal conductivity             = 1000
-  
+
     set Maximum iteration for multicomponent equilibration = 15
     set Multicomponent equilibration tolerance = 1e-8
 

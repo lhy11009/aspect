@@ -170,6 +170,14 @@ namespace aspect
     }
 
 
+    template <int dim>
+    double
+    Interface<dim>::computeEqP(const double T) const
+    {
+      return std::numeric_limits<double>::max();
+    }
+
+
 
     template <int dim>
     std::string
@@ -219,7 +227,6 @@ namespace aspect
       std::get<dim>(registered_plugins).write_plugin_graph ("Material model interface",
                                                             out);
     }
-
 
     template <int dim>
     MaterialModelInputs<dim>::MaterialModelInputs(const unsigned int n_points,
@@ -358,6 +365,26 @@ namespace aspect
       this->current_cell = cell_x;
     }
 
+    template <int dim>
+    void
+    MaterialModelInputs<dim>::fill_metastable_phases(const std::vector<bool> is_metastable_phase_inputs)
+    {
+      this->is_metastable_phases = std::make_unique<std::vector<bool>>(is_metastable_phase_inputs.size());
+      std::copy(is_metastable_phase_inputs.begin(), is_metastable_phase_inputs.end(), this->is_metastable_phases->begin());
+    }
+
+    template <int dim>
+    void
+    MaterialModelInputs<dim>::fill_metastable_grain_sizes(const std::vector<double> grain_sizes)
+    {
+      Assert (grain_sizes.size() == this->n_evaluation_points(),
+              ExcMessage ("To fill metastable grain size, the grain_sizes provided"
+                          "needs to have the same size with the evaluation points")
+             );
+      this->metastable_grain_sizes = std::make_unique<std::vector<double>> (this->n_evaluation_points());
+      std::copy(grain_sizes.begin(), grain_sizes.end(), this->metastable_grain_sizes->begin());
+    }
+
 
 
     template <int dim>
@@ -392,6 +419,7 @@ namespace aspect
       compressibilities(n_points, numbers::signaling_nan<double>()),
       entropy_derivative_pressure(n_points, numbers::signaling_nan<double>()),
       entropy_derivative_temperature(n_points, numbers::signaling_nan<double>()),
+      entropy_derivative_metastable(n_points, numbers::signaling_nan<double>()),
       reaction_terms(n_points, std::vector<double>(n_comp, numbers::signaling_nan<double>()))
     {}
 
@@ -407,6 +435,7 @@ namespace aspect
       compressibilities(source.compressibilities),
       entropy_derivative_pressure(source.entropy_derivative_pressure),
       entropy_derivative_temperature(source.entropy_derivative_temperature),
+      entropy_derivative_metastable(source.entropy_derivative_metastable),
       reaction_terms(source.reaction_terms),
       additional_outputs()
     {
@@ -907,6 +936,8 @@ namespace aspect
                           values_out.entropy_derivative_pressure);
         average_property (operation, projection_matrix, expansion_matrix,
                           values_out.entropy_derivative_temperature);
+        average_property (operation, projection_matrix, expansion_matrix,
+                          values_out.entropy_derivative_metastable);
 
         // The reaction terms are unfortunately stored in reverse
         // indexing. It's also not quite clear whether these should
@@ -995,6 +1026,13 @@ namespace aspect
               ExcMessage ("There must be one or more points for the nth output."));
       return output_values[idx];
     }
+
+
+    template <int dim>
+    PhaseFractionAdditionalOutputs<dim>::PhaseFractionAdditionalOutputs(const std::vector<std::string> &output_names,
+                                                                        const unsigned int n_points)
+      : NamedAdditionalMaterialOutputs<dim>(output_names, n_points)
+    {}
 
 
 
@@ -1265,6 +1303,8 @@ namespace aspect
   template class ReactionRateOutputs<dim>; \
   \
   template class PhaseOutputs<dim>; \
+  \
+  template class PhaseFractionAdditionalOutputs<dim>;\
   \
   template class PrescribedPlasticDilation<dim>; \
   \

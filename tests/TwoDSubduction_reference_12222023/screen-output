@@ -1,0 +1,47 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/isosurfaces_TwoD1/libisosurfaces_TwoD1.release.so>
+
+Number of active cells: 1,280 (on 5 levels)
+Number of degrees of freedom: 63,396 (10,626+1,377+5,313+11,520+11,520+11,520+11,520)
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reference_12222023/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3649 kg/m^3, 8.897e+21 Pa s, 1.27e+17 kg
+     Temperature min/avg/max:                           273 K, 2195 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reference_12222023/depth_average
+
+Number of active cells: 1,766 (on 6 levels)
+Number of degrees of freedom: 89,077 (15,650+2,026+7,825+15,894+15,894+15,894+15,894)
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reference_12222023/solution/solution-00001
+     Average density / Average viscosity / Total mass:  3651 kg/m^3, 7.168e+21 Pa s, 1.27e+17 kg
+     Temperature min/avg/max:                           273 K, 2195 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reference_12222023/depth_average
+
+Number of active cells: 2,264 (on 7 levels)
+Number of degrees of freedom: 115,112 (20,614+2,687+10,307+20,376+20,376+20,376+20,376)
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reference_12222023/solution/solution-00002
+     Average density / Average viscosity / Total mass:  3654 kg/m^3, 8.09e+21 Pa s, 1.271e+17 kg
+     Temperature min/avg/max:                           273 K, 2195 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reference_12222023/depth_average
+
+Number of active cells: 3,254 (on 8 levels)
+Number of degrees of freedom: 166,785 (30,432+3,993+15,216+29,286+29,286+29,286+29,286)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reference_12222023/solution/solution-00003
+     Average density / Average viscosity / Total mass:  3654 kg/m^3, 7.933e+21 Pa s, 1.271e+17 kg
+     Temperature min/avg/max:                           273 K, 2195 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reference_12222023/depth_average
+
+Termination requested by criterion: end time
+
+
+
