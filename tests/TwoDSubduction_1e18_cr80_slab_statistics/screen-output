@@ -1,0 +1,39 @@
+
+Loading shared library <ASPECT_DIR/tester-build/subduction_temperature2d/libsubduction_temperature2d.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/prescribe_field/libprescribed_temperature.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/visco_plastic_TwoD/libvisco_plastic_TwoD.debug.so>
+Loading shared library <ASPECT_DIR/tester-build/slab2d_statistics/libslab2d_statistics.debug.so>
+
+
+   Loading Ascii data initial file ASPECT_DIR/data/initial-temperature/ascii-data/test/box_2d_Vs_YT16.txt.
+
+Number of active cells: 2,048 (on 6 levels)
+Number of degrees of freedom: 101,028 (16,770+2,145+8,385+18,432+18,432+18,432+18,432)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Solving spcrust system ... 1 iterations.
+   Solving spharz system ... 1 iterations.
+   Solving opcrust system ... 1 iterations.
+   Solving opharz system ... 1 iterations.
+   Initial Newton Stokes residual = 2.63102e+14, v = 2.63102e+14, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 2.63102e+14
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.67433e-16, 0, 0, 0, 0, 1
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 1
+
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_1e18_cr80_slab_statistics/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 1641 K, 1673 K
+     Writing depth average:    output-TwoDSubduction_1e18_cr80_slab_statistics/depth_average
+     Writing particle output:  output-TwoDSubduction_1e18_cr80_slab_statistics/particles/particles-00000
+     Slab Statistics volume:   2.11e+10
+
+Termination requested by criterion: end time
+
+
+

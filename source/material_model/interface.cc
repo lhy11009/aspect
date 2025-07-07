@@ -392,6 +392,7 @@ namespace aspect
       compressibilities(n_points, numbers::signaling_nan<double>()),
       entropy_derivative_pressure(n_points, numbers::signaling_nan<double>()),
       entropy_derivative_temperature(n_points, numbers::signaling_nan<double>()),
+      entropy_derivative_metastable(n_points, numbers::signaling_nan<double>()),
       reaction_terms(n_points, std::vector<double>(n_comp, numbers::signaling_nan<double>()))
     {}
 
@@ -407,6 +408,7 @@ namespace aspect
       compressibilities(source.compressibilities),
       entropy_derivative_pressure(source.entropy_derivative_pressure),
       entropy_derivative_temperature(source.entropy_derivative_temperature),
+      entropy_derivative_metastable(source.entropy_derivative_metastable),
       reaction_terms(source.reaction_terms),
       additional_outputs()
     {
@@ -907,6 +909,8 @@ namespace aspect
                           values_out.entropy_derivative_pressure);
         average_property (operation, projection_matrix, expansion_matrix,
                           values_out.entropy_derivative_temperature);
+        average_property (operation, projection_matrix, expansion_matrix,
+                          values_out.entropy_derivative_metastable);
 
         // The reaction terms are unfortunately stored in reverse
         // indexing. It's also not quite clear whether these should
@@ -995,6 +999,13 @@ namespace aspect
               ExcMessage ("There must be one or more points for the nth output."));
       return output_values[idx];
     }
+
+
+    template <int dim>
+    PhaseFractionAdditionalOutputs<dim>::PhaseFractionAdditionalOutputs(const std::vector<std::string> &output_names,
+                                                                        const unsigned int n_points)
+      : NamedAdditionalMaterialOutputs<dim>(output_names, n_points)
+    {}
 
 
 
@@ -1265,6 +1276,8 @@ namespace aspect
   template class ReactionRateOutputs<dim>; \
   \
   template class PhaseOutputs<dim>; \
+  \
+  template class PhaseFractionAdditionalOutputs<dim>;\
   \
   template class PrescribedPlasticDilation<dim>; \
   \

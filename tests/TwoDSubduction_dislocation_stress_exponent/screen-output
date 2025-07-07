@@ -1,0 +1,15 @@
+
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 43,405 (20,402+2,601+10,201+10,201)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_dislocation_stress_exponent/solution/solution-00000
+     Average density / Average viscosity / Total mass:  3300 kg/m^3, 4.496e+20 Pa s, 2.112e+15 kg
+     Temperature min/avg/max:                           1673 K, 1673 K, 1673 K
+
+Termination requested by criterion: end time
+
+
+

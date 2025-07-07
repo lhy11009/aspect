@@ -789,6 +789,276 @@ namespace aspect
 
         }
 
+        PerplexReaderMorb::PerplexReaderMorb(const std::string &filename,
+                                             const bool interpol,
+                                             const MPI_Comm comm)
+        {
+          /* Initializing variables */
+          interpolation = interpol;
+          delta_press=numbers::signaling_nan<double>();
+          min_press=std::numeric_limits<double>::max();
+          max_press=std::numeric_limits<double>::lowest();
+          delta_temp=numbers::signaling_nan<double>();
+          min_temp=std::numeric_limits<double>::max();
+          max_temp=std::numeric_limits<double>::lowest();
+          n_temperature=0;
+          n_pressure=0;
+          has_dominant_phase_column = false;
+
+          std::string temp;
+          // Read data from disk and distribute among processes
+          std::istringstream in(Utilities::read_and_distribute_file_content(filename, comm));
+
+          // The following lines read in a PerpleX tab file in standard format
+          // The first 13 lines are a header in the format:
+          // |<perplex version>
+          // <table filename>
+          // <grid dim>
+          // <grid variable 1> (usually T(K) or P(bar))
+          // <min grid variable 1>
+          // <delta grid variable 1>
+          // <n steps grid variable 1>
+          // <grid variable 2> (usually T(K) or P(bar))
+          // <min grid variable 2>
+          // <delta grid variable 2>
+          // <n steps grid variable 2>
+          // Number of property columns in the table
+          // Column names
+
+          // First line is the Perplex version number
+          std::getline(in, temp); // get next line, table file name
+
+          std::getline(in, temp); // get next line, dimension of table
+          unsigned int n_variables;
+          in >> n_variables;
+          AssertThrow (n_variables==2, ExcMessage("The PerpleX file " + filename + " must be two dimensional (P(bar)-T(K))."));
+
+          std::getline(in, temp); // get next line, either T(K) or P(bar)
+
+          for (unsigned int i=0; i<2; ++i)
+            {
+              std::string natural_variable;
+              in >> natural_variable;
+
+              if (natural_variable == "T(K)")
+                {
+                  std::getline(in, temp);
+                  in >> min_temp;
+                  std::getline(in, temp);
+                  in >> delta_temp;
+                  std::getline(in, temp);
+                  in >> n_temperature;
+                  std::getline(in, temp); // get next line, either T(K), P(bar) or number of columns
+                }
+              else if (natural_variable == "P(bar)")
+                {
+                  std::getline(in, temp);
+                  in >> min_press;
+                  min_press *= 1e5;  // conversion from [bar] to [Pa]
+                  std::getline(in, temp);
+                  in >> delta_press;
+                  delta_press *= 1e5; // conversion from [bar] to [Pa]
+                  std::getline(in, temp);
+                  in >> n_pressure;
+                  std::getline(in, temp); // get next line, either T(K), P(bar) or number of columns
+                }
+              else
+                {
+                  AssertThrow (false, ExcMessage("The start of the PerpleX file " + filename + " does not have the expected format."));
+                }
+            }
+
+          in >> n_columns;
+          std::getline(in, temp); // get next line, column labels
+
+          // here we string match to assign properties to columns
+          // column i in text file -> column j in properties
+          // Properties are stored in the order rho, (no alpha, cp, vp, vs, h)
+          std::vector<int> prp_indices(1, -1);
+          std::vector<int> phase_column_indices;
+          unsigned int dominant_phase_column_index = numbers::invalid_unsigned_int;
+
+          // First two columns should be P(bar) and T(K).
+          // Here we find the order.
+          std::string column_name;
+          in >> column_name;
+
+          std::string first_natural_variable;
+          if (column_name == "P(bar)")
+            {
+              first_natural_variable = column_name;
+              in >> column_name;
+              AssertThrow(column_name == "T(K)", ExcMessage("The second column name in PerpleX lookup file " + filename + " should be T(K)."));
+            }
+          else if (column_name == "T(K)")
+            {
+              first_natural_variable = column_name;
+              in >> column_name;
+              AssertThrow(column_name == "P(bar)", ExcMessage("The second column name in PerpleX lookup file " + filename + " should be P(bar)."));
+            }
+          else
+            {
+              AssertThrow(false, ExcMessage("The first column name in the PerpleX lookup file " + filename + " should be P(bar) or T(K)."));
+            }
+
+          for (unsigned int n=2; n<n_columns; ++n)
+            {
+              in >> column_name;
+              if (column_name == "rho,kg/m3")
+                prp_indices[0] = n;
+              else if (column_name == "phase")
+                {
+                  has_dominant_phase_column = true;
+                  dominant_phase_column_index = n;
+                }
+              else if (column_name.length() > 3)
+                {
+                  if (column_name.substr(0,13).compare("vol_fraction_") == 0)
+                    {
+                      if (std::find(phase_column_names.begin(),
+                                    phase_column_names.end(),
+                                    column_name) != phase_column_names.end())
+                        {
+                          AssertThrow(false,
+                                      ExcMessage("The PerpleX lookup file " + filename + " must have unique column names. "
+                                                 "Sometimes, the same phase is stable with >1 composition at the same "
+                                                 "pressure and temperature, so you may see several columns with the same name. "
+                                                 "Either combine columns with the same name, or change the names."));
+                        }
+                      // Populate phase_column_names with the column name
+                      // and phase_column_indices with the column index in the current lookup file.
+                      phase_column_indices.push_back(n);
+                      phase_column_names.push_back(column_name);
+                    }
+                }
+            }
+          AssertThrow(std::all_of(prp_indices.begin(), prp_indices.end(), [](int i)
+          {
+            return i>=0;
+          }),
+          ExcMessage("The PerpleX lookup file " + filename + " must contain columns with names "
+                     "rho,kg/m3, alpha,1/K, cp,J/K/kg, vp,km/s, vs,km/s and h,J/kg."));
+
+          std::getline(in, temp); // first data line
+
+          AssertThrow(min_temp >= 0.0, ExcMessage("Read in of Material header failed (mintemp)."));
+          AssertThrow(delta_temp > 0, ExcMessage("Read in of Material header failed (delta_temp)."));
+          AssertThrow(n_temperature > 0, ExcMessage("Read in of Material header failed (numtemp)."));
+          AssertThrow(min_press >= 0, ExcMessage("Read in of Material header failed (min_press)."));
+          AssertThrow(delta_press > 0, ExcMessage("Read in of Material header failed (delta_press)."));
+          AssertThrow(n_pressure > 0, ExcMessage("Read in of Material header failed (numpress)."));
+
+
+          max_temp = min_temp + (n_temperature-1) * delta_temp;
+          max_press = min_press + (n_pressure-1) * delta_press;
+
+          density_values.reinit(n_temperature,n_pressure);
+          thermal_expansivity_values.reinit(n_temperature,n_pressure);
+          specific_heat_values.reinit(n_temperature,n_pressure);
+          vp_values.reinit(n_temperature,n_pressure);
+          vs_values.reinit(n_temperature,n_pressure);
+          enthalpy_values.reinit(n_temperature,n_pressure);
+
+          if (has_dominant_phase_column)
+            dominant_phase_indices.reinit(n_temperature,n_pressure);
+
+          phase_volume_fractions.resize(phase_column_names.size());
+          for (auto &phase_volume_fraction : phase_volume_fractions)
+            phase_volume_fraction.reinit(n_temperature,n_pressure);
+
+          unsigned int i = 0;
+          std::vector<double> previous_row_values(n_columns, 0.);
+
+          while (!in.eof())
+            {
+              std::vector<double> row_values(n_columns);
+              std::string phase;
+
+              for (unsigned int n=0; n<n_columns; ++n)
+                {
+                  if (n == dominant_phase_column_index)
+                    in >> phase;
+                  else
+                    in >> row_values[n]; // assigned as 0 if in.fail() == True
+
+                  // P-T grids created with PerpleX-werami sometimes contain rows
+                  // filled with NaNs at extreme P-T conditions where the thermodynamic
+                  // models break down. These P-T regions are typically not relevant to
+                  // geodynamic modeling (they most commonly appear above
+                  // mantle liquidus temperatures at low pressures).
+                  // More frustratingly, PerpleX-vertex occasionally fails to find a
+                  // valid mineral assemblage in small, isolated regions within the domain,
+                  // and so PerpleX-werami also returns NaNs for pixels within these regions.
+                  // It is recommended that the user preprocesses their input
+                  // files to replace these NaNs before plugging them into ASPECT.
+                  // If this lookup encounters invalid doubles it replaces them
+                  // with the most recent valid double.
+                  if (in.fail())
+                    {
+                      in.clear();
+                      row_values[n] = previous_row_values[n];
+                    }
+                }
+              previous_row_values = row_values;
+
+              std::getline(in, temp); // read next line
+              if (in.eof())
+                break;
+
+              if (std::find(dominant_phase_names.begin(), dominant_phase_names.end(), phase) == dominant_phase_names.end())
+                dominant_phase_names.push_back(phase);
+
+              // The ordering of the first two columns in the PerpleX table files
+              // dictates whether the inner loop is over temperature or pressure.
+              // The first column is always the inner loop.
+              // The following lines populate the material property tables
+              // according to that implicit loop structure.
+              if (first_natural_variable == "T(K)")
+                {
+                  density_values[i%n_temperature][i/n_temperature]=row_values[prp_indices[0]];
+                  thermal_expansivity_values[i%n_temperature][i/n_temperature]= 0.0; // row_values[prp_indices[1]];
+                  specific_heat_values[i%n_temperature][i/n_temperature]= 0.0; // row_values[prp_indices[2]];
+                  vp_values[i%n_temperature][i/n_temperature]= 0.0; //row_values[prp_indices[3]];
+                  vs_values[i%n_temperature][i/n_temperature]= 0.0; //row_values[prp_indices[4]];
+                  enthalpy_values[i%n_temperature][i/n_temperature]= 0.0; //row_values[prp_indices[5]];
+
+                  if (has_dominant_phase_column)
+                    {
+                      std::vector<std::string>::iterator it = std::find(dominant_phase_names.begin(), dominant_phase_names.end(), phase);
+                      dominant_phase_indices[i%n_temperature][i/n_temperature] = std::distance(dominant_phase_names.begin(), it);
+                    }
+
+                  for (unsigned int n=0; n<phase_volume_fractions.size(); ++n)
+                    {
+                      phase_volume_fractions[n][i%n_temperature][i/n_temperature]=row_values[phase_column_indices[n]];
+                    }
+                }
+              else // first_natural_variable == "P(bar)"
+                {
+                  density_values[i/n_pressure][i%n_pressure]=row_values[prp_indices[0]];
+                  thermal_expansivity_values[i/n_pressure][i%n_pressure]=0.0;//row_values[prp_indices[1]];
+                  specific_heat_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[2]];
+                  vp_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[3]];
+                  vs_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[4]];
+                  enthalpy_values[i/n_pressure][i%n_pressure]=0.0; //row_values[prp_indices[5]];
+
+                  if (has_dominant_phase_column)
+                    {
+                      std::vector<std::string>::iterator it = std::find(dominant_phase_names.begin(), dominant_phase_names.end(), phase);
+                      dominant_phase_indices[i/n_pressure][i%n_pressure] = std::distance(dominant_phase_names.begin(), it);
+                    }
+
+                  for (unsigned int n=0; n<phase_volume_fractions.size(); ++n)
+                    {
+                      phase_volume_fractions[n][i/n_pressure][i%n_pressure]=row_values[phase_column_indices[n]];
+                    }
+                }
+              ++i;
+            }
+          AssertThrow(i == n_temperature*n_pressure, ExcMessage("Material table size not consistent with header."));
+
+        }
+
 
 
         void
@@ -1044,9 +1314,14 @@ namespace aspect
             {
               for (unsigned int i=0; i<volume_fractions.size(); ++i)
                 {
-                  AssertThrow(parameter_values[i] > 0,
-                              ExcMessage ("All parameter values must be greater than 0 for harmonic averaging!"));
-                  averaged_parameter += volume_fractions[i]/(parameter_values[i]);
+                  //AssertThrow(parameter_values[i] > 0,
+                  //            ExcMessage ("All parameter values must be greater than 0 for harmonic averaging!"));
+                  // todo
+                  if (parameter_values[i] < 0)
+                    {
+                      std::cout << "Warning: Utilities: average_value: there is a negative value of parameters" << std::endl;
+                    }
+                  averaged_parameter += volume_fractions[i]/(std::max(parameter_values[i], 1e-8));
                 }
               averaged_parameter = 1.0/averaged_parameter;
               break;
@@ -1144,6 +1419,47 @@ namespace aspect
 
 
 
+      double phase_average_value1 (const std::vector<double> &phase_function_values,
+                                   const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                   const std::vector<double> &parameter_values,
+                                   const unsigned int composition_index,
+                                   const PhaseUtilities::PhaseAveragingOperation operation)
+      {
+        // Calculate base index and assign base value
+        unsigned int start_phase_index = 0;
+        for (unsigned int i=0; i<composition_index; ++i)
+          start_phase_index += n_phase_transitions_per_composition[i] + 1;
+
+        double averaged_parameter = parameter_values[start_phase_index];
+        if (n_phase_transitions_per_composition[composition_index] > 0)
+          {
+            // Do averaging when there are multiple phases
+            if (operation == PhaseUtilities::logarithmic)
+              averaged_parameter = log(averaged_parameter);
+
+            for (unsigned int i=0; i<n_phase_transitions_per_composition[composition_index]; ++i)
+              {
+                const unsigned int phase_index = start_phase_index + i;
+
+                Assert(phase_index+1<parameter_values.size(), ExcInternalError());
+                if (operation == PhaseUtilities::logarithmic)
+                  {
+                    // First average by log values and then take the exponential.
+                    // This is used for averaging prefactors in flow laws.
+                    averaged_parameter += phase_function_values[phase_index-composition_index] * log(parameter_values[phase_index+1] / parameter_values[phase_index]);
+                  }
+                else if (operation == PhaseUtilities::arithmetic)
+                  averaged_parameter += phase_function_values[phase_index-composition_index] * (parameter_values[phase_index+1] - parameter_values[phase_index]);
+
+                else
+                  AssertThrow(false, ExcInternalError());
+              }
+            if (operation == PhaseUtilities::logarithmic)
+              averaged_parameter = exp(averaged_parameter);
+          }
+        return averaged_parameter;
+      }
+
       template <int dim>
       PhaseFunctionInputs<dim>::PhaseFunctionInputs(const double temperature_,
                                                     const double pressure_,
@@ -1159,7 +1475,22 @@ namespace aspect
         phase_transition_index(phase_transition_index_)
       {}
 
+      template <int dim>
+      PhaseFunctionInputs1<dim>::PhaseFunctionInputs1(const double temperature_,
+                                                      const double pressure_,
+                                                      const double depth_,
+                                                      const double pressure_depth_derivative_,
+                                                      const unsigned int phase_transition_index_,
+                                                      const std::vector<double> &composition)
 
+        :
+        temperature(temperature_),
+        pressure(pressure_),
+        depth(depth_),
+        pressure_depth_derivative(pressure_depth_derivative_),
+        phase_transition_index(phase_transition_index_),
+        composition(std::make_shared<std::vector<double>>(composition))
+      {}
 
       template <int dim>
       void
@@ -1475,11 +1806,137 @@ namespace aspect
                   function_value = 0.5*(1.0 + std::tanh(pressure_deviation / transition_pressure_widths[in.phase_transition_index]));
               }
           }
-
         return function_value;
       }
 
+      template <int dim>
+      double
+      PhaseFunction<dim>::compute_value1 (const PhaseFunctionInputs1<dim> &in) const
+      {
+        // the percentage of material that has undergone the transition
+        double function_value;
+        double use_manually_method_for_spcrust = manually_method_crust[in.phase_transition_index];
+        double use_manually_method_for_pyrolite = manually_method_pyrolite[in.phase_transition_index];
+        double use_manually_method_for_harzburgite = manually_method_harzburgite[in.phase_transition_index];
+        if ( abs(use_manually_method_for_spcrust - 1.0) < 1e-8)
+          {
+            function_value = eclogite_transition.compute_value_crust_1_0(in, manually_method_crust,
+                                                                         transition_depths, transition_temperatures,
+                                                                         transition_widths, transition_slopes);
+          }
+        else if ( abs(use_manually_method_for_spcrust - 1.1) < 1e-8)
+          {
+            function_value = eclogite_transition.compute_value_crust_1_1(in, manually_method_crust,
+                                                                         transition_depths, transition_temperatures,
+                                                                         transition_widths, transition_slopes);
+          }
+        else if ( abs(use_manually_method_for_spcrust - 1.2) < 1e-8)
+          {
+            function_value = eclogite_transition.compute_value_crust_1_2(in, manually_method_crust,
+                                                                         transition_depths, transition_temperatures,
+                                                                         transition_widths, transition_slopes);
+          }
+        else if ( abs(use_manually_method_for_spcrust - 1.3) < 1e-8)
+          {
+            function_value = eclogite_transition.compute_value_crust_1_3(in, manually_method_crust,
+                                                                         transition_depths, transition_temperatures,
+                                                                         transition_widths, transition_slopes);
+          }
+        else if ( abs(use_manually_method_for_pyrolite - 1.0) < 1e-8)
+          {
+            function_value = pyrolite_transition.compute_value_pyrolite_1_0(in, manually_method_pyrolite,
+                                                                            transition_depths, transition_temperatures,
+                                                                            transition_widths, transition_slopes);
+            if (is_using_metastable_kinetics)
+              {
+                unsigned int metastable_index = this->introspection().compositional_index_for_name("metastable");
+                if (this->is_beyond_equilibrium(in.phase_transition_index))
+                  {
+                    function_value *= (*in.composition)[metastable_index];
+                  }
+              }
+          }
+        else if ( abs(use_manually_method_for_pyrolite - 1.1) < 1e-8)
+          {
+            function_value = pyrolite_transition.compute_value_pyrolite_1_1(in, manually_method_pyrolite,
+                                                                            transition_depths, transition_temperatures,
+                                                                            transition_widths, transition_slopes);
+          }
+        else if ( abs(use_manually_method_for_harzburgite - 1.0) < 1e-8)
+          {
+            function_value = pyrolite_transition.compute_value_harzburgite_1_0(in, manually_method_harzburgite,
+                                                                               transition_depths, transition_temperatures,
+                                                                               transition_widths, transition_slopes);
+          }
+        else if (use_depth_instead_of_pressure)
+          {
+            // calculate the deviation from the transition point (convert temperature to depth)
+            double depth_deviation = in.depth - transition_depths[in.phase_transition_index];
 
+            if (in.pressure_depth_derivative != 0.0)
+              depth_deviation -= transition_slopes[in.phase_transition_index] / in.pressure_depth_derivative
+                                 * (in.temperature - transition_temperatures[in.phase_transition_index]);
+
+            // use delta function for width = 0
+            if (transition_widths[in.phase_transition_index] == 0)
+              function_value = (depth_deviation > 0) ? 1. : 0.;
+            else
+              function_value = 0.5*(1.0 + std::tanh(depth_deviation / transition_widths[in.phase_transition_index]));
+
+            // use lower limits and upper limits to restrict the region of phase transition
+            if (in.depth < transition_depth_lower_limits[in.phase_transition_index])
+              function_value = 0.0;
+            else if (in.depth > transition_depth_upper_limits[in.phase_transition_index])
+              function_value = 1.0;
+          }
+        else
+          {
+            // calculate the deviation from the transition point (convert temperature to pressure)
+            const double pressure_deviation = in.pressure - transition_pressures[in.phase_transition_index]
+                                              - transition_slopes[in.phase_transition_index] * (in.temperature - transition_temperatures[in.phase_transition_index]);
+
+            // use delta function for width = 0
+            if (transition_pressure_widths[in.phase_transition_index] == 0)
+              function_value = (pressure_deviation > 0) ? 1. : 0.;
+            else
+              function_value = 0.5*(1.0 + std::tanh(pressure_deviation / transition_pressure_widths[in.phase_transition_index]));
+
+            // use lower limits and upper limits to restrict the region of phase transition
+            if (in.pressure < transition_pressure_lower_limits[in.phase_transition_index])
+              function_value = 0.0;
+            else if (in.depth > transition_pressure_upper_limits[in.phase_transition_index])
+              function_value = 1.0;
+          }
+        return function_value;
+      }
+
+      template <int dim>
+      bool
+      PhaseFunction<dim>::is_beyond_equilibrium (const unsigned int phase_transition_index) const
+      {
+        bool beyond_metastable_transition = false;
+        unsigned int start_phase_transition_index = 0;
+        unsigned int composition_index = 0;
+        for (unsigned int i=0; i<n_phase_transitions_per_composition->size(); ++i)
+          {
+            if ((phase_transition_index >= start_phase_transition_index) && (phase_transition_index < start_phase_transition_index + (*n_phase_transitions_per_composition)[i] + 1))
+              {
+                composition_index = i;
+                break;
+              }
+            start_phase_transition_index += (*n_phase_transitions_per_composition)[i] + 1;
+          }
+
+        for (unsigned int phase_transition_index_temp = start_phase_transition_index; phase_transition_index_temp <= phase_transition_index; phase_transition_index_temp++)
+          {
+            if (use_metastable_kinetics[phase_transition_index_temp])
+              {
+                beyond_metastable_transition = true;
+                break;
+              }
+          }
+        return beyond_metastable_transition;
+      }
 
       template <int dim>
       double
@@ -1533,6 +1990,74 @@ namespace aspect
         else
           return 0.5 / pressure_width * (1.0 - std::tanh(pressure_deviation / pressure_width)
                                          * std::tanh(pressure_deviation / pressure_width));
+      }
+
+      template <int dim>
+      double
+      PhaseFunction<dim>::compute_derivative1 (const PhaseFunctionInputs1<dim> &in) const
+      {
+        double transition_pressure;
+        double pressure_width;
+        double width_temp;
+
+        // we already should have the adiabatic conditions here
+        Assert (this->get_adiabatic_conditions().is_initialized(),
+                ExcMessage("The adiabatic conditions need to be already initialized "
+                           "to calculate the derivative of phase functions. Either call this "
+                           "function after the reference conditions have been computed, or implement "
+                           "a workaround for the case without reference profile."));
+
+        // phase transition based on depth
+        if (use_depth_instead_of_pressure)
+          {
+            const Point<dim,double> transition_point = this->get_geometry_model().representative_point(transition_depths[in.phase_transition_index]);
+            const Point<dim,double> transition_plus_width = this->get_geometry_model().representative_point(transition_depths[in.phase_transition_index] + transition_widths[in.phase_transition_index]);
+            const Point<dim,double> transition_minus_width = this->get_geometry_model().representative_point(transition_depths[in.phase_transition_index] - transition_widths[in.phase_transition_index]);
+            transition_pressure = this->get_adiabatic_conditions().pressure(transition_point);
+            pressure_width = 0.5 * (this->get_adiabatic_conditions().pressure(transition_plus_width)
+                                    - this->get_adiabatic_conditions().pressure(transition_minus_width));
+            width_temp = transition_widths[in.phase_transition_index];
+          }
+        // using pressure instead of depth to define the phase transition
+        else
+          {
+            transition_pressure = transition_pressures[in.phase_transition_index];
+            pressure_width = transition_pressure_widths[in.phase_transition_index];
+            width_temp = transition_pressure_widths[in.phase_transition_index];
+          }
+
+        // calculate the deviation from the transition point
+        const double pressure_deviation = in.pressure - transition_pressure
+                                          - transition_slopes[in.phase_transition_index] * (in.temperature - transition_temperatures[in.phase_transition_index]);
+
+        // calculate the analytical derivative of the phase function
+        if (
+          (in.temperature < transition_temperature_lower_limits[in.phase_transition_index]) ||
+          (in.temperature >= transition_temperature_upper_limits[in.phase_transition_index])
+        )
+          {
+            // return 0 if temperature is out of range
+            return 0;
+          }
+        else if (width_temp == 0)
+          return 0;
+        else
+          {
+
+            double derivative = 0.5 / pressure_width * (1.0 - std::tanh(pressure_deviation / pressure_width)
+                                                        * std::tanh(pressure_deviation / pressure_width));
+
+            if (is_using_metastable_kinetics)
+              {
+                unsigned int metastable_index = this->introspection().compositional_index_for_name("metastable");
+                if (this->is_beyond_equilibrium(in.phase_transition_index))
+                  {
+                    derivative *= (*in.composition)[metastable_index];
+                  }
+              }
+
+            return derivative;
+          }
       }
 
 
@@ -1614,7 +2139,13 @@ namespace aspect
         return transition_slopes[phase_transition_index];
       }
 
-
+      template <int dim>
+      double
+      PhaseFunction<dim>::
+      get_compute_latent_heat(const unsigned int phase_transition_index) const
+      {
+        return compute_latent_heats[phase_transition_index];
+      }
 
       template <int dim>
       double
@@ -1708,6 +2239,75 @@ namespace aspect
                            "For negative slopes the other way round. "
                            "List must have the same number of entries as Phase transition depths. "
                            "Units: \\si{\\pascal\\per\\kelvin}.");
+        prm.declare_entry ("Phase transition depth lower limits", "-1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of depth. The phase transitions "
+                           "only happen at deeper region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\meter}.");
+        prm.declare_entry ("Phase transition depth upper limits", "1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of depth. The phase transitions "
+                           "only happen at shallower region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\meter}.");
+        prm.declare_entry ("Phase transition pressure lower limits", "-1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of pressure. The phase transitions "
+                           "only happen at deeper region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\pascal}.");
+        prm.declare_entry ("Phase transition pressure upper limits", "1e16",
+                           Patterns::Anything(),
+                           "A list of limits for each phase transition, in terms of pressure. The phase transitions "
+                           "only happen at shallower region"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: \\si{\\pascal}.");
+        // define the manually defined composition
+        prm.declare_entry ("Manually define phase method crust", "0.0",
+                           Patterns::Anything(),
+                           "A list of version of method to use for each phase transition for crust"
+                           "version numbers are like 1.0, 1.1, 1.2 ..."
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
+        // define the manually defined composition for pyrolite
+        prm.declare_entry ("Manually define phase method pyrolite", "0.0",
+                           Patterns::Anything(),
+                           "A list of version of method to use for each phase transition for pyrolite"
+                           "version numbers are like 1.0, 1.1, 1.2 ..."
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
+        // define the manually defined composition for pyrolite
+        prm.declare_entry ("Manually define phase method harzburgite", "0.0",
+                           Patterns::Anything(),
+                           "A list of version of method to use for each phase transition for pyrolite"
+                           "version numbers are like 1.0, 1.1, 1.2 ..."
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
+        // compute latent heat on phases
+        prm.declare_entry ("Compute latent heat", "1.0",
+                           Patterns::Anything(),
+                           "A list of int, indicating whether to compute latent heat on this phase transition"
+                           "Entries are either 0.0 or 1.0"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
+
+        prm.declare_entry ("Metastable transition", "0.0",
+                           Patterns::Anything(),
+                           "Whether to compute phase transitions by metastable kinetics."
+                           "Entries are either 0.0 or 1.0."
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
+
+        prm.declare_entry ("Metastable transition comp", "0",
+                           Patterns::Anything(),
+                           "Compute phase transitions by metastable kinetics and record the metastable composition"
+                           "Entries are indexes of compositoin"
+                           "List must have the same number of entries as Phase transition depths. "
+                           "Units: None.");
+
+        // declare parameters for eclogite_transition
+        EclogiteTransition<dim>::declare_parameters(prm);
       }
 
 
@@ -1742,6 +2342,50 @@ namespace aspect
 
             options.property_name = "Phase transition widths";
             transition_widths          = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            options.property_name = "Phase transition depth lower limits";
+            transition_depth_lower_limits         = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            options.property_name = "Phase transition depth upper limits";
+            transition_depth_upper_limits         = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            // parse the manually defined composition
+            options.property_name = "Manually define phase method crust";
+            manually_method_crust         = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            // parse the manually defined composition for pyrolite
+            options.property_name = "Manually define phase method pyrolite";
+            manually_method_pyrolite         = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            // parse the manually defined composition for harzburgite
+            options.property_name = "Manually define phase method harzburgite";
+            manually_method_harzburgite        = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            // parse the Compute latent heat
+            options.property_name = "Compute latent heat";
+            compute_latent_heats        =  Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            options.property_name = "Metastable transition";
+            std::vector<double> use_metastable_kinetics_double    = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            use_metastable_kinetics.resize(use_metastable_kinetics_double.size());
+            std::transform(use_metastable_kinetics_double.begin(), use_metastable_kinetics_double.end(), use_metastable_kinetics.begin(),
+                           [](double val)
+            {
+              return static_cast<bool>(std::round(val));
+            });
+
+            is_using_metastable_kinetics = std::any_of(
+                                             use_metastable_kinetics.begin(),
+                                             use_metastable_kinetics.end(),
+                                             [](bool value)
+            {
+              return value;  // Lambda function to check if value is true
+            }
+                                           );
+
+            // parse A value for the eclogite transition temperature
+            eclogite_transition.parse_parameters(prm);
           }
         else
           {
@@ -1750,6 +2394,12 @@ namespace aspect
 
             options.property_name = "Phase transition pressure widths";
             transition_pressure_widths = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            options.property_name = "Phase transition pressure lower limits";
+            transition_pressure_lower_limits         = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
+
+            options.property_name = "Phase transition pressure upper limits";
+            transition_pressure_upper_limits         = Utilities::MapParsing::parse_map_to_double_array (prm.get(options.property_name), options);
           }
 
         options.property_name = "Phase transition temperature upper limits";
@@ -1782,6 +2432,1717 @@ namespace aspect
             n_phases_total_chemical_compositions += n_phases_per_composition[i+1];
           }
       }
+
+      template <int dim>
+      bool
+      PhaseFunction<dim>::get_is_using_metastable_kinetics() const
+      {
+        return is_using_metastable_kinetics;
+      }
+
+      template <int dim>
+      void
+      EclogiteTransition<dim>::declare_parameters (ParameterHandler &prm)
+      {
+        prm.enter_subsection ("Eclogite transition");
+        {
+          // declare A value for the eclogite transition temperature
+          prm.declare_entry ("Temperature for eclogite transition", "973.0", Patterns::Double (),
+                             "The temperature for crustal phase transition");
+          prm.declare_entry ("Temperature width for eclogite transition", "75.0", Patterns::Double (),
+                             "The width of temperature for crustal phase transition");
+          prm.declare_entry ("Temperature slope for eclogite transition", "1e10", Patterns::Double (),
+                             "The clapeyron slope of temperature for crustal phase transition");
+          prm.declare_entry ("Pressure for eclogite transition", "1.5e9", Patterns::Double (),
+                             "The pressure for crustal phase transition");
+          prm.declare_entry ("Pressure width for eclogite transition", "0.5e9", Patterns::Double (),
+                             "The width of pressure for crustal phase transition");
+          prm.declare_entry ("Pressure slope for eclogite transition", "0.0", Patterns::Double (),
+                             "The pressure slope for crustal phase transition");
+          prm.declare_entry ("Max pressure for eclogite transition", "5e9", Patterns::Double (),
+                             "The maximum pressure for crustal phase transition."
+                             "This helps to force the transition in very cold region");
+          prm.declare_entry ("Max pressure width for eclogite transition", "0.5e9", Patterns::Double (),
+                             "The width of maximum pressure for crustal phase transition.");
+          prm.declare_entry ("Average phase functions for eclogite transition",
+                             "true", Patterns::Bool (),
+                             "If the phase functions from the pressure and temperature boundaries are averaged for eclogite transition");
+        }
+        prm.leave_subsection();
+      }
+
+      template <int dim>
+      void
+      EclogiteTransition<dim>::parse_parameters (ParameterHandler &prm)
+      {
+        prm.enter_subsection ("Eclogite transition");
+        {
+          crust_eclogite_transition_T     =  Utilities::string_to_double(prm.get("Temperature for eclogite transition"));
+          crust_eclogite_transition_T_width     =  Utilities::string_to_double(prm.get("Temperature width for eclogite transition"));
+          crust_eclogite_transition_T_slope     =  Utilities::string_to_double(prm.get("Temperature slope for eclogite transition"));
+          crust_eclogite_transition_P     =  Utilities::string_to_double(prm.get("Pressure for eclogite transition"));
+          crust_eclogite_transition_P_slope     =  Utilities::string_to_double(prm.get("Pressure slope for eclogite transition"));
+          crust_eclogite_transition_P_width     =  Utilities::string_to_double(prm.get("Pressure width for eclogite transition"));
+          crust_eclogite_transition_max_P = Utilities::string_to_double(prm.get("Max pressure for eclogite transition"));
+          crust_eclogite_transition_max_P_width = Utilities::string_to_double(prm.get("Max pressure width for eclogite transition"));
+          crust_eclogite_transition_PT_average = prm.get_bool("Average phase functions for eclogite transition");
+        }
+        prm.leave_subsection();
+      }
+
+
+      template <int dim>
+      double
+      EclogiteTransition<dim>::compute_value_crust_1_0 (const PhaseFunctionInputs1<dim> &in,
+                                                        const std::vector<double> &manually_method_crust,
+                                                        const std::vector<double> &transition_depths,
+                                                        const std::vector<double> &transition_temperatures,
+                                                        const std::vector<double> &transition_widths,
+                                                        const std::vector<double> &transition_slopes) const
+      {
+        const double version = 1.0;
+        // version 1.0
+        double function_value = 0.0;
+        int phase_transition_index_crust = 0;
+        // composition-wise index
+        while ( abs(manually_method_crust[in.phase_transition_index - phase_transition_index_crust - 1] - version) < 1e-8)
+          phase_transition_index_crust++;
+        // find a region in a phase diagram
+        const double P0 = 1.50e9; // Pa
+        std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, 0.0, 0.0, false, false, false);
+
+        // define ecologite transition by temperature
+        const double W1 = 75.0;
+        // const double T1 = 1048.0; // K
+        const double T1 = crust_eclogite_transition_T + W1;  // as what we need is the dash line
+        std::pair<bool, double> result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_crust + 2;  // third one
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+        // std::cout << d660 << T660 << W660 << slope660/in.pressure_depth_derivative << in.pressure << in.temperature << std::endl;
+
+        if (result0.first && result1.first && (!result660.first))
+          {
+            // crustal eclogite transition
+            if (phase_transition_index_crust == 0)
+              {
+                function_value = 0.5*(1.0 + std::tanh(result1.second/W1));
+              }
+            else
+              function_value = 0.0;
+          }
+        else if ( (!result1.first) && result660.first)
+          {
+            // 660 for mantle
+            function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        else if ( result1.first && result660.first)
+          {
+            // 660 for crust
+            if (phase_transition_index_crust == 0)
+              function_value = 1.0;
+            else
+              function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        else
+          {
+            // phase 0
+            function_value = 0.0;
+          }
+        return function_value;
+      }
+
+      template <int dim>
+      double
+      EclogiteTransition<dim>::compute_value_crust_1_1 (const PhaseFunctionInputs1<dim> &in,
+                                                        const std::vector<double> &manually_method_crust,
+                                                        const std::vector<double> &transition_depths,
+                                                        const std::vector<double> &transition_temperatures,
+                                                        const std::vector<double> &transition_widths,
+                                                        const std::vector<double> &transition_slopes) const
+      {
+        // version 1.1
+        const double version = 1.1;
+        double function_value = 0.0;
+        int phase_transition_index_crust = 0;
+        // composition-wise index
+        while ( abs(manually_method_crust[in.phase_transition_index - phase_transition_index_crust - 1] - version) < 1e-8)
+          phase_transition_index_crust++;
+        // find a region in a phase diagram
+        const double W0 = crust_eclogite_transition_P_width;
+        const double P0 = crust_eclogite_transition_P + W0; // Pa
+        std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, W0, 0.0, false, false, false);
+
+        // define ecologite transition by temperature
+        const double W1 = crust_eclogite_transition_T_width;
+        // const double T1 = 1048.0; // K
+        const double T1 = crust_eclogite_transition_T + W1;  // as what we need is the dash line
+        std::pair<bool, double> result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_crust + 2;  // third one
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+        // std::cout << d660 << T660 << W660 << slope660/in.pressure_depth_derivative << in.pressure << in.temperature << std::endl;
+
+        if (result0.first && result1.first && (!result660.first))
+          {
+            // crustal eclogite transition
+            // const double deviation = std::min(result0.second/W0, result1.second/W1);
+            const double deviation = (result0.second/W0 + result1.second/W1) / 2.0;
+            if (phase_transition_index_crust == 0)
+              {
+                if (true)
+                  function_value = 0.5*(1.0 + std::tanh(deviation));
+                else
+                  {
+                    if (deviation > 0.0)
+                      function_value = 1.0;
+                    else
+                      function_value = 0.5*(2.0 + deviation);
+                  }
+              }
+            else
+              function_value = 0.0;
+          }
+        else if ( (!result1.first) && result660.first)
+          {
+            // 660 for mantle
+            function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        else if ( result1.first && result660.first)
+          {
+            // 660 for crust
+            if (phase_transition_index_crust == 0)
+              function_value = 1.0;
+            else
+              function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        else
+          {
+            // phase 0
+            function_value = 0.0;
+          }
+        return function_value;
+      }
+
+      template <int dim>
+      double
+      EclogiteTransition<dim>::compute_value_crust_1_2 (const PhaseFunctionInputs1<dim> &in,
+                                                        const std::vector<double> &manually_method_crust,
+                                                        const std::vector<double> &transition_depths,
+                                                        const std::vector<double> &transition_temperatures,
+                                                        const std::vector<double> &transition_widths,
+                                                        const std::vector<double> &transition_slopes) const
+      {
+        // version 1.2
+        const double version = 1.2;
+        // paritial_indexes
+        const int partial_index_660 = 1;
+        // initiate
+        double function_value = 0.0;
+        int phase_transition_index_crust = 0;
+        // composition-wise index
+        while ( abs(manually_method_crust[in.phase_transition_index - phase_transition_index_crust - 1] - version) < 1e-8)
+          phase_transition_index_crust++;
+        // find a region in a phase diagram
+        const double W0 = crust_eclogite_transition_P_width;
+        const double P0 = crust_eclogite_transition_P + W0; // Pa
+        std::pair<bool, double> result0 = compute_point_to_line(in, 0.0, P0, W0, 0.0, false, false, false);
+
+        // define ecologite transition by temperature
+        // add a slope
+        double W1;
+        const double T1 = crust_eclogite_transition_T + crust_eclogite_transition_T_width;  // as what we need is the dash line
+        std::pair<bool, double>  result1;
+        if (abs(crust_eclogite_transition_T_slope) > 1e9)
+          {
+            // vertical
+            W1 = crust_eclogite_transition_T_width;
+            result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+          }
+        else
+          {
+            // with a slope, pinpoint at (T1, P0), as W1 is a width by temperature, it is multiplied with slope
+            W1 = crust_eclogite_transition_T_width * abs(crust_eclogite_transition_T_slope);
+            result1 = compute_point_to_line(in, T1, crust_eclogite_transition_P, W1,
+                                            crust_eclogite_transition_T_slope, false, false, false);
+          }
+
+        // line 2: maximux pressure on basaltic composition
+        const double P2 = crust_eclogite_transition_max_P;
+        const double W2 = crust_eclogite_transition_max_P_width;
+        std::pair<bool, double> result2 = compute_point_to_line(in, 0.0, P2, W2, 0.0, false, false, false);
+
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_crust + partial_index_660;  // second one
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+
+        if (result0.first && result1.first && (!result660.first))
+          {
+            // crustal eclogite transition
+            // double deviation = (result0.second/W0 + result1.second/W1) / 2.0;
+            // deviation = std::max(result2.second/W2, deviation);
+            double deviation = average_deviation(result0.second/W0, std::max(result1.second/W1, result2.second/W2), 2.0);
+            if (phase_transition_index_crust == 0)
+              {
+                function_value = 0.5*(1.0 + std::tanh(deviation));
+              }
+            else
+              function_value = 0.0;
+          }
+        else if ( (!result1.first) && result2.first && (!result660.first))
+          {
+            // crustal eclogite transition: area 2 (line 0 and line 1)
+            const double deviation = result2.second/W2;
+            if (phase_transition_index_crust == 0)
+              {
+                if (true)
+                  function_value = 0.5*(1.0 + std::tanh(deviation));
+                else
+                  {
+                    if (deviation > 0.0)
+                      function_value = 1.0;
+                    else
+                      function_value = 0.5*(2.0 + deviation);
+                  }
+              }
+            else
+              function_value = 0.0;
+          }
+        else if ( result660.first)
+          {
+            // 660 for crust
+            if (phase_transition_index_crust == 0)
+              function_value = 1.0;
+            else
+              function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        else
+          {
+            // phase 0
+            function_value = 0.0;
+          }
+        return function_value;
+      }
+
+
+      template <int dim>
+      double
+      EclogiteTransition<dim>::compute_value_crust_1_3 (const PhaseFunctionInputs1<dim> &in,
+                                                        const std::vector<double> &manually_method_crust,
+                                                        const std::vector<double> &transition_depths,
+                                                        const std::vector<double> &transition_temperatures,
+                                                        const std::vector<double> &transition_widths,
+                                                        const std::vector<double> &transition_slopes) const
+      {
+        // version 1.3
+        const double version = 1.3;
+        // paritial_indexes
+        const int partial_index_660 = 1;
+        const int partial_index_720 = 2;
+        // initiate
+        double function_value = 0.0;
+        int phase_transition_index_crust = 0;
+        // composition-wise index
+        while ( abs(manually_method_crust[in.phase_transition_index - phase_transition_index_crust - 1] - version) < 1e-8)
+          phase_transition_index_crust++;
+        // find a region in a phase diagram
+        // define the boundary by pressure
+        const double W0 = crust_eclogite_transition_P_width;
+        const double P0 = crust_eclogite_transition_P + W0; // Pa
+        std::pair<bool, double> result0 = compute_point_to_line(in, 1150.0, P0, W0,
+                                                                crust_eclogite_transition_P_slope, false, false, false);
+
+        // define ecologite transition by temperature
+        // add a slope
+        double W1;
+        const double T1 = crust_eclogite_transition_T + crust_eclogite_transition_T_width;  // as what we need is the dash line
+        std::pair<bool, double>  result1;
+        if (abs(crust_eclogite_transition_T_slope) > 1e9)
+          {
+            // vertical
+            W1 = crust_eclogite_transition_T_width;
+            result1 = compute_point_to_line(in, T1, 0.0, W1, 0.0, false, false, true);
+          }
+        else
+          {
+            // with a slope, pinpoint at (T1, P0), as W1 is a width by temperature, it is multiplied with slope
+            W1 = crust_eclogite_transition_T_width * abs(crust_eclogite_transition_T_slope);
+            result1 = compute_point_to_line(in, T1, crust_eclogite_transition_P, W1,
+                                            crust_eclogite_transition_T_slope, false, false, false);
+          }
+
+        // line 2: maximux pressure on basaltic composition
+        const double P2 = crust_eclogite_transition_max_P;
+        const double W2 = crust_eclogite_transition_max_P_width;
+        std::pair<bool, double> result2 = compute_point_to_line(in, 0.0, P2, W2, 0.0, false, false, false);
+
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_crust + partial_index_660;  // second one
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+
+        const int phase_transition_index_720 = in.phase_transition_index - phase_transition_index_crust + partial_index_720;  // third one
+        const double d720 = transition_depths[phase_transition_index_720];
+        const double T720 = transition_temperatures[phase_transition_index_720];
+        const double W720 = transition_widths[phase_transition_index_720];
+        const double slope720 = transition_slopes[phase_transition_index_720];
+        std::pair<bool, double> result720 = compute_point_to_line(in, T720, d720, W720, slope720/in.pressure_depth_derivative, true, false, false);
+
+        if (result0.first && result1.first && (!result660.first))
+          {
+            // crustal eclogite transition
+            // double deviation = (result0.second/W0 + result1.second/W1) / 2.0;
+            // deviation = std::max(result2.second/W2, deviation);
+            double deviation;
+            if (crust_eclogite_transition_PT_average)
+              {
+                deviation = average_deviation(result0.second/W0, std::max(result1.second/W1, result2.second/W2), 2.0);
+              }
+            else
+              {
+                deviation = std::min(result0.second/W0, std::max(result1.second/W1, result2.second/W2));
+              }
+            if (phase_transition_index_crust == 0)
+              {
+                function_value = 0.5*(1.0 + std::tanh(deviation));
+              }
+            else
+              function_value = 0.0;
+          }
+        else if ( (!result1.first) && result2.first && (!result660.first))
+          {
+            // crustal eclogite transition: area 2 (line 0 and line 1)
+            const double deviation = result2.second/W2;
+            if (phase_transition_index_crust == 0)
+              {
+                if (true)
+                  function_value = 0.5*(1.0 + std::tanh(deviation));
+                else
+                  {
+                    if (deviation > 0.0)
+                      function_value = 1.0;
+                    else
+                      function_value = 0.5*(2.0 + deviation);
+                  }
+              }
+            else
+              function_value = 0.0;
+          }
+        else if (result660.first && !result720.first)
+          {
+            // 660 for crust
+            if (phase_transition_index_crust < partial_index_660)
+              function_value = 1.0;
+            else if (phase_transition_index_crust == partial_index_660)
+              function_value = 0.5*(1.0 + std::tanh(result660.second/W660));
+            else
+              function_value = 0.0;
+          }
+        else if (result720.first)
+          {
+            // 720 for crust
+            if (phase_transition_index_crust < partial_index_720)
+              function_value = 1.0;
+            else if (phase_transition_index_crust == partial_index_720)
+              function_value = 0.5*(1.0 + std::tanh(result720.second/W720));
+            else
+              function_value = 0.0;
+          }
+        else
+          {
+            // phase 0
+            function_value = 0.0;
+          }
+        return function_value;
+      }
+
+
+      template <int dim>
+      double
+      PyroliteTransition<dim>::compute_value_pyrolite_1_0 (const PhaseFunctionInputs1<dim> &in,
+                                                           const std::vector<double> &manually_method_pyrolite,
+                                                           const std::vector<double> &transition_depths,
+                                                           const std::vector<double> &transition_temperatures,
+                                                           const std::vector<double> &transition_widths,
+                                                           const std::vector<double> &transition_slopes) const
+      {
+        // version 1.0
+        const double version = 1.0;
+
+        // partial indexes of transitions
+        const int partial_index_410 = 0;
+        const int partial_index_520 = 1;
+        const int partial_index_560 = 2;
+        const int partial_index_660 = 3;
+        const int partial_index_660_gt = 4;
+        const int partial_index_660_gt1 = 5;
+        const int partial_index_660_gt_combined = 6;
+
+        // initiate varibles
+        double function_value = 0.0;
+        int phase_transition_index_pyrolite = 0;
+
+        // composition-wise index
+
+        // loop to get the local index relative to the 0th pyrolite phase
+        // debug
+        while ( in.phase_transition_index - phase_transition_index_pyrolite != 0)
+          {
+            // see if we reach the start of the pyrolite phases
+            // as for the 0th phase tran in the pyrolite phases, this loop is false initially
+            if (abs(manually_method_pyrolite[in.phase_transition_index - phase_transition_index_pyrolite - 1] - version) > 1e-8)
+              break;
+            // add one to the relative index within the pyrolite phases if we haven't
+            phase_transition_index_pyrolite++;
+          }
+
+        // 410
+        const int phase_transition_index_410 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_410;
+        const double d410 = transition_depths[phase_transition_index_410];
+        const double T410 = transition_temperatures[phase_transition_index_410];
+        const double W410 = transition_widths[phase_transition_index_410];
+        const double slope410 = transition_slopes[phase_transition_index_410];
+        std::pair<bool, double> result410 = compute_point_to_line(in, T410, d410, W410, slope410/in.pressure_depth_derivative, true, false, false);
+
+        // 520
+        const int phase_transition_index_520 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_520;
+        const double d520 = transition_depths[phase_transition_index_520];
+        const double T520 = transition_temperatures[phase_transition_index_520];
+        const double W520 = transition_widths[phase_transition_index_520];
+        const double slope520 = transition_slopes[phase_transition_index_520];
+        std::pair<bool, double> result520 = compute_point_to_line(in, T520, d520, W520, slope520/in.pressure_depth_derivative, true, false, false);
+
+        // 560
+        const int phase_transition_index_560 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_560;
+        const double d560 = transition_depths[phase_transition_index_560];
+        const double T560 = transition_temperatures[phase_transition_index_560];
+        const double W560 = transition_widths[phase_transition_index_560];
+        const double slope560 = transition_slopes[phase_transition_index_560];
+        std::pair<bool, double> result560 = compute_point_to_line(in, T560, d560, W560, slope560/in.pressure_depth_derivative, true, false, false);
+
+        // 660
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660;
+        //const int phase_transition_index_660 = 0;
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, part 0
+        const int phase_transition_index_660_gt = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt = transition_depths[phase_transition_index_660_gt];
+        const double T660_gt = transition_temperatures[phase_transition_index_660_gt];
+        const double W660_gt = transition_widths[phase_transition_index_660_gt];
+        const double slope660_gt = transition_slopes[phase_transition_index_660_gt];
+        std::pair<bool, double> result660_gt = compute_point_to_line(in, T660_gt, d660_gt, W660_gt, slope660_gt/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, part 1
+        const int phase_transition_index_660_gt1 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt1;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt1 = transition_depths[phase_transition_index_660_gt1];
+        const double T660_gt1 = transition_temperatures[phase_transition_index_660_gt1];
+        const double W660_gt1 = transition_widths[phase_transition_index_660_gt1];
+        const double slope660_gt1 = transition_slopes[phase_transition_index_660_gt1];
+        std::pair<bool, double> result660_gt1 = compute_point_to_line(in, T660_gt1, d660_gt1, W660_gt1, slope660_gt1/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, combined
+        const int phase_transition_index_660_gt_combined = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt_combined;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt_combined = transition_depths[phase_transition_index_660_gt_combined];
+        const double T660_gt_combined = transition_temperatures[phase_transition_index_660_gt_combined];
+        const double W660_gt_combined = transition_widths[phase_transition_index_660_gt_combined];
+        const double slope660_gt_combined = transition_slopes[phase_transition_index_660_gt_combined];
+        std::pair<bool, double> result660_gt_combined = compute_point_to_line(in, T660_gt_combined, d660_gt_combined, W660_gt_combined, slope660_gt_combined/in.pressure_depth_derivative, true, false, false);
+
+        if (result410.first)
+          {
+            // 410 for pyrolite
+            if (phase_transition_index_pyrolite == partial_index_410)
+              function_value += 0.5*(1.0 + std::tanh(result410.second/W410));
+          }
+        if (result520.first)
+          {
+            // 520 for pyrolite
+            if (phase_transition_index_pyrolite == partial_index_520)
+              function_value += 0.5*(1.0 + std::tanh(result520.second/W520));
+          }
+        if (result560.first)
+          {
+            // 560 for pyrolite, Gt -> CaPv + Gt
+            if (phase_transition_index_pyrolite == partial_index_560)
+              function_value += 0.5*(1.0 + std::tanh(result560.second/W560));
+          }
+        if (result660.first)
+          {
+            // 660 for pyrolite, rw -> brg + fp
+            if (phase_transition_index_pyrolite == partial_index_660)
+              function_value += 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        if (result660_gt.first && in.temperature < T660_gt)
+          {
+            // 660 for pyrolite, gt -> il
+            if (phase_transition_index_pyrolite == partial_index_660_gt)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt.second/W660_gt));
+          }
+        if (result660_gt1.first && in.temperature < T660_gt1)
+          {
+            // 660 for pyrolite, il -> brg
+            if (phase_transition_index_pyrolite == partial_index_660_gt1)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt1.second/W660_gt1));
+          }
+        if (result660_gt_combined.first && in.temperature >= T660_gt_combined)
+          {
+            // 660 for pyrolite combined, at higher temperature, gt -> brg
+            if (phase_transition_index_pyrolite == partial_index_660_gt_combined)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt_combined.second/W660_gt_combined));
+          }
+        return function_value;
+      }
+
+      template <int dim>
+      double
+      PyroliteTransition<dim>::compute_value_pyrolite_1_1 (const PhaseFunctionInputs1<dim> &in,
+                                                           const std::vector<double> &manually_method_pyrolite,
+                                                           const std::vector<double> &transition_depths,
+                                                           const std::vector<double> &transition_temperatures,
+                                                           const std::vector<double> &transition_widths,
+                                                           const std::vector<double> &transition_slopes) const
+      {
+        // version 1.1
+        // in this version, I have adapted 2 parts for the gt transition around 670 km instead of the previous
+        // 3 parts implementation.
+        const double version = 1.1;
+
+        // partial indexes of transitions
+        const int partial_index_410 = 0;
+        const int partial_index_520 = 1;
+        const int partial_index_560 = 2;
+        const int partial_index_660 = 3;
+        const int partial_index_660_gt = 4;
+        const int partial_index_660_gt1 = 5;
+        const int partial_index_660_gt_combined = 6;
+
+        // initiate varibles
+        double function_value = 0.0;
+        int phase_transition_index_pyrolite = 0;
+
+        // composition-wise index
+
+        // loop to get the local index relative to the 0th pyrolite phase
+        // debug
+        while ( in.phase_transition_index - phase_transition_index_pyrolite != 0)
+          {
+            // see if we reach the start of the pyrolite phases
+            // as for the 0th phase tran in the pyrolite phases, this loop is false initially
+            if (abs(manually_method_pyrolite[in.phase_transition_index - phase_transition_index_pyrolite - 1] - version) > 1e-8)
+              break;
+            // add one to the relative index within the pyrolite phases if we haven't
+            phase_transition_index_pyrolite++;
+          }
+
+        // 410
+        const int phase_transition_index_410 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_410;
+        const double d410 = transition_depths[phase_transition_index_410];
+        const double T410 = transition_temperatures[phase_transition_index_410];
+        const double W410 = transition_widths[phase_transition_index_410];
+        const double slope410 = transition_slopes[phase_transition_index_410];
+        std::pair<bool, double> result410 = compute_point_to_line(in, T410, d410, W410, slope410/in.pressure_depth_derivative, true, false, false);
+
+        // 520
+        const int phase_transition_index_520 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_520;
+        const double d520 = transition_depths[phase_transition_index_520];
+        const double T520 = transition_temperatures[phase_transition_index_520];
+        const double W520 = transition_widths[phase_transition_index_520];
+        const double slope520 = transition_slopes[phase_transition_index_520];
+        std::pair<bool, double> result520 = compute_point_to_line(in, T520, d520, W520, slope520/in.pressure_depth_derivative, true, false, false);
+
+        // 560
+        const int phase_transition_index_560 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_560;
+        const double d560 = transition_depths[phase_transition_index_560];
+        const double T560 = transition_temperatures[phase_transition_index_560];
+        const double W560 = transition_widths[phase_transition_index_560];
+        const double slope560 = transition_slopes[phase_transition_index_560];
+        std::pair<bool, double> result560 = compute_point_to_line(in, T560, d560, W560, slope560/in.pressure_depth_derivative, true, false, false);
+
+        // 660
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660;
+        //const int phase_transition_index_660 = 0;
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, part 0
+        const int phase_transition_index_660_gt = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt = transition_depths[phase_transition_index_660_gt];
+        const double T660_gt = transition_temperatures[phase_transition_index_660_gt];
+        const double W660_gt = transition_widths[phase_transition_index_660_gt];
+        const double slope660_gt = transition_slopes[phase_transition_index_660_gt];
+        std::pair<bool, double> result660_gt = compute_point_to_line(in, T660_gt, d660_gt, W660_gt, slope660_gt/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, part 1
+        const int phase_transition_index_660_gt1 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt1;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt1 = transition_depths[phase_transition_index_660_gt1];
+        const double T660_gt1 = transition_temperatures[phase_transition_index_660_gt1];
+        const double W660_gt1 = transition_widths[phase_transition_index_660_gt1];
+        const double slope660_gt1 = transition_slopes[phase_transition_index_660_gt1];
+        std::pair<bool, double> result660_gt1 = compute_point_to_line(in, T660_gt1, d660_gt1, W660_gt1, slope660_gt1/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, combined
+        const int phase_transition_index_660_gt_combined = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt_combined;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt_combined = transition_depths[phase_transition_index_660_gt_combined];
+        const double T660_gt_combined = transition_temperatures[phase_transition_index_660_gt_combined];
+        const double W660_gt_combined = transition_widths[phase_transition_index_660_gt_combined];
+        const double slope660_gt_combined = transition_slopes[phase_transition_index_660_gt_combined];
+        std::pair<bool, double> result660_gt_combined = compute_point_to_line(in, T660_gt_combined, d660_gt_combined, W660_gt_combined, slope660_gt_combined/in.pressure_depth_derivative, true, false, false);
+
+        if (result410.first)
+          {
+            // 410 for pyrolite
+            if (phase_transition_index_pyrolite == partial_index_410)
+              function_value += 0.5*(1.0 + std::tanh(result410.second/W410));
+          }
+        if (result520.first)
+          {
+            // 520 for pyrolite
+            if (phase_transition_index_pyrolite == partial_index_520)
+              function_value += 0.5*(1.0 + std::tanh(result520.second/W520));
+          }
+        if (result560.first)
+          {
+            // 560 for pyrolite, Gt -> CaPv + Gt
+            if (phase_transition_index_pyrolite == partial_index_560)
+              function_value += 0.5*(1.0 + std::tanh(result560.second/W560));
+          }
+        if (result660.first)
+          {
+            // 660 for pyrolite, rw -> brg + fp
+            if (phase_transition_index_pyrolite == partial_index_660)
+              function_value += 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        if (result660_gt.first && in.temperature < T660_gt)
+          {
+            // 660 for pyrolite, part 1, colder part
+            if (phase_transition_index_pyrolite == partial_index_660_gt)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt.second/W660_gt));
+          }
+        if (result660_gt1.first && in.temperature > T660_gt1)
+          {
+            // 660 for pyrolite, part 2, hotter part
+            if (phase_transition_index_pyrolite == partial_index_660_gt1)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt1.second/W660_gt1));
+          }
+        if (result660_gt_combined.first)
+          {
+            // 660 for pyrolite combined, at higher temperature, gt -> brg
+            if (phase_transition_index_pyrolite == partial_index_660_gt_combined)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt_combined.second/W660_gt_combined));
+          }
+        return function_value;
+      }
+
+      template <int dim>
+      double
+      PyroliteTransition<dim>::compute_value_harzburgite_1_0 (const PhaseFunctionInputs1<dim> &in,
+                                                              const std::vector<double> &manually_method_harzburgite,
+                                                              const std::vector<double> &transition_depths,
+                                                              const std::vector<double> &transition_temperatures,
+                                                              const std::vector<double> &transition_widths,
+                                                              const std::vector<double> &transition_slopes) const
+      {
+        // version 1.0
+        const double version = 1.0;
+
+        // partial indexes of transitions
+        const int partial_index_410 = 0;
+        const int partial_index_520 = 1;
+        const int partial_index_560 = 2;
+        const int partial_index_660 = 3;
+        const int partial_index_660_gt = 4;
+        const int partial_index_660_gt1 = 5;
+        const int partial_index_660_gt_combined = 6;
+
+        // initiate varibles
+        double function_value = 0.0;
+        int phase_transition_index_pyrolite = 0;
+
+        // composition-wise index
+
+        // loop to get the local index relative to the 0th pyrolite phase
+        // debug
+        while ( in.phase_transition_index - phase_transition_index_pyrolite != 0)
+          {
+            // see if we reach the start of the pyrolite phases
+            // as for the 0th phase tran in the pyrolite phases, this loop is false initially
+            if (abs(manually_method_harzburgite[in.phase_transition_index - phase_transition_index_pyrolite - 1] - version) > 1e-8)
+              break;
+            // add one to the relative index within the pyrolite phases if we haven't
+            phase_transition_index_pyrolite++;
+          }
+
+        // 410
+        const int phase_transition_index_410 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_410;
+        const double d410 = transition_depths[phase_transition_index_410];
+        const double T410 = transition_temperatures[phase_transition_index_410];
+        const double W410 = transition_widths[phase_transition_index_410];
+        const double slope410 = transition_slopes[phase_transition_index_410];
+        std::pair<bool, double> result410 = compute_point_to_line(in, T410, d410, W410, slope410/in.pressure_depth_derivative, true, false, false);
+
+        // 520
+        const int phase_transition_index_520 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_520;
+        const double d520 = transition_depths[phase_transition_index_520];
+        const double T520 = transition_temperatures[phase_transition_index_520];
+        const double W520 = transition_widths[phase_transition_index_520];
+        const double slope520 = transition_slopes[phase_transition_index_520];
+        std::pair<bool, double> result520 = compute_point_to_line(in, T520, d520, W520, slope520/in.pressure_depth_derivative, true, false, false);
+
+        // 560
+        const int phase_transition_index_560 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_560;
+        const double d560 = transition_depths[phase_transition_index_560];
+        const double T560 = transition_temperatures[phase_transition_index_560];
+        const double W560 = transition_widths[phase_transition_index_560];
+        const double slope560 = transition_slopes[phase_transition_index_560];
+        std::pair<bool, double> result560 = compute_point_to_line(in, T560, d560, W560, slope560/in.pressure_depth_derivative, true, false, false);
+
+        // 660
+        const int phase_transition_index_660 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660;
+        //const int phase_transition_index_660 = 0;
+        const double d660 = transition_depths[phase_transition_index_660];
+        const double T660 = transition_temperatures[phase_transition_index_660];
+        const double W660 = transition_widths[phase_transition_index_660];
+        const double slope660 = transition_slopes[phase_transition_index_660];
+        std::pair<bool, double> result660 = compute_point_to_line(in, T660, d660, W660, slope660/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, part 0
+        const int phase_transition_index_660_gt = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt = transition_depths[phase_transition_index_660_gt];
+        const double T660_gt = transition_temperatures[phase_transition_index_660_gt];
+        const double W660_gt = transition_widths[phase_transition_index_660_gt];
+        const double slope660_gt = transition_slopes[phase_transition_index_660_gt];
+        std::pair<bool, double> result660_gt = compute_point_to_line(in, T660_gt, d660_gt, W660_gt, slope660_gt/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, part 1
+        const int phase_transition_index_660_gt1 = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt1;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt1 = transition_depths[phase_transition_index_660_gt1];
+        const double T660_gt1 = transition_temperatures[phase_transition_index_660_gt1];
+        const double W660_gt1 = transition_widths[phase_transition_index_660_gt1];
+        const double slope660_gt1 = transition_slopes[phase_transition_index_660_gt1];
+        std::pair<bool, double> result660_gt1 = compute_point_to_line(in, T660_gt1, d660_gt1, W660_gt1, slope660_gt1/in.pressure_depth_derivative, true, false, false);
+
+        // 660 for gt, combined
+        const int phase_transition_index_660_gt_combined = in.phase_transition_index - phase_transition_index_pyrolite + partial_index_660_gt_combined;
+        //const int phase_transition_index_660 = 0;
+        const double d660_gt_combined = transition_depths[phase_transition_index_660_gt_combined];
+        const double T660_gt_combined = transition_temperatures[phase_transition_index_660_gt_combined];
+        const double W660_gt_combined = transition_widths[phase_transition_index_660_gt_combined];
+        const double slope660_gt_combined = transition_slopes[phase_transition_index_660_gt_combined];
+        std::pair<bool, double> result660_gt_combined = compute_point_to_line(in, T660_gt_combined, d660_gt_combined, W660_gt_combined, slope660_gt_combined/in.pressure_depth_derivative, true, false, false);
+
+        if (result410.first)
+          {
+            // 410 for pyrolite
+            if (phase_transition_index_pyrolite == partial_index_410)
+              function_value += 0.5*(1.0 + std::tanh(result410.second/W410));
+          }
+        if (result520.first)
+          {
+            // 520 for pyrolite
+            if (phase_transition_index_pyrolite == partial_index_520)
+              function_value += 0.5*(1.0 + std::tanh(result520.second/W520));
+          }
+        if (result560.first)
+          {
+            // 560 for pyrolite, Gt -> CaPv + Gt
+            if (phase_transition_index_pyrolite == partial_index_560)
+              function_value += 0.5*(1.0 + std::tanh(result560.second/W560));
+          }
+        if (result660.first)
+          {
+            // 660 for pyrolite, rw -> brg + fp
+            if (phase_transition_index_pyrolite == partial_index_660)
+              function_value += 0.5*(1.0 + std::tanh(result660.second/W660));
+          }
+        if (result660_gt.first && in.temperature < T660_gt)
+          {
+            // 660 for pyrolite, gt -> il
+            if (phase_transition_index_pyrolite == partial_index_660_gt)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt.second/W660_gt));
+          }
+        if (result660_gt1.first && in.temperature < T660_gt1)
+          {
+            // 660 for pyrolite, il -> brg
+            if (phase_transition_index_pyrolite == partial_index_660_gt1)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt1.second/W660_gt1));
+          }
+        if (result660_gt_combined.first && in.temperature > T660_gt_combined)
+          {
+            // 660 for pyrolite combined, at higher temperature, gt -> brg
+            if (phase_transition_index_pyrolite == partial_index_660_gt_combined)
+              function_value += 0.5*(1.0 + std::tanh(result660_gt_combined.second/W660_gt_combined));
+          }
+        return function_value;
+      }
+
+      template <int dim>
+      std::pair<bool, double>
+      compute_point_to_line (const PhaseFunctionInputs1<dim> &in,
+                             const double T, const double P, const double W, const double slope,
+                             bool by_depth, bool is_negative, bool is_vertical)
+      {
+        // In this approach, we define a transition as a solid line and a range.
+        // The solid line is a rigid boundary for the new phase.
+        // While the range is a width of transition.
+        double deviation;
+        bool is_in;
+        if (is_vertical)
+          deviation = in.temperature - T;
+        else
+          {
+            if (by_depth)
+              deviation = in.depth - P - slope * (in.temperature - T);
+            else
+              deviation = in.pressure - P - slope * (in.temperature - T);
+          }
+        // In this approach, a transition must has a direction in defination
+        // We need an opposite direction when the transition defined from higher pressure to lower pressure.
+        if (is_negative)
+          deviation *= -1.0;
+        // Deviation must be smaller than 2*W, value for function would be 0.04 there.
+        is_in = (deviation > -2.0 * W);
+        return std::make_pair(is_in, deviation);
+      }
+
+
+      double average_deviation(double x1, double x2, double pinpoint)
+      {
+        double deviation = 0.0;
+        if (x1 < pinpoint && x2 < pinpoint)
+          {
+            deviation = pinpoint - sqrt(pow(pinpoint - x1, 2.0) + pow(pinpoint - x2, 2.0));
+          }
+        else if (x1 < pinpoint && x2 > pinpoint)
+          {
+            deviation = x1;
+          }
+        else if (x1 > pinpoint && x2 < pinpoint)
+          {
+            deviation = x2;
+          }
+        else
+          {
+            deviation = std::min(x1, x2);
+          }
+        return deviation;
+      }
+
+      // RK4 solver
+      // Constructor
+      IRK4Solver::IRK4Solver()
+      {
+        double sqrt3 = std::sqrt(3.0) / 6.0;
+
+        A =
+        {
+          {0.25, 0.25 - sqrt3},
+          {0.25 + sqrt3, 0.25}
+        };
+
+        b = {0.5, 0.5};
+        c = {0.5 - sqrt3, 0.5 + sqrt3};
+      }
+
+      // Solve method with debug option
+      std::pair<std::vector<double>, std::vector<std::vector<double>>>
+      IRK4Solver::solve(const std::function<std::vector<double>(double, const std::vector<double>&)> &f,
+                        const std::vector<double> &y0, const std::pair<double, double> &t_span, double h, bool debug)
+      {
+        double t0 = t_span.first;
+        double t_end = t_span.second;
+
+        std::vector<double> t_values = {t0};
+        std::vector<std::vector<double>> y_values = {y0};
+
+        std::vector<double> y = y0;
+        double t = t0;
+
+        const double epsilon = 1e-6;
+
+        while (t + h < t_end * (1.0 + epsilon))
+          {
+
+            //increase t
+            t += h;
+
+            size_t n = y.size();
+            size_t stages = b.size();
+
+            // Residual function for nonlinear solver
+            auto residual = [&](const std::vector<std::vector<double>> &Y) -> std::vector<std::vector<double>>
+            {
+              std::vector<std::vector<double>> res(stages, std::vector<double>(n, 0.0));
+              for (size_t i = 0; i < stages; ++i)
+                {
+                  for (size_t k = 0; k < n; ++k)
+                    {
+                      res[i][k] = Y[i][k] - y[k];
+                      for (size_t j = 0; j < stages; ++j)
+                        {
+                          auto f_eval = f(t + c[j] * h, Y[j]);
+                          res[i][k] -= h * A[i][j] * f_eval[k];
+                        }
+                    }
+                }
+              return res;
+            };
+
+            // Initial guess for stages
+            std::vector<std::vector<double>> Y(stages, y);
+
+            // Solve for Y using simple fixed-point iteration (replaceable with a better solver)
+            size_t max_iterations = 100;
+            double tolerance = 1e-6;
+            for (size_t iter = 0; iter < max_iterations; ++iter)
+              {
+                auto res = residual(Y);
+
+                // Debug: Print residuals, relative residuals, and temporary solutions if debug is true
+                if (debug)
+                  {
+                    std::cout << "Iteration " << iter << ", t = " << t << ":\n";
+                    for (size_t i = 0; i < stages; ++i)
+                      {
+                        std::cout << "  Stage " << i << " Residual: ";
+                        for (size_t k = 0; k < n; ++k)
+                          {
+                            std::cout << res[i][k] << " ";
+                          }
+                        std::cout << "\n";
+
+                        std::cout << "  Stage " << i << " Relative Residual: ";
+                        for (size_t k = 0; k < n; ++k)
+                          {
+                            double relative_residual = std::abs(res[i][k]) / (std::abs(Y[i][k]) + 1e-12);
+                            std::cout << relative_residual << " ";
+                          }
+                        std::cout << "\n";
+
+                        std::cout << "  Stage " << i << " Solution: ";
+                        for (size_t k = 0; k < n; ++k)
+                          {
+                            std::cout << Y[i][k] << " ";
+                          }
+                        std::cout << "\n";
+                      }
+                  }
+
+                // Update Y values based on residuals
+                bool converged = true;
+                for (size_t i = 0; i < stages; ++i)
+                  {
+                    for (size_t k = 0; k < n; ++k)
+                      {
+                        double relative_residual = std::abs(res[i][k]) / (std::abs(Y[i][k]) + 1e-12); // Add small value to avoid division by zero
+                        Y[i][k] -= res[i][k];
+                        if (relative_residual > tolerance)
+                          {
+                            converged = false;
+                          }
+                      }
+                  }
+
+                if (converged) break;
+                if (iter == max_iterations - 1)
+                  {
+                    throw std::runtime_error("Nonlinear solver failed to converge");
+                  }
+              }
+
+            // Update solution using stages
+            std::vector<double> dy(n, 0.0);
+            for (size_t k = 0; k < n; ++k)
+              {
+                for (size_t i = 0; i < stages; ++i)
+                  {
+                    dy[k] += b[i] * f(t + c[i] * h, Y[i])[k];
+                  }
+              }
+
+            for (size_t k = 0; k < n; ++k)
+              {
+                y[k] += h * dy[k];
+              }
+
+            t_values.push_back(t);
+            y_values.push_back(y);
+
+          }
+
+        return {t_values, y_values};
+      }
+
+      // Constructor
+      PTKinetics::PTKinetics():
+        A(std::exp(-18.0)), n(3.2),
+        dS(7.7), dV(3.16e-6),
+        dHa(274e3), Vstar(3.3e-6),
+        fs(1e-3), Vm(4.05e-5),
+        gamma(0.6), K0(3.65e38),
+        nucleation_type(0)
+      {}
+
+      PTKinetics::PTKinetics(const double A_, const double n_, const double dS_, const double dV_,
+                             const double dHa_, const double Vstar_, const double fs_, const double Vm_
+                             , const double gamma_, const double K0_, const int nucleation_type)
+        : A(A_), n(n_), dS(dS_), dV(dV_),
+          dHa(dHa_), Vstar(Vstar_), fs(fs_), Vm(Vm_),
+          gamma(gamma_), K0(K0_), nucleation_type(nucleation_type)
+      {}
+
+// Growth rate (without ΔGr term)
+      double PTKinetics::growth_rate_P1(double P, double T, double Coh) const
+      {
+        return A * std::pow(Coh, n) * std::exp(-(dHa + P * Vstar) / (R * T));
+      }
+
+// Full growth rate (with ΔGr term)
+      double PTKinetics::growth_rate(double P, double T, double Peq, double Teq, double Coh) const
+      {
+        assert(P > Peq && "P must be greater than Peq");
+        double dGr = dV * (P - Peq) - dS * (T - Teq);
+        return growth_rate_P1(P, T, Coh) * T * (1.0 - std::exp(-dGr / (R * T)));
+      }
+
+// Nucleation rate
+      double PTKinetics::nucleation_rate(double P, double T, double Peq, double Teq) const
+      {
+        assert(P > Peq && "P must be >= Peq");
+        double dGr = dV * (P - Peq) - dS * (T - Teq);
+        double delta_G_hom = (16.0 * M_PI * fs * std::pow(Vm, 2) * std::pow(gamma, 3)) / (3.0 * std::pow(dGr, 2));
+        double Q_a = dHa + P * Vstar;
+        return K0 * T * std::exp(-delta_G_hom / (k * T)) * std::exp(-Q_a / (R * T));
+      }
+
+      // Function to calculate the Avrami number using corrected Equation (19)
+      double calculate_avrami_number(double I_max, double Y_max, double kappa, double D)
+      {
+        // Compute the Avrami number
+        return std::pow(D * D / kappa, 4) * I_max * std::pow(Y_max, 3);
+      }
+
+// Function to calculate dimensionless time (sigma_s)
+      double calculate_sigma_s(double I_PT, double Y_PT, double d_0, double kappa, double D)
+      {
+        // Check for invalid inputs
+        if (I_PT == 0 || Y_PT == 0 || d_0 == 0)
+          {
+            return std::numeric_limits<double>::infinity(); // Return infinity for invalid inputs
+          }
+
+        // Compute sigma_s using the given formula
+        double sigma_s = (kappa / std::pow(D, 2)) * std::pow((I_PT * std::pow(Y_PT, 2) * d_0) / 6.7, -1.0 / 3.0);
+        return sigma_s;
+      }
+
+// Function to calculate dimensionless time (sigma_s) for vector inputs
+      double calculate_sigma_s(const std::vector<double> &I_array, const std::vector<double> &Y_array, double d_0, double kappa, double D)
+      {
+        // Validate input sizes
+        if (I_array.size() != Y_array.size())
+          {
+            throw std::invalid_argument("I_array and Y_array must have the same size");
+          }
+
+        // Compute the average of I_array and Y_array
+        double I_PT = std::accumulate(I_array.begin(), I_array.end(), 0.0) / I_array.size();
+        double Y_PT = std::accumulate(Y_array.begin(), Y_array.end(), 0.0) / Y_array.size();
+
+        // Call the scalar version of calculate_sigma_s
+        return calculate_sigma_s(I_PT, Y_PT, d_0, kappa, D);
+      }
+
+
+// Function to solve for the extended volume after site saturation
+      double solve_extended_volume_post_saturation(double Y, double s, double kappa, double D, double d0)
+      {
+        // Calculate the extended volume based on the given parameters
+        double X3 = (6.7 * std::pow(D, 2) / (d0 * kappa)) * Y * s;
+        return X3;
+      }
+
+// Overloaded version for vector inputs
+      std::vector<double> solve_extended_volume_post_saturation(const double Y, const std::vector<double> &s, double kappa, double D, double d0)
+      {
+        // Validate input sizes
+
+        // Compute extended volume for each pair of Y and s
+        std::vector<double> X3(s.size());
+        for (size_t i = 0; i < s.size(); ++i)
+          {
+            X3[i] = solve_extended_volume_post_saturation(Y, s[i], kappa, D, d0);
+          }
+        return X3;
+      }
+
+// Basic Ode and solvers
+// Define the ODE system based on the modified Equation (18)
+      std::vector<double> ode_system(double s, const std::vector<double> &X, double Av,
+                                     const std::function<double(double)> &Y_prime,
+                                     const std::function<double(double)> &I_prime)
+      {
+        // Extract state variables
+        double X0 = X[0];
+        double X1 = X[1];
+        double X2 = X[2];
+        double X3 = X[3];
+
+        // Avrami factor
+        double Av_factor = std::pow(Av, 0.25);
+
+        // Calculate the derivatives based on the Avrami equation
+        double dX3 = Av_factor * (4.0 * Y_prime(s) * X2);
+        double dX2 = Av_factor * (M_PI * Y_prime(s) * X1);
+        double dX1 = Av_factor * (2.0 * Y_prime(s) * X0);
+        double dX0 = Av_factor * I_prime(s);
+
+        // Return the derivatives as a vector
+        return {dX0, dX1, dX2, dX3};
+      }
+
+// Solve the Modified Equation (18)
+      std::vector<std::vector<double>> solve_modified_equations_eq18(
+        double Av,
+        const std::function<double(double)> &Y_prime_func,
+        const std::function<double(double)> &I_prime_func,
+        const std::pair<double, double> &s_span,
+        const std::vector<double> &X_ini,
+        int n_span,
+        bool debug)
+      {
+
+        // Debugging output
+        if (debug)
+          {
+            std::cout << "solve_modified_equations_eq18" << std::endl << "X0 = [";
+            for (const auto &x : X_ini)
+              {
+                std::cout << x << " ";
+              }
+            std::cout << "]" << std::endl;
+
+            std::cout << "s_span = (" << s_span.first << ", " << s_span.second << ")" << std::endl;
+            std::cout << "Av = " << Av << std::endl;
+            std::cout << "Y_prime_func(s_span.first) = " << Y_prime_func(s_span.first) << ", "
+                      << "Y_prime_func(s_span.second) = " << Y_prime_func(s_span.second) << std::endl;
+            std::cout << "I_prime_func(s_span.first) = " << I_prime_func(s_span.first) << ", "
+                      << "I_prime_func(s_span.second) = " << I_prime_func(s_span.second) << std::endl;
+          }
+
+        // Define the ODE system for IRK4Solver
+        auto odes = [&](double s, const std::vector<double> &X) -> std::vector<double>
+        {
+          return ode_system(s, X, Av, Y_prime_func, I_prime_func);
+        };
+
+        // Time step size
+        double h = (s_span.second - s_span.first) / n_span;
+
+        // Create the solver
+        IRK4Solver solver;
+
+        // Solve the ODE system
+        auto [t_values, X_values] = solver.solve(odes, X_ini, s_span, h, debug);
+
+        if (debug)
+          {
+            std::cout << "      h = " << h << std::endl;
+            std::cout << "      X_values.size() = " << X_values.size() << std::endl;
+            size_t _size = t_values.size();
+            size_t _size1 = X_values[0].size();
+            for (size_t i = 0; i < _size; ++i)
+              {
+                std::cout << "      t[" << i << "] = " << t_values[i] << std::endl;
+                for (size_t j = 0; j < _size1; ++j)
+                  {
+                    std::cout << "      X["<< i << "][" << j << "] = " << X_values[i][j] << std::endl;
+                  }
+              }
+          }
+
+        // Safeguard for very small values
+        const double threshold = 1e-12; // Define a small threshold
+        for (auto &row : X_values)
+          {
+            for (auto &value : row)
+              {
+                if (std::abs(value) < threshold)
+                  {
+                    value = 0.0; // Set to zero to avoid computational issues
+                  }
+              }
+          }
+
+        // Combine results for return
+        std::vector<std::vector<double>> solution(X_values.size(), std::vector<double>(X_ini.size(), 0.0));
+        for (size_t i = 0; i < X_values.size(); ++i)
+          {
+            solution[i] = X_values[i];
+          }
+
+        return solution;
+      }
+
+// Constructor
+      MO_KINETICS::MO_KINETICS():
+        d0(1e-2),
+        A(std::exp(-18.0)), n(3.2),
+        dS(7.7), dV(3.16e-6),
+        dHa(274e3), Vstar(3.3e-6),
+        fs(1e-3), Vm(4.05e-5),
+        gamma(0.6), K0(3.65e38),
+        nucleation_type(0), include_derivative(false)
+      {
+        PT_eq = {0.0, 0.0, 0.0}; // Initialize P, T, cl to 0.0
+        n_col = 7;
+      }
+
+      MO_KINETICS::MO_KINETICS(const double d0_, const double A_, const double n_, const double dS_, const double dV_,
+                               const double dHa_, const double Vstar_, const double fs_, const double Vm_
+                               , const double gamma_, const double K0_, const int nucleation_type_, const bool include_derivative_)
+        :d0(d0_), A(A_), n(n_), dS(dS_), dV(dV_),
+         dHa(dHa_), Vstar(Vstar_), fs(fs_), Vm(Vm_),
+         gamma(gamma_), K0(K0_), nucleation_type(nucleation_type_),
+         include_derivative(include_derivative_)
+      {
+        n_col = (this->include_derivative)? 8: 7;
+      }
+
+      void MO_KINETICS::linkAndSetKineticsModel()
+      {
+        kinetics = std::make_shared<PTKinetics>(
+                     A, n,
+                     dS, dV,             // dS, dv
+                     dHa, Vstar,                // dHa, Vstar
+                     fs, Vm,               //fs, Vm
+                     gamma, K0,            // gamma, K0
+                     nucleation_type // nucleation_type
+                   );
+        assert(kinetics->get_nucleation_type() == nucleation_type);
+      }
+
+// Fix the kinetics model
+      void MO_KINETICS::setKineticsFixed(double P, double T, double Coh)
+      {
+        assert(!PT_eq.empty() && "PT_eq must be set before calling setKineticsFixed!");
+
+        double P_eq = computeEqP(T); // compute equilibrium values
+        double T_eq = computeEqT(P);
+
+        // fix grain growth and nucleation functions to specific P, T condition
+        // convert nucleation rate to volumetric nucleation rate
+        if (kinetics->get_nucleation_type() == 0)
+          {
+            f_nu = 1.0;
+          }
+        else if (kinetics->get_nucleation_type() == 1)
+          {
+            f_nu = 6.7 / d0;
+          }
+        else
+          {
+            throw std::runtime_error("This nucleation type is not implemented yet.");
+          }
+        Y_func = [this, P, T, P_eq, T_eq, Coh](double t)
+        {
+          return kinetics->growth_rate(P, T, P_eq, T_eq, Coh);
+        };
+        I_func = [this, P, T, P_eq, T_eq](double t)
+        {
+          return f_nu*kinetics->nucleation_rate(P, T, P_eq, T_eq);
+        };
+      }
+
+// Set phase transition equilibrium
+      void MO_KINETICS::setPTEq(double P0, double T0, double cl)
+      {
+        PT_eq = {P0, T0, cl}; // Update vector with new values
+      }
+
+      double MO_KINETICS::computeEqP(double T)
+      {
+        return PT_eq[0] + PT_eq[2] * (T - PT_eq[1]);
+      }
+
+      double MO_KINETICS::computeEqT(double P)
+      {
+        return PT_eq[1] + (P - PT_eq[0]) / PT_eq[2];
+      }
+
+      double MO_KINETICS::growth_rate(double P, double T, double Coh)
+      {
+        double P_eq = computeEqP(T); // compute equilibrium values
+        double T_eq = computeEqT(P);
+
+        // return 0 if equilibrium phase transition condition is not met
+        if (P > P_eq)
+          {
+            return kinetics->growth_rate(P, T, P_eq, T_eq, Coh);
+          }
+        else
+          {
+            return 0.0;
+          }
+      }
+
+      double MO_KINETICS::nucleation_rate(double P, double T)
+      {
+        double P_eq = computeEqP(T); // compute equilibrium values
+        double T_eq = computeEqT(P);
+
+        // return 0 if equilibrium phase transition condition is not met
+        if (P > P_eq)
+          {
+            return f_nu*kinetics->nucleation_rate(P, T, P_eq, T_eq);
+          }
+        else
+          {
+            return 0.0;
+          }
+      }
+
+      std::pair<std::vector<std::vector<double>>, std::vector<bool>> MO_KINETICS::solveModifiedEquation(
+        const std::pair<double, double> &t_span,
+        const std::vector<double> &X_ini,
+        bool is_saturated,
+        int n_span,
+        bool debug)
+      {
+
+        // Ensure previous steps are valid
+        assert(Y_func && I_func && "Kinetics functions must be set before solving!");
+
+        // Compute scaling variables
+        double I_max = std::max(1e-50, I_func(t_span.first));
+        double Y_max = std::max(1e-50, Y_func(t_span.first));
+        double Av = calculate_avrami_number(I_max, Y_max, kappa, D);
+
+        // Define non-dimensionalized versions of Y_func and I_func
+        auto Y_prime_func = [this, Y_max](double s)
+        {
+          return Y_func(s * t_scale) / Y_max; // Scale time by t_scale
+        };
+
+        auto I_prime_func = [this, I_max](double s)
+        {
+          return I_func(s * t_scale) / I_max; // Scale time by t_scale
+        };
+
+
+        if (debug)
+          {
+            std::cout << "solveModifiedEquation: I_max = " << I_max << ", Y_max = " << Y_max << ", Av = " << Av << std::endl;
+          }
+
+        // Compute scaling factors
+        X_scale_array =
+        {
+          std::pow(I_max, 0.75) *std::pow(Y_max, -0.75),
+          std::pow(I_max, 0.5) *std::pow(Y_max, -0.5),
+          std::pow(I_max, 0.25) *std::pow(Y_max, -0.25),
+          1.0
+        };
+
+        // Non-dimensionalize the initial solution
+        std::vector<double> X_ini_nd(4, 0.0);
+        for (size_t k = 0; k < X_ini.size(); ++k)
+          {
+            X_ini_nd[k] = X_ini[k] / X_scale_array[k];
+          }
+
+        // Non-dimensionalize the time span
+        std::pair<double, double> s_span = {t_span.first / t_scale, t_span.second / t_scale};
+        std::vector<double> s_values(n_span+1);
+        for (int i = 0; i <= n_span; ++i)
+          {
+            s_values[i] = s_span.first + i * (s_span.second - s_span.first) / n_span;
+          }
+
+        std::vector<double> I_array(n_span+1), Y_array(n_span+1);
+        for (int i = 0; i <= n_span; ++i)
+          {
+            I_array[i] = I_func(s_values[i] * t_scale);
+            Y_array[i] = Y_func(s_values[i] * t_scale);
+          }
+
+        // Compute saturation condition
+        double s_saturation = calculate_sigma_s(I_array, Y_array, d0, kappa, D);
+
+        if (debug)
+          {
+            std::cout << "I_array[0] = " << I_array[0] << std::endl;
+            std::cout << "Y_array[0] = " << Y_array[0] << std::endl;
+            std::cout << "solveModifiedEquation: s_saturation = " << s_saturation << "\n";
+            std::cout << "solveModifiedEquation: t_saturation = " << s_saturation *t_scale << "\n";
+            std::cout << "solveModifiedEquation: is_saturated = " << is_saturated << "\n";
+          }
+
+        // Initialize result containers
+        std::vector<std::vector<double>> X_array(4, std::vector<double>(n_span+1, 0.0));
+        std::vector<bool> is_saturated_array(n_span+1, false);
+
+        if (!is_saturated)
+          {
+            auto it = std::find_if(s_values.begin(), s_values.end(), [s_saturation, s_values](double s)
+            {
+              return s > s_values[0] + s_saturation;
+            });
+            if (it != s_values.end() && std::distance(s_values.begin(), it) > 1)
+              {
+                // Pre-saturation & saturation
+                int i0 = std::distance(s_values.begin(), it);
+                std::pair<double, double> s_span_us = {s_values[0], s_values[i0]};
+                auto solution_nd = solve_modified_equations_eq18(Av, Y_prime_func, I_prime_func, s_span_us, X_ini_nd, i0, debug);
+
+
+                // Scale and store pre-saturation results
+                for (size_t j = 0; j < solution_nd.size(); ++j)
+                  {
+                    for (size_t k = 0; k < solution_nd[j].size(); ++k)
+                      {
+                        X_array[k][j] = solution_nd[j][k] * X_scale_array[k];
+                      }
+                  }
+                // Pre-assign values post-saturation
+                for (size_t j = solution_nd.size(); j < static_cast<size_t>(n_span + 1); ++j)
+                  {
+                    for (size_t k = 0; k < solution_nd[solution_nd.size()-1].size(); ++k)
+                      {
+                        X_array[k][j] = solution_nd[solution_nd.size()-1][k] * X_scale_array[k];
+                      }
+                  }
+
+                // Post-saturation, increment from values derived by the analytical solution
+                auto post_saturation = solve_extended_volume_post_saturation(Y_max, s_values, kappa, D, d0);
+                auto post_saturation_ini = solve_extended_volume_post_saturation(Y_max, s_values[i0], kappa, D, d0);
+                for (int i = i0; i <= n_span; ++i)
+                  {
+                    X_array[3][i] = X_array[3][i0] + post_saturation[i] - post_saturation_ini;
+                  }
+                std::fill(is_saturated_array.begin() + i0, is_saturated_array.end(), true);
+              }
+            else if (it != s_values.end() && std::distance(s_values.begin(), it) <= 1)
+              {
+                // assign the initial values
+                for (size_t k = 0; k < X_ini.size(); ++k)
+                  {
+                    X_array[k][0] = X_ini[k];
+                  }
+
+                // solve the nucleation in range of s_values[0], s_saturation
+                std::pair<double, double> s_span_us = {s_values[0], s_values[0] + s_saturation};
+
+                auto solution_nd = solve_modified_equations_eq18(Av, Y_prime_func, I_prime_func, s_span_us, X_ini_nd, n_span, debug);
+
+                for (size_t j = 1; j < static_cast<size_t>(n_span + 1); ++j)
+                  {
+                    for (size_t k = 0; k < solution_nd[j].size(); ++k)
+                      {
+                        X_array[k][j] = solution_nd[solution_nd.size()-1][k] * X_scale_array[k];
+                      }
+                  }
+
+                // saturation at the 1st sub-step
+                // Post-saturation, increment from values derived by the analytical solution
+                auto post_saturation = solve_extended_volume_post_saturation(Y_max, s_values, kappa, D, d0);
+                auto post_saturation_ini = solve_extended_volume_post_saturation(Y_max, s_values[1], kappa, D, d0);
+                for (size_t j = 1; j < static_cast<size_t>(n_span + 1); ++j)
+                  {
+                    X_array[3][j] = X_array[3][1] + post_saturation[j] - post_saturation_ini;
+                  }
+
+                std::fill(is_saturated_array.begin()+1, is_saturated_array.end(), true);
+              }
+            else
+              {
+                // solve the unsaturated condition
+                auto solution_nd = solve_modified_equations_eq18(Av, Y_prime_func, I_prime_func, s_span, X_ini_nd, n_span, debug);
+
+                // Debug: Print X_scale_array if debug is true
+                if (debug)
+                  {
+                    std::cout << "X_scale_array: ";
+                    for (const auto &scale : X_scale_array)
+                      {
+                        std::cout << scale << " ";
+                      }
+                    std::cout << "\n";
+                  }
+
+                // assign the values from the solution
+                for (size_t j = 0; j < solution_nd.size(); ++j)
+                  {
+                    for (size_t k = 0; k < solution_nd[j].size(); ++k)
+                      {
+                        // Debug print for each value
+                        if (debug)
+                          {
+                            std::cout << "solution_nd[" << j << "][" << k << "] = "  << solution_nd[j][k] << ", X_scale_array[" << k << "] = " << X_scale_array[k] << std::endl;
+                          }
+                        X_array[k][j] = solution_nd[j][k] * X_scale_array[k];
+                      }
+                  }
+              }
+          }
+        else
+          {
+            // assign the initial values
+            for (size_t j = 0; j < static_cast<size_t>(n_span + 1); ++j)
+              {
+                for (size_t k = 0; k < X_ini.size(); ++k)
+                  {
+                    X_array[k][j] = X_ini[k];
+                  }
+              }
+
+            // Full saturation, increment from values derived by the analytical solution
+            auto post_saturation = solve_extended_volume_post_saturation(Y_max, s_values, kappa, D, d0);
+            auto post_saturation_ini = solve_extended_volume_post_saturation(Y_max, s_values[0], kappa, D, d0);
+            for (size_t j = 0; j < static_cast<size_t>(n_span + 1); ++j)
+              {
+                X_array[3][j] = X_ini[3] + post_saturation[j] - post_saturation_ini;
+              }
+            std::fill(is_saturated_array.begin(), is_saturated_array.end(), true);
+          }
+
+        return {X_array, is_saturated_array};
+      }
+
+      std::vector<std::vector<double>> MO_KINETICS::solve(double P, double T, double t_min, double t_max, int n_t, int n_span, bool debug,
+                                                           std::vector<double> X, bool is_saturated)
+      {
+
+        // Initialize variables
+        // Check if X has exactly 4 elements
+        if (X.size() != 4)
+          {
+            throw std::invalid_argument("Error: X must have exactly 4 elements.");
+          }
+
+        std::vector<std::vector<double>> results(n_t * n_span+1, std::vector<double>(n_col, 0.0));
+
+        // Compute equilibrium pressure
+        double Peq = computeEqP(T);
+
+        double last_derivative = 0.0;
+        // Loop over time steps
+        for (int i_t = 0; i_t < n_t; ++i_t)
+          {
+            if (debug)
+              {
+                std::cout << "i_t: " << i_t << std::endl;
+              }
+
+            // Define the time span for the current step
+            double t_piece_min = t_min + (t_max - t_min) / n_t * i_t;
+            double t_piece_max = t_min + (t_max - t_min) / n_t * (i_t + 1);
+            std::pair<double, double> t_span = {t_piece_min, t_piece_max};
+
+            std::vector<std::vector<double>> X_array(4, std::vector<double>(n_span+1, 0.0));
+            std::vector<bool> is_saturated_array(n_span+1, false);
+
+            if (P > Peq)
+              {
+                // Solve the kinetics if equilibrium condition is met
+                auto solution = solveModifiedEquation(t_span, X, is_saturated, n_span, false);
+                X_array = solution.first;
+                is_saturated_array = solution.second;
+                X = {X_array[0].back(), X_array[1].back(), X_array[2].back(), X_array[3].back()};
+                is_saturated = is_saturated_array.back();
+              }
+            else
+              {
+                // Assign trivial values if equilibrium condition is not met
+                X = {0.0, 0.0, 0.0, 0.0};
+                is_saturated = false;
+              }
+
+            // Compute results for each step in the current time span
+            std::vector<double> V_array(n_span+1);
+            const double t_interval = (t_piece_max - t_piece_min) / n_span;
+            for (int j = 0; j <= n_span; ++j)
+              {
+                double threshold = 50.0; // Define a threshold for large values
+                if (X_array[3][j] > threshold)
+                  {
+                    // If X_array[3][j] is too large, directly set V_array[j] to 1
+                    V_array[j] = 1.0;
+                  }
+                else
+                  {
+                    // Otherwise, compute the exponential term
+                    V_array[j] = 1.0 - std::exp(-X_array[3][j]);
+                  }
+
+                // note i_t * n_span + j would have the same value
+                // for the last node the piece and the first node in the consequtive piece
+                // compute the derivative and recode the last value to append the next "first" value
+                const double derivative = (j==0)? last_derivative: (V_array[j] - V_array[j-1])/t_interval;
+                if (j == n_span)
+                  last_derivative = derivative;
+
+                if (this->include_derivative)
+                  {
+                    results[i_t * n_span + j] =
+                    {
+                      t_piece_min + t_interval * j,
+                      X_array[0][j],
+                      X_array[1][j],
+                      X_array[2][j],
+                      X_array[3][j],
+                      V_array[j],
+                      static_cast<double>(is_saturated_array[j]),
+                      derivative
+                    };
+                  }
+                else
+                  {
+                    results[i_t * n_span + j] =
+                    {
+                      t_piece_min + (t_piece_max - t_piece_min) / n_span * j,
+                      X_array[0][j],
+                      X_array[1][j],
+                      X_array[2][j],
+                      X_array[3][j],
+                      V_array[j],
+                      static_cast<double>(is_saturated_array[j])
+                    };
+                  }
+              }
+          }
+
+        return results;
+      }
+
     }
   }
 }
@@ -1801,8 +4162,9 @@ namespace aspect
                                                               const unsigned int, \
                                                               MaterialModelOutputs<dim> &); \
   template struct PhaseFunctionInputs<dim>; \
-  template class PhaseFunction<dim>; \
-  template class PhaseFunctionDiscrete<dim>;
+  template struct PhaseFunctionInputs1<dim>; \
+  template class PhaseFunctionDiscrete<dim>; \
+  template class PhaseFunction<dim>;
 
       ASPECT_INSTANTIATE(INSTANTIATE)
 

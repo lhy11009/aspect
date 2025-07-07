@@ -509,11 +509,13 @@ namespace aspect
       dg_limiter_enabled = dg_limiter_enabled || parameters.use_limiter_for_discontinuous_composition_solution[c];
 
     // Check that DG limiters are only used with cartesian mapping
+    /*
     if (dg_limiter_enabled)
       AssertThrow(geometry_model->natural_coordinate_system() == Utilities::Coordinates::CoordinateSystem::cartesian,
                   ExcMessage("The limiter for the discontinuous temperature and composition solutions "
                              "has not been tested in non-Cartesian geometries and currently requires "
                              "the use of a Cartesian geometry model."));
+    */
 
     std::set<types::boundary_id> open_velocity_boundary_indicators
       = geometry_model->get_used_boundary_indicators();

@@ -1,0 +1,19 @@
+
+Loading shared library <ASPECT_DIR/tester-build/subduction_temperature2d_ellipse/libsubduction_temperature2d_ellipse.debug.so>
+
+
+   Loading Ascii data initial file ASPECT_DIR/data/initial-temperature/ascii-data/test/box_2d_Vs_YT16.txt.
+
+Number of active cells: 8,192 (on 7 levels)
+Number of degrees of freedom: 107,844 (66,306+8,385+33,153)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Temperature min/avg/max: 273 K, 2300 K, 3521 K
+     Writing depth average:   output-TwoDSubduction_eba_temperature/depth_average
+
+Termination requested by criterion: end time
+
+
+

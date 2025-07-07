@@ -436,6 +436,13 @@ namespace aspect
         MaterialProperties::Property requested_properties;
 
         /**
+         * An added option to execute metastable reaction. When this option is true, the
+         * metastable computation is performed. Assign this as false be default will only
+         * turn on metastable computation when the particle property is updated.
+         */
+        bool compute_metastable_reaction = false;
+
+        /**
          * Given an additional material model input class as explicitly specified
          * by the template argument, return a pointer to this additional material model
          * input object if it is used in the current simulation.
@@ -608,6 +615,15 @@ namespace aspect
          * given positions.
          */
         std::vector<double> entropy_derivative_temperature;
+
+        // todo_metastable
+        /**
+         * The product of the change of entropy $\Delta S$ at a phase transition
+         * and the derivative of the metastable transformed volume multiplied by
+         * phase function $X=X(p,T,\mathfrak c,\mathbf x)$.
+         */
+        std::vector<double> entropy_derivative_metastable;
+
 
         /**
          * Change in composition due to chemical reactions at the given
@@ -1000,6 +1016,28 @@ namespace aspect
         const std::vector<std::string> names;
     };
 
+    /**
+     * Additional output fields for the seismic velocities to be added to
+     * the MaterialModel::MaterialModelOutputs structure and filled in the
+     * MaterialModel::Interface::evaluate() function.
+     */
+    template <int dim>
+    class PhaseFractionAdditionalOutputs : public NamedAdditionalMaterialOutputs<dim>
+    {
+      public:
+        /**
+         * Constructor for case where outputs are stored for a number of points.
+         *
+         * @param output_names A list of names for the additional output variables
+         *   this object will store. The length of the list also indicates
+         *   how many additional output variables objects of derived classes
+         *   will store.
+         * @param n_points The number of points for which to store each of the
+         *   output variables.
+         */
+        PhaseFractionAdditionalOutputs(const std::vector<std::string> &output_names,
+                                       const unsigned int n_points);
+    };
 
     /**
      * Additional output fields for the seismic velocities to be added to
