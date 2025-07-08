@@ -109,8 +109,8 @@ namespace aspect
                            std::exp((p.activation_energy + pressure*p.activation_volume)/
                                     (constants::gas_constant*temperature*p.stress_exponent)) *
                            std::pow(strain_rate,((1. - p.stress_exponent)/p.stress_exponent)) *
-                                      std::pow(strain_rate,((1. - p.reference_stress_exponent)/p.reference_stress_exponent)) /
-                                       std::pow(p.reference_strain_rate,((1. - p.reference_stress_exponent)/p.reference_stress_exponent));
+                           std::pow(strain_rate,((1. - p.reference_stress_exponent)/p.reference_stress_exponent)) /
+                           std::pow(p.reference_strain_rate,((1. - p.reference_stress_exponent)/p.reference_stress_exponent));
 
         Assert (viscosity > 0.0,
                 ExcMessage ("Negative dislocation viscosity detected. This is unphysical and should not happen. "
@@ -150,10 +150,10 @@ namespace aspect
         for (unsigned int i=0; i<composition; ++i)
           start_phase_index += n_phase_transitions_per_composition[i] + 1;
 
-        const double prefactor = prefactors_dislocation[start_phase_index];
-        const double activation_energy = activation_energies_dislocation[start_phase_index];
-        const double activation_volume = activation_volumes_dislocation[start_phase_index];
-        const double stress_exponent = stress_exponents_dislocation[start_phase_index];
+        const double prefactor = prefactors[start_phase_index];
+        const double activation_energy = activation_energies[start_phase_index];
+        const double activation_volume = activation_volumes[start_phase_index];
+        const double stress_exponent = stress_exponents[start_phase_index];
         const double reference_stress_exponent = reference_stress_exponents_dislocation[start_phase_index];
         const double reference_strain_rate = reference_strain_rates_dislocation[start_phase_index];
 
@@ -186,10 +186,10 @@ namespace aspect
                 // A: prefactor,
                 // d: grain size, m: grain size exponent, E: activation energy, P: pressure,
                 // V; activation volume, R: gas constant, T: temperature.
-                const double prefactor = prefactors_dislocation[phase_index+1];
-                const double activation_energy = activation_energies_dislocation[phase_index+1];
-                const double activation_volume = activation_volumes_dislocation[phase_index+1];
-                const double stress_exponent = stress_exponents_dislocation[phase_index+1];
+                const double prefactor = prefactors[phase_index+1];
+                const double activation_energy = activation_energies[phase_index+1];
+                const double activation_volume = activation_volumes[phase_index+1];
+                const double stress_exponent = stress_exponents[phase_index+1];
                 const double reference_stress_exponent = reference_stress_exponents_dislocation[phase_index+1];
                 const double reference_strain_rate = reference_strain_rates_dislocation[phase_index+1];
 
@@ -263,17 +263,17 @@ namespace aspect
         const double temp = 1.0 / creep_parameters.stress_exponent + 1.0 / creep_parameters.reference_stress_exponent - 1;
         const double stress_exponent_1 = 1.0 / temp;
         const double strain_rate = std::pow(creep_parameters.prefactor, stress_exponent_1/creep_parameters.stress_exponent) *
-                                               std::pow(stress, stress_exponent_1) *
-                                               std::exp(-(creep_parameters.activation_energy + pressure*creep_parameters.activation_volume)/
-                                                        (constants::gas_constant*temperature) * stress_exponent_1/creep_parameters.stress_exponent) *
-                                               std::pow(creep_parameters.reference_strain_rate, stress_exponent_1*(1 - 1.0/creep_parameters.reference_stress_exponent));
+                                   std::pow(stress, stress_exponent_1) *
+                                   std::exp(-(creep_parameters.activation_energy + pressure*creep_parameters.activation_volume)/
+                                            (constants::gas_constant*temperature) * stress_exponent_1/creep_parameters.stress_exponent) *
+                                   std::pow(creep_parameters.reference_strain_rate, stress_exponent_1*(1 - 1.0/creep_parameters.reference_stress_exponent));
 
         const double dstrain_rate_dstress = std::pow(creep_parameters.prefactor, stress_exponent_1/creep_parameters.stress_exponent) *
-                                                        stress_exponent_1 *
-                                                        std::pow(stress, stress_exponent_1-1.) *
-                                                        std::exp(-(creep_parameters.activation_energy + pressure*creep_parameters.activation_volume)/
-                                                                 (constants::gas_constant*temperature) * stress_exponent_1/creep_parameters.stress_exponent) *
-                                                        std::pow(creep_parameters.reference_strain_rate, stress_exponent_1*(1 - 1.0/creep_parameters.reference_stress_exponent));
+                                            stress_exponent_1 *
+                                            std::pow(stress, stress_exponent_1-1.) *
+                                            std::exp(-(creep_parameters.activation_energy + pressure*creep_parameters.activation_volume)/
+                                                     (constants::gas_constant*temperature) * stress_exponent_1/creep_parameters.stress_exponent) *
+                                            std::pow(creep_parameters.reference_strain_rate, stress_exponent_1*(1 - 1.0/creep_parameters.reference_stress_exponent));
 
         return std::make_pair(strain_rate, dstrain_rate_dstress);
       }
@@ -296,10 +296,10 @@ namespace aspect
         const double temp = 1.0 / creep_parameters.stress_exponent + 1.0 / creep_parameters.reference_stress_exponent - 1;
         const double stress_exponent_1 = 1.0 / temp;
         const double log_strain_rate = stress_exponent_1/creep_parameters.stress_exponent * std::log(creep_parameters.prefactor) +
-                                                   stress_exponent_1 * log_stress -
-                                                   (creep_parameters.activation_energy + pressure*creep_parameters.activation_volume)/
-                                                   (constants::gas_constant*temperature)*stress_exponent_1/creep_parameters.stress_exponent +
-                                                   stress_exponent_1*(1 - 1.0/creep_parameters.reference_stress_exponent) * std::log(creep_parameters.reference_strain_rate);
+                                       stress_exponent_1 * log_stress -
+                                       (creep_parameters.activation_energy + pressure*creep_parameters.activation_volume)/
+                                       (constants::gas_constant*temperature)*stress_exponent_1/creep_parameters.stress_exponent +
+                                       stress_exponent_1*(1 - 1.0/creep_parameters.reference_stress_exponent) * std::log(creep_parameters.reference_strain_rate);
 
         const double dlog_strain_rate_dlog_stress = stress_exponent_1;
 

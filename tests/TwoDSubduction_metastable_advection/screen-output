@@ -38,7 +38,7 @@ Number of degrees of freedom: 41,511 (6,006+1,002+3,003+4,500+4,500+4,500+4,500+
      Writing graphical output:  output-TwoDSubduction_metastable_advection/solution/solution-00002
      RMS, max velocity:         0.01 m/year, 0.01 m/year
      Temperature min/avg/max:   1662 K, 1886 K, 2130 K
-     Compositions min/max/mass: 0/1/1.164e+09 // 0/5.698e+23/5.71e+32 // 0/5.526e+13/5.899e+22 // 0/3.38e+11/1.356e+18 // 0/1.468e+14/5.874e+20 // 0/0/0 // 0/0/0
+     Compositions min/max/mass: 0/1/1.164e+09 // 0/5.698e+23/5.71e+32 // 0/5.526e+13/5.899e+22 // 0/3.266e+11/1.311e+18 // 0/1.424e+14/5.697e+20 // 0/0/0 // 0/0/0
      Writing depth average:     output-TwoDSubduction_metastable_advection/depth_average
      Writing particle output:   output-TwoDSubduction_metastable_advection/particles/particles-00002
 

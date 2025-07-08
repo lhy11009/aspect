@@ -1087,7 +1087,7 @@ namespace aspect
                     pcout << solver_control_expensive.last_step()
                           << " iterations." << std::endl;
 
-                    final_linear_residual = solver_control_expensive.last_value();
+                    outputs.final_linear_residual = solver_control_expensive.last_value();
                   }
                 // if the solver fails, report the error from processor 0 with some additional
                 // information about its location, and throw a quiet exception on all other

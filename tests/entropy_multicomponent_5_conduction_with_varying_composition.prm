@@ -62,7 +62,7 @@ end
 subsection Boundary composition model
   set Fixed composition boundary indicators = top
   set List of model names = function
-  
+
   subsection Function
     set Function expression = 1.; 2070; 2070; 0.0
   end
@@ -82,9 +82,9 @@ end
 
 subsection Initial composition model
   set List of model names = function
-  
+
   subsection Function
-  set Function expression = y*(1/200000);2070 ;2070  ;0  
+  set Function expression = y*(1/200000);2070 ;2070  ;0
   end
 end
 
@@ -92,7 +92,7 @@ end
 # modeling software BurnMan.
 subsection Material model
   set Model name = entropy model
-  
+
   subsection Entropy model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/ol-en-table/
     set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt
@@ -112,11 +112,11 @@ end
 
 subsection Postprocess
   set List of postprocessors = visualization, velocity statistics, temperature statistics, mass flux statistics, composition statistics
-  
+
   subsection Visualization
     set Time between graphical output = 1e8
     set List of output variables      = material properties, adiabat, nonadiabatic pressure, nonadiabatic temperature, entropy average
-    
+
     subsection Material properties
       set List of material properties = density,thermal expansivity,specific heat,viscosity, compressibility
     end

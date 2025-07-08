@@ -1,8 +1,8 @@
 # This is a test case for the multi-component entropy averaging method
-# It tests the equilibration of 70% forsterite (starting with entropy = 2700 J/K/kg) 
+# It tests the equilibration of 70% forsterite (starting with entropy = 2700 J/K/kg)
 # and 30% enstatite (starting with entropy = 600 J/K/kg) at 0 pa pressure.
-# After the equilibration, the total bulk entropy is conserved, so it should be 2100 J/K/kg), 
-# and the two components have the same temperature. 
+# After the equilibration, the total bulk entropy is conserved, so it should be 2100 J/K/kg),
+# and the two components have the same temperature.
 # Our analytical solution is the equilibrated temperature calculated by the thermodynamic code BurnMan,
 # which equals 1117.411360150445 K.
 
@@ -81,7 +81,7 @@ subsection Material model
 
   subsection Entropy model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/ol-en-table/
-    set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt 
+    set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt
     set Maximum viscosity                = 1e25
     set Minimum viscosity                = 1e25
     set Lateral viscosity file name      = constant_lateral_vis_prefactor.txt

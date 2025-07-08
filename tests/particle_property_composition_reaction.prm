@@ -95,7 +95,7 @@ subsection Postprocess
     set Time between data output = 0
     #set Data output format = none
   end
-  
+
   subsection Visualization
     set Time between graphical output = 0
   end
@@ -109,16 +109,16 @@ subsection Particles
     set List of reactants      = reactant1, reactant2, background
     set List of products       = reactant2, reactant1, reactant1
     set List of reaction times = 25, 60, 40
-    
+
     subsection Reaction area function
       set Variable names      = x, z
       set Function expression = if(x+z>1, 0 , 1); if(x-z<0, 0 , 1); if(z>0.8, 1, 0)
     end
-    
+
     subsection Reaction rate function
       set Function expression = reactant; 2 * reactant; 1-product
     end
-    
+
   end
 
   subsection Generator

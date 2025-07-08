@@ -157,10 +157,10 @@ namespace aspect
         for (unsigned int i=0; i<composition; ++i)
           start_phase_index += n_phase_transitions_per_composition[i] + 1;
 
-        const double prefactor = prefactors_diffusion[start_phase_index];
-        const double activation_energy = activation_energies_diffusion[start_phase_index];
-        const double activation_volume = activation_volumes_diffusion[start_phase_index];
-        const double grain_size_exponent = grain_size_exponents_diffusion[start_phase_index];
+        const double prefactor = prefactors[start_phase_index];
+        const double activation_energy = activation_energies[start_phase_index];
+        const double activation_volume = activation_volumes[start_phase_index];
+        const double grain_size_exponent = grain_size_exponents[start_phase_index];
 
         double viscosity_diffusion_base = 0.5 / prefactor *
                                           std::exp((activation_energy +
@@ -190,10 +190,10 @@ namespace aspect
                 // A: prefactor,
                 // d: grain size, m: grain size exponent, E: activation energy, P: pressure,
                 // V; activation volume, R: gas constant, T: temperature.
-                const double prefactor = prefactors_diffusion[phase_index+1];
-                const double activation_energy = activation_energies_diffusion[phase_index+1];
-                const double activation_volume = activation_volumes_diffusion[phase_index+1];
-                const double grain_size_exponent = grain_size_exponents_diffusion[phase_index+1];
+                const double prefactor = prefactors[phase_index+1];
+                const double activation_energy = activation_energies[phase_index+1];
+                const double activation_volume = activation_volumes[phase_index+1];
+                const double grain_size_exponent = grain_size_exponents[phase_index+1];
 
                 double viscosity_diffusion_phase = 0.5 / prefactor *
                                                    std::exp((activation_energy +

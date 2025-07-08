@@ -1,6 +1,6 @@
-# This test checks that the tian approximation reaction model correctly 
+# This test checks that the tian approximation reaction model correctly
 # outputs the melt fractions. The initial bound water is 1 wt%, and there is
-# also an initial porosity of 1% (volume fraction). 
+# also an initial porosity of 1% (volume fraction).
 # The pressure is 1 GPa, and the temperature is set to 1600 K, and the solid
 # is 100% peridotite. The tian approximation says that the peridotite can only
 # store 0.10257 wt% water. The melt fraction within the tian reaction model is calculated with:
@@ -46,7 +46,7 @@ subsection Initial composition model
                               1; \
                               0; \
                               0; \
-                              0  
+                              0
   end
 end
 

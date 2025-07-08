@@ -171,7 +171,12 @@ namespace aspect
       InitializationModeForLateParticles
       Metastable<dim>::late_initialization_mode () const
       {
-        return interpolate_respect_boundary;
+        // this option produces error in the interface.cc in relation 
+        // to the function of advection_field_for_boundary_initialization,
+        // where the definition is elusive in this plugin because we have
+        // mulitple properties
+        // return interpolate_respect_boundary; 
+        return interpolate;
       }
 
 

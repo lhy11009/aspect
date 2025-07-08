@@ -1,6 +1,6 @@
 # This parameter file tests the tidal heating plugin for a case where the
 # viscosity is constant and the tidal heating is not dependent on latitude
-# or longitude. 
+# or longitude.
 #
 # The equation implemented in this heating model is from Tobie et al. (2003) (https://doi.org/10.1029/2003JE002099),
 # which is defined as:
@@ -102,7 +102,7 @@ end
 
 subsection Postprocess
   set List of postprocessors = velocity statistics, temperature statistics, visualization, basic statistics, \
-			       pressure statistics, material statistics, heating statistics
+             pressure statistics, material statistics, heating statistics
 
   subsection Visualization
     set Time between graphical output = 0.5e5

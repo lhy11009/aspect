@@ -67,7 +67,7 @@ subsection Gravity model
   set Model name = vertical
 
   subsection Vertical
-    set Magnitude = 0   
+    set Magnitude = 0
   end
 end
 
@@ -93,9 +93,9 @@ end
 
 subsection Postprocess
   set List of postprocessors = particles
-  
+
   subsection Particles
-    set Time between data output = .001 
+    set Time between data output = .001
     set Data output format       = ascii
   end
 end

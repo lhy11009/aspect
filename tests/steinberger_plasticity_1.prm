@@ -1,6 +1,6 @@
 # This is a test for using Drucker-Prager plasticity with the Steinberger material model.
 # The model is set up in a more realistic Earth-like condition. The strain rate, the stress
-# second invariant, and the viscosity we output in the visualization postprocessor should 
+# second invariant, and the viscosity we output in the visualization postprocessor should
 # always hold this relation: stress_second_invariant = 2 * viscosity * strain_rate.
 
 set Dimension                              = 2
@@ -24,7 +24,7 @@ subsection Compositional fields
 end
 
 subsection Material model
-  set Model name = Steinberger 
+  set Model name = Steinberger
 
   subsection Steinberger model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/steinberger/test-steinberger-compressible/

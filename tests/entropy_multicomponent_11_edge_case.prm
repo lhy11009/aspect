@@ -1,6 +1,6 @@
 # This test has the same setup as test 2, but now the two components both contain quartz.
-# We slightly smooth the property lookup table to avoid the infinite specific heat at 
-# the Qtz->Coesite univariant reaction. 
+# We slightly smooth the property lookup table to avoid the infinite specific heat at
+# the Qtz->Coesite univariant reaction.
 # This is an edge case where the two assemblages with the same univariant reaction can vary
 # their entropy freely without changing T.
 # This test shows that the multicomponent averaging method can well solve such edge cases
@@ -13,7 +13,7 @@ set Use years in output instead of seconds = true
 set End time                               = 4e6
 set Maximum time step                      = 2e5
 set Output directory                       = output-entropy-multi-edge-case-change-adiabatic-p
-set Nonlinear solver scheme                = iterated Advection and Stokes 
+set Nonlinear solver scheme                = iterated Advection and Stokes
 set Use operator splitting                 = true
 
 subsection Solver parameters
@@ -43,11 +43,11 @@ end
 
 subsection Adiabatic conditions model
  subsection Compute profile
- 
+
   set Use surface condition function = true
 
-  	subsection Surface condition function
-    set Variable names = x,t 
+    subsection Surface condition function
+    set Variable names = x,t
     set Function expression = 1.2e9+4e2*t;0
     end
 
@@ -83,7 +83,7 @@ subsection Initial composition model
   set List of model names = function
 
   subsection Function
-   
+
     set Function expression = 0.3; 1610; 2006; 0.0
 
     end

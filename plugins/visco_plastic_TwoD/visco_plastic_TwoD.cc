@@ -502,6 +502,8 @@ namespace aspect
                 {
                   const SymmetricTensor<2,dim> viscoelastic_strain_rate_invariant = elastic_rheology.calculate_viscoelastic_strain_rate(in.strain_rate[i],
                                                                                     stress_old,
+                                                                                    stress_old,
+                                                                                    viscosity_pre_yield,
                                                                                     elastic_shear_moduli[j]);
 
                   current_edot_ii = std::max(std::sqrt(std::max(-second_invariant(viscoelastic_strain_rate_invariant), 0.)),
@@ -1102,7 +1104,7 @@ namespace aspect
 
       if (use_elasticity)
         {
-          elastic_rheology.fill_elastic_outputs(in, average_elastic_shear_moduli, out);
+          elastic_rheology.fill_elastic_additional_outputs(in, average_elastic_shear_moduli, out);
           elastic_rheology.fill_reaction_outputs(in, average_elastic_shear_moduli, out);
         }
 
@@ -1864,7 +1866,7 @@ namespace aspect
             std::make_unique<MaterialModel::PlasticTwoDAdditionalOutputs<dim>> (n_points));
         }
       if (use_elasticity)
-        elastic_rheology.create_elastic_outputs(out);
+        elastic_rheology.create_elastic_additional_outputs(out);
       // add dislocation viscosity
       if (out.template get_additional_output<TwoDAdditionalViscosityOutputs<dim>>() == nullptr)
         {

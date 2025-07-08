@@ -287,7 +287,7 @@ subsection Postprocess
         set Time between graphical output = 0
     end
     subsection Visualization
-        set List of output variables = material properties, named additional outputs, nonadiabatic pressure, strain rate, stress, heating
+        set List of output variables = material properties, nonadiabatic pressure, strain rate, stress, heating
         set Output format = gnuplot
         set Time between graphical output = 0.1e6
     end
