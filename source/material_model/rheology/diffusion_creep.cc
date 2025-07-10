@@ -121,10 +121,24 @@ namespace aspect
                                     (constants::gas_constant*temperature)) *
                            std::pow(grain_size, p.grain_size_exponent);
 
+        // Assert (viscosity > 0.0,
+        //         ExcMessage ("Negative diffusion viscosity detected. This is unphysical and should not happen. "
+        //                     "Check for negative parameters. Temperature and pressure are "
+        //                     + Utilities::to_string(temperature) + " K, " + Utilities::to_string(pressure) + " Pa. "));
+
         Assert (viscosity > 0.0,
-                ExcMessage ("Negative diffusion viscosity detected. This is unphysical and should not happen. "
-                            "Check for negative parameters. Temperature and pressure are "
-                            + Utilities::to_string(temperature) + " K, " + Utilities::to_string(pressure) + " Pa. "));
+        ExcMessage ("Negative diffusion viscosity detected. This is unphysical and should not happen. "
+                    "Check for potentially unphysical parameters. "
+                    "Details:\n"
+                    "  temperature = " + Utilities::to_string(temperature) + " K\n"
+                    "  pressure = " + Utilities::to_string(pressure) + " Pa\n"
+                    "  grain_size = " + Utilities::to_string(grain_size) + " m\n"
+                    "  prefactor = " + Utilities::to_string(p.prefactor) + "\n"
+                    "  activation_energy = " + Utilities::to_string(p.activation_energy) + " J/mol\n"
+                    "  activation_volume = " + Utilities::to_string(p.activation_volume) + " m^3/mol\n"
+                    "  grain_size_exponent = " + Utilities::to_string(p.grain_size_exponent) + "\n"
+                    "  gas_constant = " + Utilities::to_string(constants::gas_constant) + " J/(mol·K)\n"));
+
 
         // Creep viscosities become extremely large at low
         // temperatures and can therefore provoke floating-point overflow errors. In
