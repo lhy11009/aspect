@@ -6,7 +6,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program":"${workspaceFolder}/build_master_TwoD_rebase_rebase_debug/aspect",
-            "args": ["/mnt/lochy/ASPECT_DATA/MOW/aspect_tests/TwoDSubduction_skip_expensive_stokes/TwoDSubduction_skip_expensive_stokes.prm"],
+            "args": ["/mnt/lochy/ASPECT_DATA/MOW/mow_tests/eba2d_width80_h1000_bw4000_sw1000_yd300_M_1/case_small.prm"],
             "environment": [{"name": "config", "value": "Debug"}],
             "cwd": "${workspaceFolder}"
         }

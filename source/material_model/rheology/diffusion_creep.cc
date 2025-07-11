@@ -110,6 +110,18 @@ namespace aspect
                                                                     phase_function_values,
                                                                     n_phase_transitions_per_composition);
 
+        #ifdef DEBUG
+        std::cout << "Debug: pressure=" << pressure
+                  << ", temperature=" << temperature
+                  << ", composition=" << composition
+                  << ", prefactor=" << p.prefactor
+                  << ", activation_energy=" << p.activation_energy
+                  << ", activation_volume=" << p.activation_volume
+                  << ", grain_size_exponent=" << p.grain_size_exponent
+                  << std::endl;
+        #endif
+
+
         // Power law creep equation
         //    viscosity = 0.5 * A^(-1) * d^(m) * exp((E + P*V)/(RT))
         // A: prefactor,
