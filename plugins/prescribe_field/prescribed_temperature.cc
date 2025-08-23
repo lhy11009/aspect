@@ -41,7 +41,7 @@ namespace aspect
   double top_temperature, subducting_plate_velocity, 
   overiding_plate_age, x_extent, y_extent, side_distance, area_width,
   potential_mantle_temperature, overiding_plate_area_width,
-  phi_M, phi_M_rad, outer_radius;
+  phi_M, phi_M_rad, outer_radius, trench_migration;
 
   // Because we do not initially know what dimension we're in, we need
   // function parser objects for both 2d and 3d.
@@ -119,7 +119,8 @@ namespace aspect
           if (x < area_width)
           {
             // for the subducting plate
-            age = x / subducting_plate_velocity;
+            // todo_migration
+            age = (x - trench_migration) / subducting_plate_velocity;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -171,7 +172,8 @@ namespace aspect
           if (x < area_width + side_distance)
           {
             // for the subducting plate
-            age = (x - side_distance) / subducting_plate_velocity;
+            // todo_migration
+            age = (x - side_distance - trench_migration) / subducting_plate_velocity;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -226,7 +228,8 @@ namespace aspect
           if (l < area_width + side_distance)
           {
             // for the subducting plate
-            age = (l - side_distance) / subducting_plate_velocity;
+            // todo_migration
+            age = (l - side_distance - trench_migration) / subducting_plate_velocity;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -276,7 +279,8 @@ namespace aspect
           {
             const double dist = outer_radius * phi;
             // for the subducting plate
-            const double age = dist / subducting_plate_velocity;
+            // todo_migration
+            const double age = (dist - trench_migration) / subducting_plate_velocity;
             temperature = temperature + (bottom_temperature_local - top_temperature) *
                           ((2 / (double(i) * M_PI)) * std::sin((double(i) * M_PI * depth) / max_depth) *
                            std::exp((((subducting_plate_velocity * max_depth)/(2 * thermal_diffusivity)) -
@@ -429,6 +433,11 @@ namespace aspect
                           Patterns::Double (0.),
                           "The distance to the side"
                           );
+        // todo_migration
+        prm.declare_entry("Trench migration", "0.0",
+                          Patterns::Double (),
+                          "Trench migration distance (so everthing moves with it and the ridge is placed at a different position)"
+                          );
       }
       prm.leave_subsection();
 
@@ -529,6 +538,8 @@ namespace aspect
             overiding_plate_age = prm.get_double("Overiding plate age");
             overiding_plate_area_width = prm.get_double("Overiding area width");
             top_temperature = prm.get_double("Top temperature");
+            trench_migration = prm.get_double("Trench migration");
+            // todo_migration
           }
           prm.leave_subsection();
       }
