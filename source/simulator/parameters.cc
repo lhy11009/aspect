@@ -582,6 +582,10 @@ namespace aspect
                            "in the preconditioning used in the GMRES solver. The exact definition of "
                            "this block preconditioner for the Stokes equation can be found in "
                            "\\cite{kronbichler:etal:2012}.");
+
+        prm.declare_entry ("Skip expensive stokes solver", "false",
+                           Patterns::Bool(),
+                           "Skip the expensive stokes solver, even if the cheap ones fail");
       }
       prm.leave_subsection ();
 
@@ -1643,6 +1647,7 @@ namespace aspect
         force_nonsymmetric_A_block_solver = prm.get_bool("Force nonsymmetric A block solver");
         linear_solver_S_block_tolerance = prm.get_double ("Linear solver S block tolerance");
         stokes_gmres_restart_length     = prm.get_integer("GMRES solver restart length");
+        skip_expensive_stokes_solver = prm.get_bool("Skip expensive stokes solver");
       }
       prm.leave_subsection ();
 

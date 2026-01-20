@@ -1,0 +1,54 @@
+Invalid MIT-MAGIC-COOKIE-1 key
+Authorization required, but no authorization protocol specified
+
+Invalid MIT-MAGIC-COOKIE-1 key
+Authorization required, but no authorization protocol specified
+
+
+Warning in line <21> of file <input string>: You are using the deprecated spelling <Use years in output instead of seconds> of the parameter <Use years instead of seconds>.
+Number of active cells: 3,200 (on 4 levels)
+Number of degrees of freedom: 107,649 (26,082+3,321+13,041+13,041+13,041+13,041+13,041+13,041)
+
+Number of mesh deformation degrees of freedom: 6,642
+   Solving mesh displacement system... 0 iterations.
+Number of active cells: 6,080 (on 5 levels)
+Number of degrees of freedom: 204,549 (49,570+6,269+24,785+24,785+24,785+24,785+24,785+24,785)
+
+Number of mesh deformation degrees of freedom: 12,538
+   Solving mesh displacement system... 0 iterations.
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving mesh displacement system... 0 iterations.
+   Solving temperature system... 0 iterations.
+   Skipping noninitial_plastic_strain composition solve because RHS is zero.
+   Solving plastic_strain system ... 0 iterations.
+   Solving crust_upper system ... 0 iterations.
+   Solving crust_lower system ... 0 iterations.
+   Solving mantle_lithosphere system ... 0 iterations.
+   Initial Newton Stokes residual = 1.71848e+15, v = 1.71661e+15, p = 8.00908e+13
+
+   Solving Stokes system (GMG)... 1+0 iterations.
+      Newton system information: Norm of the rhs: 1.71848e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 1
+
+   Solving Stokes system (GMG)... 10+  skip expensive stokes by user choice (loc: solve_stokes)
+      Newton system information: Norm of the rhs: 4.78777e+14, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 2: 0.278605
+
+   The linear solver tolerance is set to 0.01. 
+   Solving Stokes system (GMG)... 10+  skip expensive stokes by user choice (loc: solve_stokes)
+      Newton system information: Norm of the rhs: 3.05276e+14, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 3: 0.177643
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+
+Termination requested by criterion: end time
+
+
+
+
+WARNING: During this computation 1 nonlinear solver failures occurred!
