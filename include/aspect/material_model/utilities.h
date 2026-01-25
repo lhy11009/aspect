@@ -22,6 +22,8 @@
 #define _aspect_material_model_utilities_h
 
 #include <aspect/global.h>
+#include <aspect/material_model/interface.h>
+
 #include <deal.II/base/point.h>
 #include <deal.II/base/symmetric_tensor.h>
 #include <deal.II/fe/component_mask.h>
@@ -29,6 +31,7 @@
 #include <deal.II/base/parameter_handler.h>
 
 #include <mpi.h>
+
 
 
 namespace aspect
@@ -58,6 +61,7 @@ namespace aspect
   namespace MaterialModel
   {
     template <int dim> class MaterialModelOutputs;
+    template <int dim> class MaterialModelInputs;
     template <int dim> struct EquationOfStateOutputs;
 
     /**
@@ -455,9 +459,21 @@ namespace aspect
        * strain, so the implementation is independent of the number of entries in
        * @p volume_fractions.
        */
+      // haoyuan: wrapper to explicitly handle the default approach (no position and no template given)
+      double
+      average_value (const std::vector<double> &volume_fractions,
+                     const std::vector<double> &parameter_values,
+                     const CompositionalAveragingOperation &average_type,
+                     const std::optional<std::string> &field_name = std::nullopt);
+
+      template <int dim>
       double average_value (const std::vector<double> &volume_fractions,
                             const std::vector<double> &parameter_values,
-                            const CompositionalAveragingOperation &average_type);
+                            const CompositionalAveragingOperation &average_type,
+                            const std::optional<std::string> &field_name = std::nullopt,
+                            const std::shared_ptr<const MaterialModelInputs<dim>> &in = nullptr,
+                            const unsigned int q = numbers::invalid_unsigned_int);
+
 
 
 
