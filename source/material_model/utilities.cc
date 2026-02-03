@@ -1085,7 +1085,7 @@ namespace aspect
               ", p=" + Utilities::to_string(in->pressure[q]);
 
             // position_string +=
-              // ", |ε̇|=" + Utilities::to_string(in->strain_rate[q].norm());
+            // ", |ε̇|=" + Utilities::to_string(in->strain_rate[q].norm());
           }
 
         double averaged_parameter = 0.0;

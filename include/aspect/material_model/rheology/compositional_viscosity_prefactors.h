@@ -66,15 +66,27 @@ namespace aspect
             dislocation
           } modified_flow_laws;
 
+
+          /**
+          * Return whether the current prefactor scheme requires viscosity scaling.
+          * If this returns false, callers can skip invoking compute_viscosity.
+          */
+          bool needs_scaling() const;
+
+
           /**
            * Compute the viscosity.
            */
+          // todo_new
           double
-          compute_viscosity (const MaterialModel::MaterialModelInputs<dim> &in,
-                             const double base_viscosity,
-                             const unsigned int composition_index,
-                             const unsigned int q,
-                             const ModifiedFlowLaws &modified_flow_laws) const;
+          compute_viscosity(
+            const double temperature,
+            const double pressure,
+            const double bound_fluid_fraction,
+            const double base_viscosity,
+            const unsigned int composition_index,
+            const ModifiedFlowLaws &modified_flow_laws) const;
+
 
         private:
           /**
