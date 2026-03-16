@@ -1,10 +1,10 @@
 # This .prm file is intended to test the kernel density estimation
 # based algorithm for deleting excess particles in 3D. The KDE-based algorithm
-# generates a point-density function from the location of the particles 
-# and removes the particles whose location represents the maximum of the 
-# point density function first. This method is intended to avoid some of the 
+# generates a point-density function from the location of the particles
+# and removes the particles whose location represents the maximum of the
+# point density function first. This method is intended to avoid some of the
 # problems with particle clustering which are caused by randomly deleting
-# excess particles. This test is the same as particle_KDE_deletion except in 
+# excess particles. This test is the same as particle_KDE_deletion except in
 # 3 dimensions instead of 2.
 
 set Dimension                              = 3
@@ -107,14 +107,14 @@ subsection Mesh refinement
     set Variable names      = x,y,z
     set Function expression = if ( y<=4, 2, 4)
   end
-  
+
 end
 
 subsection Particles
   set Particle generator name =  reference cell
   set Maximum particles per cell = 32
   set Load balancing strategy = remove and add particles
-  set Particle removal algorithm = point density function  
+  set Particle removal algorithm = point density function
   subsection Generator
     subsection Reference cell
       set Number of particles per cell per direction = 4

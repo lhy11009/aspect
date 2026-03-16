@@ -1,0 +1,34 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/subduction_temperature2d/libsubduction_temperature2d.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+
+Number of active cells: 10,000 (on 2 levels)
+Number of degrees of freedom: 491,404 (80,802+10,201+40,401+90,000+90,000+90,000+90,000)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Skipping spcrust composition solve because RHS is zero.
+   Skipping spharz composition solve because RHS is zero.
+   Skipping opcrust composition solve because RHS is zero.
+   Skipping opharz composition solve because RHS is zero.
+   Initial Newton Stokes residual = 4.25003e+12, v = 4.25003e+12, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 4.25003e+12
+      Relative nonlinear residuals (temperature, compositional fields, Stokes system): 1.72887e-16, 0, 0, 0, 0, 1
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 1
+
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_pyrolite_metastable_0/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 1137 K, 2000 K
+     Writing depth average:    output-TwoDSubduction_pyrolite_metastable_0/depth_average
+     Writing particle output:  output-TwoDSubduction_pyrolite_metastable_0/particles/particles-00000
+
+Termination requested by criterion: end time
+
+
+

@@ -142,7 +142,7 @@ export -f indent_file
 #
 echo "--- Indenting all ASPECT header and source files"
 
-find tests include source benchmarks cookbooks unit_tests \
+find tests include source benchmarks cookbooks unit_tests plugins \
      \( -name '*.cc' -o -name '*.h' -o -name '*.h.in' \) -print0 \
   | xargs -0 -P 10 -I {} bash -c "indent_file {}"
 
@@ -158,6 +158,7 @@ export -f find_source_files
 
 # remove execute permission on source files:
 find_source_files | xargs -0 -n 50 -P 10 chmod -x
+find tests include source benchmarks cookbooks unit_tests plugins \( -name '*.cc' -o -name '*.h' -o -name '*.prm' \) -print | xargs -n 50 -P 10 chmod -x
 
 # convert dos formatted files to unix file format by stripping out
 # carriage returns (15=0x0D):
@@ -173,6 +174,7 @@ dos_to_unix()
 }
 export -f dos_to_unix
 find_source_files | xargs -0 -P 10 -I {} bash -c 'dos_to_unix "$@"' _ {}
+find tests include source unit_tests cookbooks benchmarks doc plugins \( -name '*.cc' -o -name '*.h' -o -name '*.prm' -o -name '*.h.in' -o -name '*.md' \) -print | xargs -P 10 -I {} bash -c 'dos_to_unix "$@"' _ {}
 
 # convert tabs to two spaces:
 tab_to_space()
@@ -186,6 +188,7 @@ tab_to_space()
 }
 export -f tab_to_space
 find_source_files | xargs -0 -P 10 -I {} bash -c 'tab_to_space "$@"' _ {}
+find tests include source unit_tests cookbooks benchmarks doc plugins \( -name '*.cc' -o -name '*.h' -o -name '*.prm' -o -name '*.h.in' -o -name 'CMakeLists.txt' -o -name '*.cmake' -o -name '*.md' \) -print | xargs -P 10 -I {} bash -c 'tab_to_space "$@"' _ {}
 
 # Remove trailing whitespace from files
 remove_trailing_whitespace()
@@ -199,6 +202,7 @@ remove_trailing_whitespace()
 }
 export -f remove_trailing_whitespace
 find_source_files | xargs -0 -P 10 -I {} bash -c 'remove_trailing_whitespace "$@"' _ {}
+find tests include source unit_tests cookbooks benchmarks doc plugins \( -name '*.cc' -o -name '*.h' -o -name '*.prm' -o -name '*.h.in' -o -name 'CMakeLists.txt' -o -name '*.cmake' -o -name '*.md' \) -print | xargs -P 10 -I {} bash -c 'remove_trailing_whitespace "$@"' _ {}
 
 
 # Ensure only a single newline at end of files
@@ -226,6 +230,7 @@ ensure_single_trailing_newline()
 }
 export -f ensure_single_trailing_newline
 find_source_files | xargs -0 -P 10 -I {} bash -c 'ensure_single_trailing_newline "$@"' _ {}
+find include source unit_tests cookbooks benchmarks doc plugins \( -name '*.cc' -o -name '*.h' -o -name '*.prm' -o -name '*.h.in' -o -name 'CMakeLists.txt' -o -name '*.cmake' -o -name '*.md' \) -print | xargs -P 10 -I {} bash -c 'ensure_single_trailing_newline "$@"' _ {}
 
 # Do not recursively search the tests directory for prm files, otherwise the output prms will be changed
 find tests \( -name '*.cc' -o -name '*.h' -o -name '*.h.in' -o -name 'CMakeLists.txt' -o -name '*.cmake' \) -print0 | xargs -0 -P 10 -I {} bash -c 'ensure_single_trailing_newline "$@"' _ {}

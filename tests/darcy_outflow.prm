@@ -1,7 +1,7 @@
 # This test defines an initial block of porosity implaced in a solid within a 2D cartesian box.
-# Because the porosity composition is less dense than the solid, the porosity will rise to the 
-# surface of the model and flow out of the top of the box. This tests the implementation of 
-# composition dependent outflow boundary conditions for when a composition is advected with the 
+# Because the porosity composition is less dense than the solid, the porosity will rise to the
+# surface of the model and flow out of the top of the box. This tests the implementation of
+# composition dependent outflow boundary conditions for when a composition is advected with the
 # Darcy field advection method.
 set Dimension                              = 2
 set Use years instead of seconds           = true
@@ -17,7 +17,7 @@ set Max nonlinear iterations               = 10
 set Nonlinear solver tolerance             = 1e-3
 
 # Define a function which applies a downward solid velocity of 10 cm/yr on all sides.
-# This allows the solid to be inflowing at the top boundary, while the fluid will be 
+# This allows the solid to be inflowing at the top boundary, while the fluid will be
 # outflowing at the top boundary.
 subsection Boundary velocity model
   set Prescribed velocity boundary indicators = top:function, bottom:function, right:function, left:function
@@ -99,7 +99,7 @@ end
 
 # Initialize a porosity that is 0 in the bottom half of the model.
 # In the upper half, the porosity increases from 0% at the left boundary
-# to 5% at the right boundary. We define a solid composition that has a 
+# to 5% at the right boundary. We define a solid composition that has a
 # value of 1 in the top 500 m of the box, and a value of 0 in the rest of the box.
 subsection Initial composition model
   set Model name = function

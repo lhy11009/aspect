@@ -1,6 +1,6 @@
 # This test verifies implementation of prescribed solutions interface.
-# It sets up a 2D convection problem in a rectangular box with 
-# prescribed temperature conditions. A prescribed temperature function is 
+# It sets up a 2D convection problem in a rectangular box with
+# prescribed temperature conditions. A prescribed temperature function is
 # applied that varies with space and time to set the thermal field.
 
 # At the top, we define the number of space dimensions we would like to
@@ -50,7 +50,7 @@ subsection Mesh refinement
 end
 
 # The next section deals with the initial conditions for the
-# temperature with an adiabatic condition 
+# temperature with an adiabatic condition
 subsection Initial temperature model
   set Model name = adiabatic
 end

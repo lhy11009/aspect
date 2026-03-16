@@ -1,0 +1,219 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/isosurfaces_TwoD1/libisosurfaces_TwoD1.release.so>
+
+Number of active cells: 64 (on 4 levels)
+Number of degrees of freedom: 7,860 (578+81+289+576+576+576+576+576+576+576+576+576+576+576+576)
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_metastable_slab/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 1671 K, 2000 K
+     Writing depth average:    output-TwoDSubduction_metastable_slab/depth_average
+     Writing particle output:  output-TwoDSubduction_metastable_slab/particles/particles-00000
+
+Number of active cells: 121 (on 5 levels)
+Number of degrees of freedom: 14,948 (1,150+155+575+1,089+1,089+1,089+1,089+1,089+1,089+1,089+1,089+1,089+1,089+1,089+1,089)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 4.17011e+13, v = 4.17011e+13, p = 0
+
+   Solving Stokes system (GMG)... 18+0 iterations.
+      Newton system information: Norm of the rhs: 4.17011e+13
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 1
+
+   Solving Stokes system (GMG)... 17+0 iterations.
+      Newton system information: Norm of the rhs: 3.98072e+12, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 2: 0.0954583
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 15+0 iterations.
+      Newton system information: Norm of the rhs: 1.59746e+12, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 3: 0.0383075
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 24+0 iterations.
+      Newton system information: Norm of the rhs: 1.04651e+12, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 4: 0.0250955
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 24+0 iterations.
+      Newton system information: Norm of the rhs: 6.62672e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 5: 0.015891
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 24+0 iterations.
+      Newton system information: Norm of the rhs: 4.14279e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 6: 0.00993448
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 28+0 iterations.
+      Newton system information: Norm of the rhs: 2.60869e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 7: 0.00625569
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 28+0 iterations.
+      Newton system information: Norm of the rhs: 1.55463e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 8: 0.00372804
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 29+0 iterations.
+      Newton system information: Norm of the rhs: 9.79373e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 9: 0.00234856
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 28+0 iterations.
+      Newton system information: Norm of the rhs: 5.71125e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 10: 0.00136957
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 29+0 iterations.
+      Newton system information: Norm of the rhs: 3.69884e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 11: 0.00088699
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 29+0 iterations.
+      Newton system information: Norm of the rhs: 2.18106e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 12: 0.000523023
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 29+0 iterations.
+      Newton system information: Norm of the rhs: 1.47559e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 13: 0.00035385
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 28+0 iterations.
+      Newton system information: Norm of the rhs: 9.40179e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 14: 0.000225457
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 28+0 iterations.
+      Newton system information: Norm of the rhs: 6.88984e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 15: 0.00016522
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 27+0 iterations.
+      Newton system information: Norm of the rhs: 4.76477e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 16: 0.00011426
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 26+0 iterations.
+      Newton system information: Norm of the rhs: 3.9532e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 17: 9.47986e-05
+
+
+   Postprocessing:
+     Writing graphical output:     output-TwoDSubduction_metastable_slab/solution/solution-00001
+     RMS, max velocity:            0.0473 m/year, 0.236 m/year
+     Temperature min/avg/max:      273 K, 1671 K, 2000 K
+     Writing depth average:        output-TwoDSubduction_metastable_slab/depth_average
+     Number of advected particles: 16940
+
+*** Timestep 1:  t=1000 years, dt=1000 years
+   Solving temperature system... 8 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 4.38838e+13, v = 4.38838e+13, p = 0
+
+   Solving Stokes system (GMG)... 30+0 iterations.
+      Newton system information: Norm of the rhs: 3.90759e+13
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 0.890439
+
+   Solving Stokes system (GMG)... 26+0 iterations.
+      Newton system information: Norm of the rhs: 3.23126e+12, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 2: 0.0736322
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 17+0 iterations.
+      Newton system information: Norm of the rhs: 2.00699e+12, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 3: 0.0457342
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 30+0 iterations.
+      Newton system information: Norm of the rhs: 1.35729e+12, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 4: 0.0309291
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 30+0 iterations.
+      Newton system information: Norm of the rhs: 8.85542e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 5: 0.0201792
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 33+0 iterations.
+      Newton system information: Norm of the rhs: 5.94841e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 6: 0.0135549
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 35+0 iterations.
+      Newton system information: Norm of the rhs: 4.04647e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 7: 0.00922088
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 2.65927e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 8: 0.0060598
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 1.74101e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 9: 0.00396731
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 1.12599e+11, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 10: 0.00256583
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 7.31668e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 11: 0.00166728
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 35+0 iterations.
+      Newton system information: Norm of the rhs: 4.72627e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 12: 0.001077
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 3.13083e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 13: 0.000713435
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 2.05683e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 14: 0.000468699
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 35+0 iterations.
+      Newton system information: Norm of the rhs: 1.34963e+10, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 15: 0.000307545
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 36+0 iterations.
+      Newton system information: Norm of the rhs: 9.08636e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 16: 0.000207055
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 35+0 iterations.
+      Newton system information: Norm of the rhs: 6.04009e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 17: 0.000137638
+
+   The linear solver tolerance is set to 0.1. 
+   Solving Stokes system (GMG)... 35+0 iterations.
+      Newton system information: Norm of the rhs: 4.07989e+09, Derivative scaling factor: 0
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 18: 9.29703e-05
+
+
+   Postprocessing:
+     Writing graphical output: output-TwoDSubduction_metastable_slab/solution/solution-00002
+     RMS, max velocity:        0.105 m/year, 0.375 m/year
+     Temperature min/avg/max:  273 K, 1671 K, 2000 K
+     Writing depth average:    output-TwoDSubduction_metastable_slab/depth_average
+     Writing particle output:  output-TwoDSubduction_metastable_slab/particles/particles-00001
+
+Termination requested by criterion: end time
+
+
+

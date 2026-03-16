@@ -682,6 +682,18 @@ namespace aspect
         // We get here if the Stokes solve above failed. Let's see first
         // why that happened:
 
+        // tell stokes to succeed by skipping the expensive stokes
+        // doesn't work for the 0th non-linear iteration because the residual is not
+        // set yet and you will get nan value
+        // If it's the 0th non-linear iteration, resume the default way
+        pcout << "    skip expensive stokes by user choice (loc: defect correct)" << std::endl;
+        if (parameters.skip_nonlinear_interation_with_expensive_stokes_solver
+            && nonlinear_iteration >= parameters.skip_nonlinear_interation_with_expensive_stokes_solver_iteration)
+          {
+            pcout << "    also skip the whole nonlinear iteration by user choice (loc: defect correct)" << std::endl;
+            dcr.nonlinear_iteration_complete = true;
+          }
+
         // If the exception we got is not one of the two documented by
         // throw_linear_solver_failure_exception(), then we have a genuine
         // problem here, and will need to get outta here right away:
@@ -1075,7 +1087,6 @@ namespace aspect
   }
 
 
-
   template <int dim>
   void Simulator<dim>::solve_single_advection_iterated_newton_stokes (const bool use_newton_iterations)
   {
@@ -1160,6 +1171,14 @@ namespace aspect
           postprocess ();
 
         ++nonlinear_iteration;
+
+        if (dcr.nonlinear_iteration_complete)
+          {
+            // lhy11009
+            // check the option to end nonlinear iterations by user choice
+            pcout <<  "    nonlinear iteration complete by user choice" << std::endl;
+            break;
+          }
       }
     while (nonlinear_solver_control.check(nonlinear_iteration, relative_residual) == SolverControl::iterate);
 
