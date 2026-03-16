@@ -1,0 +1,55 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Iterations for temperature solver
+# 10: Iterations for Stokes solver
+# 11: Velocity iterations in Stokes preconditioner
+# 12: Schur complement iterations in Stokes preconditioner
+# 13: Visualization file name
+# 14: RMS velocity (m/year)
+# 15: Max. velocity (m/year)
+# 16: Minimal temperature (K)
+# 17: Average temperature (K)
+# 18: Maximal temperature (K)
+# 19: Average nondimensional temperature (K)
+# 20: Minimal value for composition spcrust
+# 21: Maximal value for composition spcrust
+# 22: Global mass for composition spcrust
+# 23: Minimal value for composition spharz
+# 24: Maximal value for composition spharz
+# 25: Global mass for composition spharz
+# 26: Minimal value for composition opcrust
+# 27: Maximal value for composition opcrust
+# 28: Global mass for composition opcrust
+# 29: Minimal value for composition opharz
+# 30: Maximal value for composition opharz
+# 31: Global mass for composition opharz
+# 32: Minimal value for composition metastable
+# 33: Maximal value for composition metastable
+# 34: Global mass for composition metastable
+# 35: Minimal value for composition meta_x0
+# 36: Maximal value for composition meta_x0
+# 37: Global mass for composition meta_x0
+# 38: Minimal value for composition meta_x1
+# 39: Maximal value for composition meta_x1
+# 40: Global mass for composition meta_x1
+# 41: Minimal value for composition meta_x2
+# 42: Maximal value for composition meta_x2
+# 43: Global mass for composition meta_x2
+# 44: Minimal value for composition meta_x3
+# 45: Maximal value for composition meta_x3
+# 46: Global mass for composition meta_x3
+# 47: Minimal value for composition meta_is
+# 48: Maximal value for composition meta_is
+# 49: Global mass for composition meta_is
+# 50: Minimal value for composition meta_rate
+# 51: Maximal value for composition meta_rate
+# 52: Global mass for composition meta_rate
+# 53: Number of advected particles
+# 54: Particle file name
+0 0.000000000000e+00 0.000000000000e+00 2500 23003 10201 247500 1 0 0 0 0 output-TwoDSubduction_metastable_initial/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73150000e+02 1.27315000e+03 2.27315000e+03 5.00000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.54393229e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.54393229e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 100838 output-TwoDSubduction_metastable_initial/particles/particles-00000 

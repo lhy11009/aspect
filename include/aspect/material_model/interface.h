@@ -344,6 +344,12 @@ namespace aspect
                     const bool                                            compute_strain_rate = true);
 
         /**
+         * Function to fill in metastable inputs into the class attributes
+         */
+        void fill_metastable_phases(const std::vector<bool> is_metastable_phases);
+        void fill_metastable_grain_sizes(const std::vector<double> grain_sizes);
+
+        /**
          * Function that returns the number of points at which
          * the material model is to be evaluated.
          */
@@ -410,6 +416,12 @@ namespace aspect
         std::vector<SymmetricTensor<2,dim>> strain_rate;
 
         /**
+         * Metastable attributes
+         */
+        std::unique_ptr<std::vector<bool>> is_metastable_phases;
+        std::unique_ptr<std::vector<double>> metastable_grain_sizes;
+
+        /**
          * Optional cell object that contains these quadrature
          * points. This allows for evaluating properties at the cell vertices
          * and interpolating to the quadrature points, or to query the cell for
@@ -434,6 +446,13 @@ namespace aspect
          * of this variable see the documentation for MaterialProperties::Property.
          */
         MaterialProperties::Property requested_properties;
+
+        /**
+         * An added option to execute metastable reaction. When this option is true, the
+         * metastable computation is performed. Assign this as false be default will only
+         * turn on metastable computation when the particle property is updated.
+         */
+        bool compute_metastable_reaction = false;
 
         /**
          * Given an additional material model input class as explicitly specified
@@ -608,6 +627,14 @@ namespace aspect
          * given positions.
          */
         std::vector<double> entropy_derivative_temperature;
+
+        /**
+         * The product of the change of entropy $\Delta S$ at a phase transition
+         * and the derivative of the metastable transformed volume multiplied by
+         * phase function $X=X(p,T,\mathfrak c,\mathbf x)$.
+         */
+        std::vector<double> entropy_derivative_metastable;
+
 
         /**
          * Change in composition due to chemical reactions at the given
@@ -1000,6 +1027,28 @@ namespace aspect
         const std::vector<std::string> names;
     };
 
+    /**
+     * Additional output fields for the seismic velocities to be added to
+     * the MaterialModel::MaterialModelOutputs structure and filled in the
+     * MaterialModel::Interface::evaluate() function.
+     */
+    template <int dim>
+    class PhaseFractionAdditionalOutputs : public NamedAdditionalMaterialOutputs<dim>
+    {
+      public:
+        /**
+         * Constructor for case where outputs are stored for a number of points.
+         *
+         * @param output_names A list of names for the additional output variables
+         *   this object will store. The length of the list also indicates
+         *   how many additional output variables objects of derived classes
+         *   will store.
+         * @param n_points The number of points for which to store each of the
+         *   output variables.
+         */
+        PhaseFractionAdditionalOutputs(const std::vector<std::string> &output_names,
+                                       const unsigned int n_points);
+    };
 
     /**
      * Additional output fields for the seismic velocities to be added to
@@ -1430,6 +1479,16 @@ namespace aspect
                                               const LinearAlgebra::BlockVector        &solution,
                                               const FEValuesBase<dim>                 &fe_values,
                                               const Introspection<dim>                &introspection) const;
+
+        /*
+        * For metastable kinetics, handle over to the metastable.cc in the
+        * particle property. Here the function returns a maximum limit of
+        * double.
+        */
+        virtual
+        double
+        computeEqP(const double T) const;
+
 
       protected:
         /**

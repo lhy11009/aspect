@@ -1,4 +1,4 @@
-# This file tests whether the heat added to the model can be correctly converted 
+# This file tests whether the heat added to the model can be correctly converted
 # to internal energy, following the relation: Delta U = T * Delta S - P * Delta V, P = 0
 # There is a constant heat flux flowing in from the bottom. Thermal conductivity is set
 # to a very high value, so that the temperature everywhere is almost the same.
@@ -9,7 +9,7 @@ set Use years instead of seconds           = true
 set End time                               = 3e5
 set Maximum time step                      = 3.33333e3
 set Output directory                       = output-entropy-multi-free-surface-heat-from-bottom
-set Nonlinear solver scheme                = iterated Advection and Stokes 
+set Nonlinear solver scheme                = iterated Advection and Stokes
 set Use operator splitting                 = true
 
 set Nonlinear solver tolerance = 1e-6
@@ -92,9 +92,9 @@ subsection Boundary heat flux model
 
   set Fixed heat flux boundary indicators = bottom
   set Model name = function
-  
+
   subsection Function
-    set Coordinate system = cartesian 
+    set Coordinate system = cartesian
     set  Function expression  = -0.05
   end
 end
@@ -104,7 +104,7 @@ subsection Material model
 
   subsection Entropy model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/ol-en-table/
-    set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt  
+    set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt
     set Maximum viscosity                = 1e25
     set Minimum viscosity                = 1e25
     set Lateral viscosity file name      = constant_lateral_vis_prefactor.txt

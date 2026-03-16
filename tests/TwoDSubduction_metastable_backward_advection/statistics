@@ -1,0 +1,43 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Iterations for temperature solver
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+# 16: Average adiabatic heating rate (W/kg)
+# 17: Total adiabatic heating rate (W)
+# 18: Minimal value for composition metastable
+# 19: Maximal value for composition metastable
+# 20: Global mass for composition metastable
+# 21: Minimal value for composition meta_x0
+# 22: Maximal value for composition meta_x0
+# 23: Global mass for composition meta_x0
+# 24: Minimal value for composition meta_x1
+# 25: Maximal value for composition meta_x1
+# 26: Global mass for composition meta_x1
+# 27: Minimal value for composition meta_x2
+# 28: Maximal value for composition meta_x2
+# 29: Global mass for composition meta_x2
+# 30: Minimal value for composition meta_x3
+# 31: Maximal value for composition meta_x3
+# 32: Global mass for composition meta_x3
+# 33: Minimal value for composition meta_is
+# 34: Maximal value for composition meta_is
+# 35: Global mass for composition meta_is
+# 36: Minimal value for composition meta_rate
+# 37: Maximal value for composition meta_rate
+# 38: Global mass for composition meta_rate
+# 39: Number of advected particles
+# 40: Particle file name
+0 0.000000000000e+00 0.000000000000e+00 500 7008 3003 31500 0 output-TwoDSubduction_metastable_backward_advection/solution/solution-00000 1.00000000e-02 1.00000000e-02 1.66200000e+03 1.88620530e+03 2.12972086e+03 5.94236146e-02 -1.75417925e-10 -1.22292420e+03 0.00000000e+00 1.00000000e+00 1.16931429e+09 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.16931429e+09 0.00000000e+00 0.00000000e+00 0.00000000e+00 70000 output-TwoDSubduction_metastable_backward_advection/particles/particles-00000 
+1 1.000000000000e+03 1.000000000000e+03 500 7008 3003 31500 3 output-TwoDSubduction_metastable_backward_advection/solution/solution-00001 1.00000000e-02 1.00000000e-02 1.66200000e+03 1.88620555e+03 2.12972086e+03 5.94236824e-02 -1.75417948e-10 -1.22292437e+03 0.00000000e+00 1.00000000e+00 1.16931429e+09 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 2.70459633e+06 2.71743580e+15 0.00000000e+00 1.00000000e+00 1.16931429e+09 0.00000000e+00 0.00000000e+00 0.00000000e+00 69811 output-TwoDSubduction_metastable_backward_advection/particles/particles-00001 
+2 2.000000000000e+03 1.000000000000e+03 500 7008 3003 31500 2 output-TwoDSubduction_metastable_backward_advection/solution/solution-00002 1.00000000e-02 1.00000000e-02 1.66200000e+03 1.88620581e+03 2.12972086e+03 5.94237502e-02 -1.75417972e-10 -1.22292454e+03 0.00000000e+00 1.00000000e+00 1.16934286e+09 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 5.40921119e+06 5.43493923e+15 0.00000000e+00 1.00000000e+00 1.16934286e+09 0.00000000e+00 0.00000000e+00 0.00000000e+00 69656 output-TwoDSubduction_metastable_backward_advection/particles/particles-00002 

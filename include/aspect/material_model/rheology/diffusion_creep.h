@@ -135,6 +135,36 @@ namespace aspect
                                               const DiffusionCreepParameters creep_parameters) const;
 
           /**
+           * Include an integar number for the mixing model to use
+           * 1: iso stress (weakest), 2: iso strain (strongest), 3: log (intermediate)
+           * Also include two double numbers for the minimum and the maximum viscosities
+           * similar to the compute_viscosity function, otherwise
+           */
+          double
+          compute_viscosity_mixing (const double pressure,
+                                    const double temperature,
+                                    const unsigned int composition,
+                                    const std::vector<double> &phase_function_values,
+                                    const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                    const int,
+                                    const double,
+                                    const double) const;
+          /*
+          * Overload the interface to parse in metastable grain size
+          */
+          double
+          compute_viscosity_mixing (const double pressure,
+                                    const double temperature,
+                                    const unsigned int composition,
+                                    const std::vector<double> &phase_function_values,
+                                    const std::vector<unsigned int> &n_phase_transitions_per_composition,
+                                    const int,
+                                    const double,
+                                    const double,
+                                    const std::vector<bool> is_metastable_phases,
+                                    const double) const;
+
+          /**
            * Compute the strain rate and first stress derivative as a function
            * of stress based on the diffusion creep law for the given @p grain_size.
            */

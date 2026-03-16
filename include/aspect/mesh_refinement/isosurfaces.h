@@ -85,6 +85,7 @@ namespace aspect
           int min_refinement;
           int max_refinement;
           std::vector<Property> properties;
+
       };
 
     }
@@ -138,6 +139,12 @@ namespace aspect
          */
         std::vector<internal::Isosurface> isosurfaces;
 
+        // todo_refine
+        // additional inputs for refining metastable region
+        bool adjust_metastable_flag;
+        unsigned adjust_metastable_composition_index;
+        double adjust_metastable_min_depth;
+        double adjust_metastable_max_depth;
     };
   }
 }

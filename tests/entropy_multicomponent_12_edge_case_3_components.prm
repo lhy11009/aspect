@@ -24,17 +24,33 @@ subsection Geometry model
   subsection Box
     set X extent = 13000
     set Y extent = 13000
-    
+
   end
 end
 
 subsection Adiabatic conditions model
  subsection Compute profile
+<<<<<<< HEAD
+||||||| parent of 1bcd92885 (My commits)
+ 
+=======
+
+>>>>>>> 1bcd92885 (My commits)
   set Use surface condition function = true
 
+<<<<<<< HEAD
   	subsection Surface condition function
       set Variable names = x,t
       set Function expression = 1.2e9+4e2*t;0
+||||||| parent of 1bcd92885 (My commits)
+  	subsection Surface condition function
+    set Variable names = x,t 
+    set Function expression = 1.2e9+4e2*t;0
+=======
+    subsection Surface condition function
+    set Variable names = x,t
+    set Function expression = 1.2e9+4e2*t;0
+>>>>>>> 1bcd92885 (My commits)
     end
  end
 end
@@ -73,7 +89,7 @@ subsection Material model
 
   subsection Entropy model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/ol-en-table/
-    set Material file name               = qtz60.txt, qtz40.txt, qtz60.txt 
+    set Material file name               = qtz60.txt, qtz40.txt, qtz60.txt
     set Maximum viscosity                = 1e25
     set Minimum viscosity                = 1e25
     set Lateral viscosity file name      = constant_lateral_vis_prefactor.txt

@@ -231,6 +231,28 @@ namespace aspect
                             {
                               coarsen = true;
                             }
+
+                          // If this belongs to potential metastable region, then if current refinement level is smaller
+                          // than the maximum refinement level, any coarsening flag should be cleared, and a refinement
+                          // flag should be placed
+                          // todo_refine, implement
+                          if (adjust_metastable_flag)
+                            {
+                              if (isosurface.properties[0].index == adjust_metastable_composition_index)
+                                {
+                                  const Point<dim> i_point = fe_values.quadrature_point(i_quad);
+                                  const double depth = this->get_geometry_model().depth(i_point);
+                                  if (depth >= adjust_metastable_min_depth && depth < adjust_metastable_max_depth)
+                                    if (cell->level() <  isosurface.max_refinement)
+                                      {
+                                        clear_coarsen = true;
+                                        refine = true;
+                                        clear_refine = false;
+                                        coarsen = false;
+                                        break;
+                                      }
+                                }
+                            }
                         }
                     }
                 }
@@ -286,7 +308,18 @@ namespace aspect
                              "add a value to the maximum value. If, for example, `max-4` drops below the minimum or `min+4` goes above the "
                              "maximum, it will simply use the global minimum and maximum values respectively. The same holds for any "
                              "mesh refinement level below the global minimum or above the global maximum.");
-
+          // todo_refine, define
+          prm.declare_entry ("Adjust metastable flag", "false",
+                             Patterns::Bool(),
+                             "");
+          prm.declare_entry ("Adjust metastable minimum depth", "350e3",
+                             Patterns::Double (0.),
+                             "Minimum depth to refine the metastable region, "
+                             "Units: m.");
+          prm.declare_entry ("Adjust metastable maximum depth", "720e3",
+                             Patterns::Double (0.),
+                             "Maximum depth to refine the metastable region, "
+                             "Units: m.");
         }
         prm.leave_subsection();
       }
@@ -307,6 +340,11 @@ namespace aspect
         const std::vector<std::string> &compositions = this->introspection().get_composition_names();
         prm.enter_subsection("Isosurfaces");
         {
+          // todo_refine, parse
+          adjust_metastable_flag = prm.get_bool("Adjust metastable flag");
+          adjust_metastable_min_depth = prm.get_double("Adjust metastable minimum depth");
+          adjust_metastable_max_depth = prm.get_double("Adjust metastable maximum depth");
+          adjust_metastable_composition_index = numbers::invalid_unsigned_int;
           // Split the list by comma delimited components.
           const std::vector<std::string> isosurface_entries = dealii::Utilities::split_string_list(prm.get("Isosurfaces"), ';');
           unsigned int isosurface_entry_number = 0;
@@ -338,6 +376,16 @@ namespace aspect
                   AssertThrow(key_and_value.size() == 2,
                               ExcMessage("The isosurface property must have a key (e.g. Temperature) and two values separated by a | (e.g. (300 | 600)."));
                   properties.emplace_back(key_and_value[0], compositions); // convert key to property name
+                  // todo_refine, index
+                  // If we want to adjust the mesh by refining the metastable region
+                  // We first need to record the composition index of the targeting composition
+                  // (i.e. sp_lower)
+                  if (adjust_metastable_flag)
+                    if (key_and_value[0] == "sp_lower" || key_and_value[0] == "spharz")
+                      {
+                        auto &last_property = properties.back();
+                        adjust_metastable_composition_index = last_property.index;
+                      }
                   const std::vector<std::string> values = dealii::Utilities::split_string_list(key_and_value[1], '|');
                   AssertThrow(values.size() == 2,
                               ExcMessage("Both a maximum and a minimum value are required for each isosurface."));
@@ -351,7 +399,13 @@ namespace aspect
               isosurface.properties = properties;
               isosurfaces.push_back(isosurface);
             }
-        }
+
+          //todo_refine; assert index
+          if (adjust_metastable_flag)
+            AssertThrow(adjust_metastable_composition_index != numbers::invalid_unsigned_int,
+                        ExcMessage("The adjust_metastable_flag is set but the sp_lower composition is not found"));
+
+          }
         prm.leave_subsection();
       }
       prm.leave_subsection();

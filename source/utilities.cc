@@ -373,7 +373,7 @@ namespace aspect
         AssertThrow (options.check_values_per_key == false ||
                      options.n_values_per_key.size() == options.list_of_required_keys.size(),
                      ExcMessage("parse_map_to_double_array can only check the structure "
-                                "of the parsed map for "
+                                "og the parsed map for "
                                 + options.property_name
                                 + " if an expected number of values for each key is given. "
                                 "The expected number of values is "

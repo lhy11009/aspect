@@ -602,6 +602,9 @@ namespace aspect
     bool                           force_nonsymmetric_A_block_solver;
     double                         linear_solver_S_block_tolerance;
     unsigned int                   stokes_gmres_restart_length;
+    bool                           skip_expensive_stokes_solver;
+    bool                           skip_nonlinear_interation_with_expensive_stokes_solver;
+    unsigned int                   skip_nonlinear_interation_with_expensive_stokes_solver_iteration;
 
     // subsection: AMG parameters
     std::string                    AMG_smoother_type;

@@ -1,0 +1,60 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Iterations for temperature solver
+# 10: Iterations for Stokes solver
+# 11: Velocity iterations in Stokes preconditioner
+# 12: Schur complement iterations in Stokes preconditioner
+# 13: Visualization file name
+# 14: RMS velocity (m/year)
+# 15: Max. velocity (m/year)
+# 16: Minimal temperature (K)
+# 17: Average temperature (K)
+# 18: Maximal temperature (K)
+# 19: Average nondimensional temperature (K)
+# 20: Minimal value for composition spcrust
+# 21: Maximal value for composition spcrust
+# 22: Global mass for composition spcrust
+# 23: Minimal value for composition spharz
+# 24: Maximal value for composition spharz
+# 25: Global mass for composition spharz
+# 26: Minimal value for composition opcrust
+# 27: Maximal value for composition opcrust
+# 28: Global mass for composition opcrust
+# 29: Minimal value for composition opharz
+# 30: Maximal value for composition opharz
+# 31: Global mass for composition opharz
+# 32: Minimal value for composition metastable
+# 33: Maximal value for composition metastable
+# 34: Global mass for composition metastable
+# 35: Minimal value for composition meta_x0
+# 36: Maximal value for composition meta_x0
+# 37: Global mass for composition meta_x0
+# 38: Minimal value for composition meta_x1
+# 39: Maximal value for composition meta_x1
+# 40: Global mass for composition meta_x1
+# 41: Minimal value for composition meta_x2
+# 42: Maximal value for composition meta_x2
+# 43: Global mass for composition meta_x2
+# 44: Minimal value for composition meta_x3
+# 45: Maximal value for composition meta_x3
+# 46: Global mass for composition meta_x3
+# 47: Minimal value for composition meta_is
+# 48: Maximal value for composition meta_is
+# 49: Global mass for composition meta_is
+# 50: Minimal value for composition meta_rate
+# 51: Maximal value for composition meta_rate
+# 52: Global mass for composition meta_rate
+# 53: Number of advected particles
+# 54: Particle file name
+# 55: Average density (kg/m^3)
+# 56: Average viscosity (Pa s)
+# 57: Total mass (kg)
+0 0.000000000000e+00 0.000000000000e+00 2500 23003 10201 247500 1 0 0 0 0 output-TwoDSubduction_metastable_spharz_density/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73150000e+02 1.27315000e+03 2.27315000e+03 5.00000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.00000000e+00 9.60000000e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 100838 output-TwoDSubduction_metastable_spharz_density/particles/particles-00000 3.27399582e+03 4.67151745e+23 3.14303599e+15 
+1 1.000000000000e+03 1.000000000000e+03 2500 23003 10201 247500 1 0 0 0 0 output-TwoDSubduction_metastable_spharz_density/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73150000e+02 1.27315000e+03 2.27315000e+03 5.00000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.00000000e+00 9.60000000e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.32185201e+11 0.00000000e+00 3.27578924e+23 1.06061542e+35 0.00000000e+00 2.37291727e+13 5.61195318e+24 0.00000000e+00 1.87253633e+03 3.28001689e+14 0.00000000e+00 5.06786608e+07 9.21391773e+17 0.00000000e+00 1.00000000e+00 4.51891143e+11 0.00000000e+00 1.30795901e-11 3.94890716e-01 100838 output-TwoDSubduction_metastable_spharz_density/particles/particles-00001 3.41415608e+03 4.99823496e+23 3.27758984e+15 
+2 2.000000000000e+03 1.000000000000e+03 2500 23003 10201 247500 1 0 0 0 0 output-TwoDSubduction_metastable_spharz_density/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73150000e+02 1.27315000e+03 2.27315000e+03 5.00000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 1.00000000e+00 9.60000000e+11 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.39921750e+11 0.00000000e+00 3.27578924e+23 1.07080663e+35 0.00000000e+00 2.37291727e+13 5.69726562e+24 0.00000000e+00 1.87253633e+03 3.36256747e+14 0.00000000e+00 1.06988284e+08 1.94503191e+18 0.00000000e+00 1.00000000e+00 4.51891143e+11 0.00000000e+00 5.97255765e-12 1.74705629e-01 100838 output-TwoDSubduction_metastable_spharz_density/particles/particles-00002 3.41747125e+03 4.99823496e+23 3.28077240e+15 

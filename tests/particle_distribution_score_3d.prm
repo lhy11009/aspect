@@ -101,7 +101,7 @@ subsection Mesh refinement
     set Variable names      = x,y,z
     set Function expression = if ( y<=4, 2, 4)
   end
-  
+
 end
 
 subsection Particles

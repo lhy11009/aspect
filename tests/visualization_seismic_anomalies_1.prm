@@ -1,5 +1,5 @@
-# This is a test for the "lateral average" average velocity scheme used in 
-# the seismic anomalies postprocessor. 
+# This is a test for the "lateral average" average velocity scheme used in
+# the seismic anomalies postprocessor.
 
 set End time                               = 0
 set Adiabatic surface temperature          = 1600.0
@@ -30,15 +30,15 @@ end
 
 
 
-# Prescribe the initial temperature. 
+# Prescribe the initial temperature.
 subsection Initial temperature model
   set List of model names = function
-  
+
   subsection Function
     set Coordinate system   = cartesian
     set Variable names      = x, y
     set Function expression = ( (x>=25e3 && x<=75e3 && y<=200e3) ? \
-    		 	      (1600) : (800) ) 
+                 (1600) : (800) )
   end
 end
 
@@ -65,7 +65,7 @@ subsection Postprocess
       set Average velocity scheme = lateral average
     end
   end
-  
+
 end
 
 

@@ -1,0 +1,41 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/isosurfaces_TwoD1/libisosurfaces_TwoD1.release.so>
+
+Number of active cells: 1,344 (on 4 levels)
+Number of degrees of freedom: 66,420 (11,074+1,425+5,537+12,096+12,096+12,096+12,096)
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reset_corner_T_box/solution/solution-00000
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273 K, 2278 K, 3211 K
+     Average density / Average viscosity / Total mass:  3674 kg/m^3, 2.073e+22 Pa s, 7.521e+16 kg
+     Writing depth average:                             output-TwoDSubduction_reset_corner_T_box/depth_average
+
+Number of active cells: 2,352 (on 5 levels)
+Number of degrees of freedom: 116,414 (19,498+2,495+9,749+21,168+21,168+21,168+21,168)
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reset_corner_T_box/solution/solution-00001
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273 K, 2278 K, 3211 K
+     Average density / Average viscosity / Total mass:  3675 kg/m^3, 2.138e+22 Pa s, 7.522e+16 kg
+     Writing depth average:                             output-TwoDSubduction_reset_corner_T_box/depth_average
+
+Number of active cells: 3,036 (on 6 levels)
+Number of degrees of freedom: 151,090 (25,666+3,295+12,833+27,324+27,324+27,324+27,324)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_reset_corner_T_box/solution/solution-00002
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273 K, 2278 K, 3211 K
+     Average density / Average viscosity / Total mass:  3675 kg/m^3, 2.131e+22 Pa s, 7.523e+16 kg
+     Writing depth average:                             output-TwoDSubduction_reset_corner_T_box/depth_average
+
+Termination requested by criterion: end time
+
+
+

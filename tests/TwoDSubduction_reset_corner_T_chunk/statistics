@@ -1,0 +1,18 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+0 0.000000000000e+00 0.000000000000e+00 1280 12003 5313 46080 0 output-TwoDSubduction_reset_corner_T_chunk/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19539546e+03 3.50000000e+03 5.95722174e-01 
+0 0.000000000000e+00 0.000000000000e+00 1526 14791 6543 54936 0 output-TwoDSubduction_reset_corner_T_chunk/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19541342e+03 3.50000000e+03 5.95727742e-01 
+0 0.000000000000e+00 0.000000000000e+00 1988 20038 8858 71568 0 output-TwoDSubduction_reset_corner_T_chunk/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19537353e+03 3.50000000e+03 5.95715378e-01 

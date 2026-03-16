@@ -1,0 +1,83 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/subduction_temperature2d/libsubduction_temperature2d.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 303,204 (20,402+2,601+10,201+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 5.24598e+15, v = 5.24598e+15, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 5.24598e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 1
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_metastable_reaction_grain_size/solution/solution-00000
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273.1 K, 1273 K, 2273 K
+     Compositions min/max/mass:                         0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0.01/0.01/9.6e+09
+     Writing depth average:                             output-TwoDSubduction_metastable_reaction_grain_size/depth_average
+     Writing particle output:                           output-TwoDSubduction_metastable_reaction_grain_size/particles/particles-00000
+     Average density / Average viscosity / Total mass:  3368 kg/m^3, 1.411e+26 Pa s, 3.233e+15 kg
+
+*** Timestep 1:  t=1000 years, dt=1000 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 3.70509e+14, v = 3.70509e+14, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 5.24653e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 14.1603
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_metastable_reaction_grain_size/solution/solution-00001
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273.1 K, 1273 K, 2273 K
+     Compositions min/max/mass:                         0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/3.348e+11 // 0/3.219e+23/1.072e+35 // 0/2.219e+13/5.674e+24 // 0/1762/3.315e+14 // 0/5.038e+07/9.059e+17 // 0/1/4.562e+11 // 0/1.325e-11/0.4 // 1.523e-07/0.01/9.444e+09
+     Writing depth average:                             output-TwoDSubduction_metastable_reaction_grain_size/depth_average
+     Writing particle output:                           output-TwoDSubduction_metastable_reaction_grain_size/particles/particles-00001
+     Average density / Average viscosity / Total mass:  3491 kg/m^3, 1.071e+29 Pa s, 3.351e+15 kg
+
+*** Timestep 2:  t=2000 years, dt=1000 years
+   Solving temperature system... 9 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 3.70884e+14, v = 3.70884e+14, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 5.24654e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 14.1461
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_metastable_reaction_grain_size/solution/solution-00002
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273.1 K, 1274 K, 2273 K
+     Compositions min/max/mass:                         0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/3.44e+11 // 0/3.219e+23/1.082e+35 // 0/2.315e+13/5.756e+24 // 0/2266/3.394e+14 // 0/1.064e+08/1.912e+18 // 0/1/4.562e+11 // 0/7.063e-12/0.1761 // 2.179e-07/0.01081/9.345e+09
+     Writing depth average:                             output-TwoDSubduction_metastable_reaction_grain_size/depth_average
+     Writing particle output:                           output-TwoDSubduction_metastable_reaction_grain_size/particles/particles-00002
+     Average density / Average viscosity / Total mass:  3495 kg/m^3, 1.071e+29 Pa s, 3.355e+15 kg
+
+Termination requested by criterion: end time
+
+
+
+
+WARNING: During this computation 3 nonlinear solver failures occurred!
