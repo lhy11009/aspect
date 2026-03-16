@@ -1,10 +1,10 @@
 # This test verifies implementation of prescribed solutions interface.
-# It sets up a 2D convection problem in a spherical chunk with 
-# prescribed velocity conditions. A prescribed velocity function is 
+# It sets up a 2D convection problem in a spherical chunk with
+# prescribed velocity conditions. A prescribed velocity function is
 # applied that varies with space and time to set the flow field.
 # The time unit "year" is being used instead of "second" to test
-# the converting of units. In addition, the "Use spherical unit vectors" 
-# is set to true in this test so that the first entry of the 
+# the converting of units. In addition, the "Use spherical unit vectors"
+# is set to true in this test so that the first entry of the
 # velocity aligns with r direction and the second entry aligns with phi direction
 
 # At the top, we define the number of space dimensions we would like to
@@ -46,7 +46,7 @@ subsection Geometry model
         set Chunk inner radius = 5.3710e+06
         set Chunk outer radius = 6.3710e+06
         set Chunk minimum longitude = 80.0
-        set Chunk maximum longitude = 100.0 
+        set Chunk maximum longitude = 100.0
         set Longitude repetitions = 2
     end
 end
@@ -101,7 +101,7 @@ subsection Prescribed solution
         subsection Indicator function
             set Variable names = r, phi, t
             # 1.3962634016 - 80 deg
-            set Function constants = Ro=6371e3, Ri=5371e3, phi_min = 1.3962634016 
+            set Function constants = Ro=6371e3, Ri=5371e3, phi_min = 1.3962634016
             set Function expression = ((phi-phi_min)*Ro<2e6*0.5*t) ? 1:0; (r-Ri<1e6*0.5*t) ? 1:0
         end
         subsection Function

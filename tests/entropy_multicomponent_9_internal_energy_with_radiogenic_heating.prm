@@ -8,7 +8,7 @@ set Use years instead of seconds           = true
 set End time                               = 3e5
 set Maximum time step                      = 3.33333e3
 set Output directory                       = new-output-free-surface-with-heat-in-unequaled-gr-3-alpha-1000-vis-1e25-nlst1e6-ts333e3-radioactive
-set Nonlinear solver scheme                = iterated Advection and Stokes 
+set Nonlinear solver scheme                = iterated Advection and Stokes
 set Use operator splitting                 = true
 
 set Nonlinear solver tolerance = 1e-6
@@ -17,7 +17,7 @@ set Max nonlinear iterations = 15
 subsection Heating model
 
   set List of model names =  constant heating
-  
+
   subsection Constant heating
      set Radiogenic heating rate = 5e-8  #W/kg
   end
@@ -25,7 +25,7 @@ end
 
 subsection Solver parameters
   subsection Operator splitting parameters
-      set Reaction solver type             = fixed step      
+      set Reaction solver type             = fixed step
       set Reaction time step               = 1e100
       set Reaction time steps per advection step = 1
   end
@@ -86,7 +86,7 @@ end
 subsection Initial composition model
   set List of model names = function
 
-  subsection Function   
+  subsection Function
     set Function expression = 0.3; 2700; 700; 0.0
   end
 end
@@ -96,7 +96,7 @@ subsection Material model
 
   subsection Entropy model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/entropy-table/ol-en-table/
-    set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt 
+    set Material file name               = forsterite_50GPa.txt, enstatite_50GPa.txt
     set Maximum viscosity                = 1e25
     set Minimum viscosity                = 1e25
     set Lateral viscosity file name      = constant_lateral_vis_prefactor.txt

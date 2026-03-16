@@ -1,0 +1,94 @@
+# test of eba initial temperature
+# It is a combination of "adiabatic" and "subduction 2d temperature ellipse"
+# Make sure it is consistent at 200 km depth
+set Dimension = 2
+set Use years instead of seconds = true
+set Start time = 0
+set End time = 0.0  # test run to 1e6, elongate to 2e6
+set Additional shared libraries = $ASPECT_SOURCE_DIR/build_master_TwoD_rebase/subduction_temperature2d_ellipse/libsubduction_temperature2d_ellipse.so
+set Pressure normalization = surface
+set Surface pressure = 0
+set Adiabatic surface temperature = 1573
+set Nonlinear solver scheme = no Advection, no Stokes  # last step
+
+subsection Discretization
+    set Composition polynomial degree = 2
+    set Stokes velocity polynomial degree = 2
+    set Temperature polynomial degree = 2
+    set Use discontinuous composition discretization = true
+end
+
+subsection Formulation
+    set Formulation = custom
+    set Mass conservation = incompressible
+    set Temperature equation = reference density profile
+end
+
+
+subsection Geometry model
+    set Model name = chunk
+    subsection Chunk
+        set Chunk inner radius = 3.481e6
+        set Chunk outer radius = 6.371e6
+        set Chunk maximum longitude = 61.0
+        set Chunk minimum longitude = 0.0
+        set Longitude repetitions = 2
+    end
+end
+
+
+subsection Mesh refinement
+    set Initial global refinement = 6
+end
+
+
+subsection Boundary velocity model
+    set Tangential velocity boundary indicators = west, east, bottom, top
+end
+
+subsection Initial temperature model
+    set List of model names = adiabatic, subduction 2d temperature ellipse
+    set List of model operators = add
+    subsection Subduction 2d temperature ellipse
+        set Thermal boundary width factor in = 1.0
+        set Thermal boundary width factor out = 0.5
+        set Extended boussinesq = true
+    end
+end
+
+
+subsection Boundary temperature model
+    set Fixed temperature boundary indicators = bottom, top
+    set List of model names = spherical constant
+    subsection Spherical constant
+        set Inner temperature = 3500
+        set Outer temperature = 273
+    end
+end
+
+subsection Material model
+    set Model name = visco plastic
+    set Material averaging = harmonic average
+end
+
+subsection Gravity model
+    set Model name = ascii data
+end
+
+subsection Heating model
+    set List of model names = adiabatic heating
+end
+
+subsection Postprocess
+    set List of postprocessors = temperature statistics, depth average # visualization
+    subsection Depth average
+        set Number of zones = 50
+        set Output format = txt
+        set Time between graphical output = 0
+    end
+    # subsection Visualization
+    #    set List of output variables = density, viscosity, error indicator, named additional outputs
+    #    set Output format = vtu
+    #    set Time between graphical output = 0.1e6
+    # end
+end

@@ -1,5 +1,5 @@
 # This is a test for Steinberger material model with Drucker-Prager Plasticity
-# The model is set up with a prescribed velocity field. Given the model setup, 
+# The model is set up with a prescribed velocity field. Given the model setup,
 # yielding is expected to happen at places where pressure is lower than 2 GPa
 # (~50 km depth).
 # yield stress = P*sind(0.5) + 8e7*cosd(0.5) Pa
@@ -22,7 +22,7 @@ subsection Prescribed Stokes solution
   subsection Velocity function
     set Variable names = x,y,t
     set Function constants = bottom_vx= 3.1710e-10, top_vx = 3.5710e-10
-    set Function expression = (top_vx - bottom_vx)/400e3 * y + top_vx ; 0 
+    set Function expression = (top_vx - bottom_vx)/400e3 * y + top_vx ; 0
   end
 end
 
@@ -40,7 +40,7 @@ subsection Compositional fields
 end
 
 subsection Material model
-  set Model name = Steinberger 
+  set Model name = Steinberger
 
   subsection Steinberger model
     set Data directory                   = $ASPECT_SOURCE_DIR/data/material-model/steinberger/test-steinberger-compressible/

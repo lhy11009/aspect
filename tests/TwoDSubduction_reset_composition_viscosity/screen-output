@@ -1,0 +1,56 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/isosurfaces_TwoD1/libisosurfaces_TwoD1.release.so>
+
+Number of active cells: 80 (on 3 levels)
+Number of degrees of freedom: 4,092 (738+105+369+720+720+720+720)
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output:                          output-TwoDSubduction_reset_composition_viscosity/solution/solution-00000
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273 K, 2154 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reset_composition_viscosity/depth_average
+     Average density / Average viscosity / Total mass:  3631 kg/m^3, 5.848e+22 Pa s, 1.263e+17 kg
+
+Number of active cells: 140 (on 4 levels)
+Number of degrees of freedom: 7,239 (1,342+186+671+1,260+1,260+1,260+1,260)
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output:                          output-TwoDSubduction_reset_composition_viscosity/solution/solution-00001
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273 K, 2189 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reset_composition_viscosity/depth_average
+     Average density / Average viscosity / Total mass:  3648 kg/m^3, 2.889e+22 Pa s, 1.269e+17 kg
+
+Number of active cells: 173 (on 5 levels)
+Number of degrees of freedom: 8,976 (1,678+231+839+1,557+1,557+1,557+1,557)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output:                          output-TwoDSubduction_reset_composition_viscosity/solution/solution-00002
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273 K, 2192 K, 3500 K
+     Writing depth average:                             output-TwoDSubduction_reset_composition_viscosity/depth_average
+     Average density / Average viscosity / Total mass:  3649 kg/m^3, 2.854e+22 Pa s, 1.27e+17 kg
+
+Termination requested by criterion: end time
+
+
+

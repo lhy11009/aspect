@@ -3,7 +3,7 @@
 # instead of just prescribing pressure.
 
 # Define the number of space dimensions we would like to
-# work in: 
+# work in:
 set Dimension = 3
 
 # Specify the time you want to let the model run for in

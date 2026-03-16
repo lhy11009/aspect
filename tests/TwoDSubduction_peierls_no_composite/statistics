@@ -1,0 +1,18 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: RMS velocity (m/year)
+# 11: Max. velocity (m/year)
+# 12: Minimal temperature (K)
+# 13: Average temperature (K)
+# 14: Maximal temperature (K)
+# 15: Average nondimensional temperature (K)
+0 0.000000000000e+00 0.000000000000e+00 1280 12003  5313  46080 0 output-TwoDSubduction_peierls_no_composite/solution/solution-00000 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19525468e+03 3.50000000e+03 5.95678551e-01 
+0 0.000000000000e+00 0.000000000000e+00 2240 21223  9401  80640 0 output-TwoDSubduction_peierls_no_composite/solution/solution-00001 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19514511e+03 3.50000000e+03 5.95644596e-01 
+0 0.000000000000e+00 0.000000000000e+00 5600 52618 23335 201600 0 output-TwoDSubduction_peierls_no_composite/solution/solution-00002 0.00000000e+00 0.00000000e+00 2.73000000e+02 2.19517119e+03 3.50000000e+03 5.95652678e-01 

@@ -101,14 +101,14 @@ subsection Mesh refinement
     set Variable names      = x,y,z
     set Function expression = if ( y<=4, 2, 4)
   end
-  
+
 end
 
 subsection Particles
   set Particle generator name =  reference cell
   set Minimum particles per cell = 32
   set Load balancing strategy = add particles
-  set Particle removal algorithm = point density function  
+  set Particle removal algorithm = point density function
   subsection Generator
     subsection Reference cell
       set Number of particles per cell per direction = 4

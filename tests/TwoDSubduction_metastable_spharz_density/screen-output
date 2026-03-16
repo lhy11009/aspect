@@ -1,0 +1,83 @@
+
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/subduction_temperature2d/libsubduction_temperature2d.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+Loading shared library <ASPECT_DIR/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+
+Number of active cells: 2,500 (on 1 levels)
+Number of degrees of freedom: 280,704 (20,402+2,601+10,201+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500+22,500)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 5.14256e+15, v = 5.14256e+15, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 5.14256e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 1
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_metastable_spharz_density/solution/solution-00000
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273.1 K, 1273 K, 2273 K
+     Compositions min/max/mass:                         0/0/0 // 1/1/9.6e+11 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/0/0
+     Writing depth average:                             output-TwoDSubduction_metastable_spharz_density/depth_average
+     Writing particle output:                           output-TwoDSubduction_metastable_spharz_density/particles/particles-00000
+     Average density / Average viscosity / Total mass:  3274 kg/m^3, 4.672e+23 Pa s, 3.143e+15 kg
+
+*** Timestep 1:  t=1000 years, dt=1000 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 3.62407e+14, v = 3.62407e+14, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 5.14315e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 14.1916
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_metastable_spharz_density/solution/solution-00001
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273.1 K, 1273 K, 2273 K
+     Compositions min/max/mass:                         0/0/0 // 1/1/9.6e+11 // 0/0/0 // 0/0/0 // 0/1/3.322e+11 // 0/3.276e+23/1.061e+35 // 0/2.373e+13/5.612e+24 // 0/1873/3.28e+14 // 0/5.068e+07/9.214e+17 // 0/1/4.519e+11 // 0/1.308e-11/0.3949
+     Writing depth average:                             output-TwoDSubduction_metastable_spharz_density/depth_average
+     Writing particle output:                           output-TwoDSubduction_metastable_spharz_density/particles/particles-00001
+     Average density / Average viscosity / Total mass:  3414 kg/m^3, 4.998e+23 Pa s, 3.278e+15 kg
+
+*** Timestep 2:  t=2000 years, dt=1000 years
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Initial Newton Stokes residual = 3.62771e+14, v = 3.62771e+14, p = 0
+
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Newton system information: Norm of the rhs: 5.14317e+15
+      Relative nonlinear residual (Stokes system) after nonlinear iteration 1: 14.1774
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output:                          output-TwoDSubduction_metastable_spharz_density/solution/solution-00002
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Temperature min/avg/max:                           273.1 K, 1273 K, 2273 K
+     Compositions min/max/mass:                         0/0/0 // 1/1/9.6e+11 // 0/0/0 // 0/0/0 // 0/1/3.399e+11 // 0/3.276e+23/1.071e+35 // 0/2.373e+13/5.697e+24 // 0/1873/3.363e+14 // 0/1.07e+08/1.945e+18 // 0/1/4.519e+11 // 0/5.973e-12/0.1747
+     Writing depth average:                             output-TwoDSubduction_metastable_spharz_density/depth_average
+     Writing particle output:                           output-TwoDSubduction_metastable_spharz_density/particles/particles-00002
+     Average density / Average viscosity / Total mass:  3417 kg/m^3, 4.998e+23 Pa s, 3.281e+15 kg
+
+Termination requested by criterion: end time
+
+
+
+
+WARNING: During this computation 3 nonlinear solver failures occurred!

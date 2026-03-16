@@ -1,6 +1,6 @@
-# This test has a free top boundary with all others closed. 
+# This test has a free top boundary with all others closed.
 # Mass conservation is analyzed by comparing mass statistics over time.
-# Mass conservation is achieved after initial 3 timesteps. 
+# Mass conservation is achieved after initial 3 timesteps.
 # The oscillation in mass for the initial timesteps decreases with increasing global refinement.
 
 set Dimension                              = 2
@@ -8,7 +8,7 @@ set Use years instead of seconds           = true
 set End time                               = 2e6
 set Maximum time step                      = 1e5
 set Output directory                       = output-entropy-multi-free-surface-with-heating
-set Nonlinear solver scheme                = iterated Advection and Stokes 
+set Nonlinear solver scheme                = iterated Advection and Stokes
 set Use operator splitting                 = true
 
 subsection Solver parameters
@@ -75,7 +75,7 @@ subsection Initial composition model
   set List of model names = function
 
   subsection Function
-    set Function expression = 0.3; 2700; 700; 0.0 
+    set Function expression = 0.3; 2700; 700; 0.0
   end
 end
 
@@ -83,9 +83,9 @@ subsection Boundary heat flux model
 
   set Fixed heat flux boundary indicators = bottom
   set Model name = function
-  
+
   subsection Function
-    set Coordinate system = cartesian 
+    set Coordinate system = cartesian
     set  Function expression  = -0.05
   end
 end
