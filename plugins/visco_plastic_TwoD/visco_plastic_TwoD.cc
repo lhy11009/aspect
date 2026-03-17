@@ -346,8 +346,6 @@ namespace aspect
                                                                                  maximum_viscosity_for_composition,
                                                                                  is_metastable_phase,
                                                                                  metastable_grain_size);
-
-                  double foo1 = 0.0;
                 }
               else
                 {
@@ -529,17 +527,13 @@ namespace aspect
 
           const Rheology::DruckerPragerParameters drucker_prager_parameters = drucker_prager_plasticity.compute_drucker_prager_parameters(j, phase_function_values,
                                                                               n_phases_per_composition);
-          const double current_cohesion = drucker_prager_parameters.cohesion * weakening_factors[0];
-          const double current_friction = drucker_prager_parameters.angle_internal_friction * weakening_factors[1];
           viscosity_pre_yield *= weakening_factors[2];
 
           // Step 4: plastic yielding
 
           // Step 4a: calculate Drucker-Prager yield stress
-          const double yield_stress = drucker_prager_plasticity.compute_yield_stress(current_cohesion,
-                                                                                     current_friction,
-                                                                                     std::max(in.pressure[i], 0.0),
-                                                                                     drucker_prager_parameters.max_yield_stress);
+          const double yield_stress = drucker_prager_plasticity.compute_yield_stress(std::max(in.pressure[i], 0.0),
+                                                                                     drucker_prager_parameters);
 
           // Step 4b: select if yield viscosity is based on Drucker Prager or stress limiter rheology
           double viscosity_yield = viscosity_pre_yield;
@@ -560,11 +554,10 @@ namespace aspect
                 // rescale the viscosity back to yield surface
                 if (current_stress >= yield_stress)
                   {
-                    viscosity_yield = drucker_prager_plasticity.compute_viscosity(current_cohesion,
-                                                                                  current_friction,
-                                                                                  std::max(in.pressure[i], 0.0),
+                    viscosity_yield = drucker_prager_plasticity.compute_viscosity(std::max(in.pressure[i], 0.0),
                                                                                   current_edot_ii,
-                                                                                  drucker_prager_parameters.max_yield_stress);
+                                                                                  drucker_prager_parameters,
+                                                                                  viscosity_pre_yield);
                     composition_yielding[j] = true;
                   }
                 break;
