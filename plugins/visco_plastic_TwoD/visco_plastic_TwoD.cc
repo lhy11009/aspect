@@ -247,7 +247,7 @@ namespace aspect
                                      const YieldScheme &yield_type,
                                      const std::vector<double> &phase_function_values,
                                      const std::vector<unsigned int> &n_phases_per_composition,
-                                     TwoDAdditionalViscosityOutputs<dim> *add_viscosities_out) const
+                                     const std::shared_ptr<TwoDAdditionalViscosityOutputs<dim>> add_viscosities_out) const
     {
       // Initialize or fill variables used to calculate viscosities
       std::vector<bool> composition_yielding(volume_fractions.size(), false);
@@ -593,7 +593,7 @@ namespace aspect
                          const std::vector<double> &phase_function_values,
                          const std::vector<unsigned int> &n_phases_per_composition) const
     {
-      PlasticTwoDAdditionalOutputs<dim> *plastic_out = out.template get_additional_output<PlasticTwoDAdditionalOutputs<dim>>();
+      const std::shared_ptr<PlasticTwoDAdditionalOutputs<dim>> plastic_out = out.template get_additional_output_object<PlasticTwoDAdditionalOutputs<dim>>();
 
       if (plastic_out != nullptr)
         {
@@ -629,8 +629,8 @@ namespace aspect
                                   const std::vector<unsigned int> &n_phases_per_composition
                                  ) const
     {
-      MaterialModel::MaterialModelDerivatives<dim> *derivatives =
-        out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim>>();
+      const std::shared_ptr<MaterialModel::MaterialModelDerivatives<dim>> derivatives =
+        out.template get_additional_output_object<MaterialModel::MaterialModelDerivatives<dim>>();
 
       if (derivatives != nullptr)
         {
@@ -1069,7 +1069,7 @@ namespace aspect
 
               // prepare for output of dislocation creep
               std::pair<std::vector<double>, std::vector<bool>> calculate_viscosities;
-              if (TwoDAdditionalViscosityOutputs<dim> *add_viscosities_out = out.template get_additional_output<TwoDAdditionalViscosityOutputs<dim>>())
+              if (const std::shared_ptr<TwoDAdditionalViscosityOutputs<dim>> add_viscosities_out = out.template get_additional_output_object<TwoDAdditionalViscosityOutputs<dim>>())
                 {
                   // change for output dislocation creep viscosity
                   calculate_viscosities = calculate_isostrain_viscosities(in_visc, i, volume_fractions, viscous_flow_law,
@@ -1098,8 +1098,8 @@ namespace aspect
               plastic_yielding = calculate_viscosities.second[std::distance(volume_fractions.begin(),max_composition)];
 
               // Compute viscosity derivatives if they are requested
-              if (MaterialModel::MaterialModelDerivatives<dim> *derivatives =
-                    out.template get_additional_output<MaterialModel::MaterialModelDerivatives<dim>>())
+              if (const std::shared_ptr<MaterialModel::MaterialModelDerivatives<dim>> derivatives =
+                    out.template get_additional_output_object<MaterialModel::MaterialModelDerivatives<dim>>())
                 compute_viscosity_derivatives(i, volume_fractions, calculate_viscosities.first, in_visc, out, phase_function_values, phase_function.n_phase_transitions_for_each_chemical_composition());
             }
 
@@ -1123,7 +1123,7 @@ namespace aspect
                                                                                  viscosity_averaging);
 
               // Fill the material properties that are part of the elastic additional outputs
-              if (ElasticAdditionalOutputs<dim> *elastic_out = out.template get_additional_output<ElasticAdditionalOutputs<dim>>())
+              if (const std::shared_ptr<ElasticAdditionalOutputs<dim>> elastic_out = out.template get_additional_output_object<ElasticAdditionalOutputs<dim>>())
                 {
                   elastic_out->elastic_shear_moduli[i] = average_elastic_shear_moduli[i];
                 }
@@ -1175,7 +1175,7 @@ namespace aspect
         {
           for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
             {
-              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim>>();
+              const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out = out.template get_additional_output_object<ReactionRateOutputs<dim>>();
               reset_shear_zone_composition_from_particle(i, out.reaction_terms, reaction_rate_out, in);
             }
         }
@@ -1185,7 +1185,7 @@ namespace aspect
         {
           for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
             {
-              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim>>();
+              const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out = out.template get_additional_output_object<ReactionRateOutputs<dim>>();
               reaction_mor_compositions(i, out.reaction_terms, reaction_rate_out, in);
             }
         }
@@ -1194,7 +1194,7 @@ namespace aspect
         {
           for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
             {
-              ReactionRateOutputs<dim> *reaction_rate_out = out.template get_additional_output<ReactionRateOutputs<dim>>();
+              const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out = out.template get_additional_output_object<ReactionRateOutputs<dim>>();
               reaction_metastable_compositions(i, out.reaction_terms, reaction_rate_out, in);
             }
 
@@ -1968,7 +1968,7 @@ namespace aspect
     void
     ViscoPlasticTwoD<dim>::create_additional_named_outputs (MaterialModel::MaterialModelOutputs<dim> &out) const
     {
-      if (out.template get_additional_output<PlasticTwoDAdditionalOutputs<dim>>() == nullptr)
+      if (out.template get_additional_output_object<PlasticTwoDAdditionalOutputs<dim>>() == nullptr)
         {
           const unsigned int n_points = out.n_evaluation_points();
           out.additional_outputs.push_back(
@@ -1977,7 +1977,7 @@ namespace aspect
       if (use_elasticity)
         elastic_rheology.create_elastic_additional_outputs(out);
       // add dislocation viscosity
-      if (out.template get_additional_output<TwoDAdditionalViscosityOutputs<dim>>() == nullptr)
+      if (out.template get_additional_output_object<TwoDAdditionalViscosityOutputs<dim>>() == nullptr)
         {
           const unsigned int n_points = out.n_evaluation_points();
           out.additional_outputs.push_back(
@@ -2058,7 +2058,7 @@ namespace aspect
     void
     ViscoPlasticTwoD<dim>::reset_shear_zone_composition_from_particle(const unsigned int i,
                                                                       std::vector<std::vector<double>> &reaction_terms,
-                                                                      ReactionRateOutputs<dim> *reaction_rate_out,
+                                                                      const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out,
                                                                       const MaterialModel::MaterialModelInputs<dim> &in) const
     {
       // get value of composition
@@ -2158,7 +2158,7 @@ namespace aspect
     void
     ViscoPlasticTwoD<dim>::reaction_mor_compositions(const unsigned int i,
                                                      std::vector<std::vector<double>> &reaction_terms,
-                                                     ReactionRateOutputs<dim> *reaction_rate_out,
+                                                     const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out,
                                                      const MaterialModel::MaterialModelInputs<dim> &in) const
     {
       // get value of composition
@@ -2248,7 +2248,7 @@ namespace aspect
     void
     ViscoPlasticTwoD<dim>::reaction_metastable_compositions(const unsigned int i,
                                                             std::vector<std::vector<double>> &reaction_terms,
-                                                            ReactionRateOutputs<dim> *reaction_rate_out,
+                                                            const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out,
                                                             const MaterialModel::MaterialModelInputs<dim> &in) const
     {
       for (unsigned c=0; c<this->n_compositional_fields(); ++c)

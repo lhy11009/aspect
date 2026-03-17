@@ -1,6 +1,6 @@
 # This test verifies implementation of prescribed solutions interface.
-# It sets up a 2D convection problem in a rectangular box with 
-# prescribed velocity conditions. A prescribed velocity function is 
+# It sets up a 2D convection problem in a rectangular box with
+# prescribed velocity conditions. A prescribed velocity function is
 # applied that varies with space and time to set the flow field.
 # The time unit "year" is used in this test instead of "seconds"
 

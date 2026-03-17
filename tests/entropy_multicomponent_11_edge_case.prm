@@ -36,19 +36,19 @@ subsection Adiabatic conditions model
  subsection Compute profile
 <<<<<<< HEAD
 ||||||| parent of 1bcd92885 (My commits)
- 
+
 =======
 
 >>>>>>> 1bcd92885 (My commits)
   set Use surface condition function = true
 
 <<<<<<< HEAD
-  	subsection Surface condition function
+    subsection Surface condition function
       set Variable names = x,t
       set Function expression = 1.2e9+4e2*t;0
 ||||||| parent of 1bcd92885 (My commits)
-  	subsection Surface condition function
-    set Variable names = x,t 
+    subsection Surface condition function
+    set Variable names = x,t
     set Function expression = 1.2e9+4e2*t;0
 =======
     subsection Surface condition function
@@ -86,7 +86,7 @@ subsection Initial composition model
   subsection Function
 <<<<<<< HEAD
 ||||||| parent of 1bcd92885 (My commits)
-   
+
 =======
 
 >>>>>>> 1bcd92885 (My commits)

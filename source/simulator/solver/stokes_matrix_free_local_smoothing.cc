@@ -1523,8 +1523,8 @@ namespace aspect
             catch (const std::exception &exc)
               {
                 this->get_signals().post_stokes_solver(sim,
-                                                       preconditioner_cheap.n_iterations_Schur_complement() + preconditioner_expensive.n_iterations_Schur_complement(),
-                                                       preconditioner_cheap.n_iterations_A_block() + preconditioner_expensive.n_iterations_A_block(),
+                                                       schur_approximation_cheap.n_iterations() + schur_approximation_expensive.n_iterations(),
+                                                       inverse_velocity_block_cheap.n_iterations() + inverse_velocity_block_expensive.n_iterations(),
                                                        solver_control_cheap,
                                                        solver_control_expensive);
 

@@ -1,5 +1,5 @@
-# This .prm file is intended to test the particle_distribution_score postprocessor in 
-# 3 dimensions. 
+# This .prm file is intended to test the particle_distribution_score postprocessor in
+# 3 dimensions.
 
 set Dimension                              = 3
 set Use years instead of seconds           = false

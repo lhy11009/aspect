@@ -405,7 +405,7 @@ namespace aspect
             AssertThrow(adjust_metastable_composition_index != numbers::invalid_unsigned_int,
                         ExcMessage("The adjust_metastable_flag is set but the sp_lower composition is not found"));
 
-          }
+        }
         prm.leave_subsection();
       }
       prm.leave_subsection();

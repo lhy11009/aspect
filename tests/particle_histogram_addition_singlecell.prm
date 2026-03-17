@@ -1,6 +1,6 @@
 # This is an extremely basic test case for particle addition using a histogram.
 # The test generates three particles from an ASCII file, each in a separate corner of the cell.
-# The result of this test should be to generate a new particle in the corner of the 
+# The result of this test should be to generate a new particle in the corner of the
 # cell which did not already have a particle generated from the ASCII file. This is to make
 # sure that the histogram method is generating particles in the histogram "bucket" which
 # has the least particles.

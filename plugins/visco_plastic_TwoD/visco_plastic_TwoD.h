@@ -498,7 +498,7 @@ namespace aspect
                                           const YieldScheme &yield_type,
                                           const std::vector<double> &phase_function_values = std::vector<double>(),
                                           const std::vector<unsigned int> &n_phases_per_composition = std::vector<unsigned int>(),
-                                          TwoDAdditionalViscosityOutputs<dim> *add_viscosities_out = nullptr) const;
+                                          const std::shared_ptr<TwoDAdditionalViscosityOutputs<dim>> add_viscosities_out = nullptr) const;
 
 
         /**
@@ -562,7 +562,7 @@ namespace aspect
          */
         void reaction_mor_compositions(const unsigned int point_index,
                                        std::vector<std::vector<double>> &reaction_terms,
-                                       ReactionRateOutputs<dim> *reaction_rate_out,
+                                       const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out,
                                        const MaterialModel::MaterialModelInputs<dim> &in) const;
 
         /*
@@ -581,7 +581,7 @@ namespace aspect
          */
         void reaction_metastable_compositions(const unsigned int point_index,
                                               std::vector<std::vector<double>> &reaction_terms,
-                                              ReactionRateOutputs<dim> *reaction_rate_out,
+                                              const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out,
                                               const MaterialModel::MaterialModelInputs<dim> &in) const;
 
 
@@ -736,7 +736,7 @@ namespace aspect
          */
         void reset_shear_zone_composition_from_particle(const unsigned int point_index,
                                                         std::vector<std::vector<double>> &reaction_terms,
-                                                        ReactionRateOutputs<dim> *reaction_rate_out,
+                                                        const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out,
                                                         const MaterialModel::MaterialModelInputs<dim> &in) const;
 
         /**
