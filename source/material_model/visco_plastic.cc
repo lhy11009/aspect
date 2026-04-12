@@ -555,8 +555,8 @@ namespace aspect
     template <int dim>
     void
     ViscoPlastic<dim>::reset_calculated_viscosities( const unsigned int i,
-                                                         std::vector<double> &viscosities,
-                                                         const MaterialModel::MaterialModelInputs<dim> &in) const
+                                                     std::vector<double> &viscosities,
+                                                     const MaterialModel::MaterialModelInputs<dim> &in) const
     {
       // convert to coordinate system used by the function
       Utilities::NaturalCoordinate<dim> point =

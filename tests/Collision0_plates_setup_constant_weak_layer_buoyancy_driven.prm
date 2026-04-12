@@ -6,7 +6,7 @@ set Output directory = output
 set Max nonlinear iterations = 40
 set Nonlinear solver tolerance = 5e-3
 set Dimension = 2
-set End time = 1
+set End time = 0
 set CFL number = 0.5
 set Pressure normalization = no
 set Maximum time step = 1
@@ -216,7 +216,7 @@ end
 subsection Mesh refinement
     set Coarsening fraction = 0.3
     set Refinement fraction = 0.5
-    set Initial adaptive refinement = 3
+    set Initial adaptive refinement = 2
     set Initial global refinement = 1
     set Strategy = viscosity, minimum refinement function, maximum refinement function, isosurfaces
     set Time steps between mesh refinement = 2
@@ -228,14 +228,14 @@ subsection Mesh refinement
         set Function constants = litho_thickness=120e3, ymax=1000e3
         set Coordinate system = cartesian
         set Variable names = x, y
-        set Function expression = if(y>(ymax-litho_thickness),4, \
+        set Function expression = if(y>(ymax-litho_thickness),3, \
                               if(y>=(ymax - 662e3) && y<=(ymax - 658e3), 3, 2))
     end
     subsection Maximum refinement function
         set Function constants = xmax=5500e3, xmin=4000e3, ymax=1000e3
         set Coordinate system = cartesian
         set Variable names = x, y
-        set Function expression = if( x<=xmax && x>=xmin && y>=(ymax - 660e3), 4, 3)
+        set Function expression = if( x<=xmax && x>=xmin && y>=(ymax - 660e3), 3, 2)
     end
     subsection Isosurfaces
         set Isosurfaces = max, max, porosity: 0.5 | 1.0; max, max, bound_fluid: 0.5 | 1.0; max, max, sediment: 0.5 | 1.0; max-1, max, gabbro: 0.5 | 1.0; max, max, MORB: 0.5 | 1.0; max-1, max, crust_upper: 0.5 | 1.0; max-1, max, crust_lower: 0.5 | 1.0
