@@ -1,0 +1,39 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: Minimal value for composition porosity
+# 11: Maximal value for composition porosity
+# 12: Global mass for composition porosity
+# 13: Minimal value for composition bound_fluid
+# 14: Maximal value for composition bound_fluid
+# 15: Global mass for composition bound_fluid
+# 16: Minimal value for composition gabbro
+# 17: Maximal value for composition gabbro
+# 18: Global mass for composition gabbro
+# 19: Minimal value for composition MORB
+# 20: Maximal value for composition MORB
+# 21: Global mass for composition MORB
+# 22: Minimal value for composition sediment
+# 23: Maximal value for composition sediment
+# 24: Global mass for composition sediment
+# 25: Minimal value for composition crust_upper
+# 26: Maximal value for composition crust_upper
+# 27: Global mass for composition crust_upper
+# 28: Minimal value for composition crust_lower
+# 29: Maximal value for composition crust_lower
+# 30: Global mass for composition crust_lower
+# 31: RMS velocity (m/year)
+# 32: Max. velocity (m/year)
+# 33: Number of advected particles
+# 34: Particle file name
+# 35: Average density (kg/m^3)
+# 36: Average viscosity (Pa s)
+# 37: Total mass (kg)
+0 0.000000000000e+00 0.000000000000e+00 1453 14758 6531 45717 0 output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/solution/solution-00000 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.88710172e+09 0.00000000e+00 1.00000000e+00 1.33272059e+09 0.00000000e+00 1.00000000e+00 6.16383272e+09 -1.25000000e-01 1.00000000e+00 6.55254289e+10 0.00000000e+00 1.00000000e+00 2.18788297e+11 0.00000000e+00 0.00000000e+00 71197 output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/particles/particles-00000 3.48768037e+03 5.90275192e+21 3.03428192e+16 
+1 1.000000000000e+00 1.000000000000e+00 1453 14758 6531 45717 0 output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/solution/solution-00001 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.88710172e+09 0.00000000e+00 1.00000000e+00 1.33272059e+09 0.00000000e+00 1.00000000e+00 6.16383272e+09 -1.25000000e-01 1.00000000e+00 6.55254289e+10 0.00000000e+00 1.00000000e+00 2.18788297e+11 0.00000000e+00 0.00000000e+00 71197 output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/particles/particles-00001 3.48768037e+03 2.01208267e+22 3.03428192e+16 
