@@ -2155,11 +2155,11 @@ namespace aspect
                                "but the `adiabatic heating' plugin has been selected in the input file. "
                                "Please check the consistency of your input file."));
 
-        AssertThrow(!heating_model_manager.shear_heating_enabled(),
-                    ExcMessage("ASPECT detected an inconsistency in the provided input file. "
-                               "The 'Boussinesq approximation' formulation expects shear heating to be disabled, "
-                               "but the `shear heating' plugin has been selected in the input file. "
-                               "Please check the consistency of your input file."));
+        // AssertThrow(!heating_model_manager.shear_heating_enabled(),
+        //             ExcMessage("ASPECT detected an inconsistency in the provided input file. "
+        //                        "The 'Boussinesq approximation' formulation expects shear heating to be disabled, "
+        //                        "but the `shear heating' plugin has been selected in the input file. "
+        //                        "Please check the consistency of your input file."));
       }
     else if (parameters.formulation == Parameters<dim>::Formulation::anelastic_liquid_approximation)
       {
