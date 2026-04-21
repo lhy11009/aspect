@@ -193,6 +193,10 @@ namespace aspect
           out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic, std::optional<std::string>("entropy_derivative_pressure"), in_ptr, i);
           out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic, std::optional<std::string>("entropy_derivative_temperature"), in_ptr, i);
 
+          // todo_cc
+          if (compressible_correction)
+            apply_compressibility_correction(in, out, i);
+
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding.
           // Also always compute the viscosity if additional outputs are requested, because the viscosity is needed
           // to compute the elastic force term and the elastic reaction rates.
@@ -351,7 +355,11 @@ namespace aspect
     ViscoPlastic<dim>::
     is_compressible () const
     {
-      return equation_of_state.is_compressible();
+      // todo_cc
+      if (compressible_correction)
+        return true;
+      else
+        return equation_of_state.is_compressible();
     }
 
 
@@ -436,6 +444,14 @@ namespace aspect
           }
           prm.leave_subsection();
 
+
+          // todo_cc
+          prm.declare_entry("Compressible Correction", "false", Patterns::Bool());
+          prm.declare_entry("CC reference temperature", "1573", Patterns::Double());
+          prm.declare_entry("CC reference thermal expansivity", "3e-5", Patterns::Double());
+          prm.declare_entry("CC reference isothermal compressibility", "4e-12", Patterns::Double());
+          prm.declare_entry("CC bulk modulus pressure derivative", "4.0", Patterns::Double());
+          prm.declare_entry("CC isochoric specific heat", "1000", Patterns::Double());
         }
         prm.leave_subsection();
       }
@@ -526,6 +542,24 @@ namespace aspect
             }
           prm.leave_subsection();
 
+          // todo_cc
+          compressible_correction = prm.get_bool("Compressible Correction");
+
+          cc_reference_temperature =
+            prm.get_double("CC reference temperature");
+
+          cc_reference_thermal_expansivity =
+            prm.get_double("CC reference thermal expansivity");
+
+          cc_reference_isothermal_compressibility =
+            prm.get_double("CC reference isothermal compressibility");
+
+          cc_isothermal_bulk_modulus_pressure_derivative =
+            prm.get_double("CC bulk modulus pressure derivative");
+
+          cc_isochoric_specific_heat =
+            prm.get_double("CC isochoric specific heat");
+
         }
         prm.leave_subsection();
       }
@@ -569,6 +603,63 @@ namespace aspect
         {
           viscosities[i] = new_viscosity;
         }
+    }
+
+    // todo_cc
+    template <int dim>
+    void
+    ViscoPlastic<dim>::
+    apply_compressibility_correction(
+      const MaterialModel::MaterialModelInputs<dim> &in,
+      MaterialModel::MaterialModelOutputs<dim> &out,
+      const unsigned int i) const
+    {
+      const double temperature = std::max(in.temperature[i], 1.0);
+
+      double pressure_for_density;
+      if (this->introspection().composition_type_exists(CompositionalFieldDescription::density) &&
+          this->get_parameters().formulation_mass_conservation ==
+          Parameters<dim>::Formulation::MassConservation::projected_density_field)
+        pressure_for_density = this->get_adiabatic_conditions().pressure(in.position[i]);
+      else
+        pressure_for_density = in.pressure[i];
+
+      // --- renamed variables ---
+      const double ak =
+        cc_reference_thermal_expansivity /
+        cc_reference_isothermal_compressibility;
+
+      const double f =
+        1.0 + (pressure_for_density
+               - ak * (temperature - cc_reference_temperature))
+        * cc_isothermal_bulk_modulus_pressure_derivative
+        * cc_reference_isothermal_compressibility;
+
+      Assert(f > 0.0, ExcMessage("Negative f in compressibility correction."));
+
+      const double rho_base = out.densities[i];
+
+      out.densities[i] =
+        rho_base * std::pow(f, 1.0 / cc_isothermal_bulk_modulus_pressure_derivative);
+
+      out.thermal_expansion_coefficients[i] =
+        cc_reference_thermal_expansivity / f;
+
+      out.compressibilities[i] =
+        cc_reference_isothermal_compressibility / f;
+
+      out.specific_heat[i] =
+        cc_isochoric_specific_heat +
+        (temperature * cc_reference_thermal_expansivity
+         * ak * std::pow(f,
+                         -1.0 - (1.0 / cc_isothermal_bulk_modulus_pressure_derivative))
+         / rho_base);
+
+      // if (out.entropy_derivative_pressure.size() > i)
+      //   out.entropy_derivative_pressure[i] = 0.0;
+
+      // if (out.entropy_derivative_temperature.size() > i)
+      //   out.entropy_derivative_temperature[i] = 0.0;
     }
 
   }
