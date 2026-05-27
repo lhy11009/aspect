@@ -165,6 +165,19 @@ namespace aspect
 
               computing_timer.leave_subsection("Interpolate prescribed temperature");
             }
+          else if (true)
+            {
+              computing_timer.enter_subsection("Interpolate prescribed temperature foo");
+
+              interpolate_material_output_into_advection_field_foo({adv_field});
+
+              // Also set the old_solution block to the prescribed field. The old
+              // solution is the one that is used to assemble the diffusion system in
+              // assemble_advection_system() for this solver scheme.
+              // old_solution.block(adv_field.block_index(introspection)) = solution.block(adv_field.block_index(introspection));
+
+              computing_timer.leave_subsection("Interpolate prescribed temperature foo");
+            }
 
           assemble_advection_system (adv_field);
 

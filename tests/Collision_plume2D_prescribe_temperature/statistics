@@ -1,0 +1,20 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of nonlinear iterations
+# 8: Iterations for temperature solver
+# 9: Iterations for Stokes solver
+# 10: Velocity iterations in Stokes preconditioner
+# 11: Schur complement iterations in Stokes preconditioner
+# 12: Visualization file name
+# 13: RMS velocity (m/year)
+# 14: Max. velocity (m/year)
+# 15: Minimal temperature (K)
+# 16: Average temperature (K)
+# 17: Maximal temperature (K)
+# 18: Average nondimensional temperature (K)
+0 0.000000000000e+00 0.000000000000e+00 1024 9539 4225 2 11 12 14 14 output-Collision_plume2D_prescribe_temperature/solution/solution-00000 2.67959907e-03 6.16846724e-03 2.73000000e+02 9.28918667e+02 3.27300000e+03 1.87405333e-01 
+1 1.000000000000e+02 1.000000000000e+02 1024 9539 4225 1  6  4  5  5 output-Collision_plume2D_prescribe_temperature/solution/solution-00001 2.67959690e-03 6.16846452e-03 2.73000000e+02 9.28918678e+02 3.27300000e+03 1.87405337e-01 

@@ -25,6 +25,7 @@
 #include <aspect/newton.h>
 #include <aspect/adiabatic_conditions/interface.h>
 #include <aspect/gravity_model/interface.h>
+#include <aspect/initial_temperature/interface.h>
 
 namespace aspect
 {
@@ -38,6 +39,16 @@ namespace aspect
         {
           phase_function_discrete->initialize();
         }
+      
+      initial_temperature_manager = nullptr;
+    }
+
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::initialize_initial_temperature_manager ()
+    {
+      initial_temperature_manager = this->get_initial_temperature_manager_pointer();
     }
 
 
@@ -115,6 +126,8 @@ namespace aspect
 
       std::vector<double> phase_function_discrete_values = (use_dominant_phase_for_viscosity?
                                                             std::vector<double>(phase_function_discrete->n_phase_transitions(), 0.0): std::vector<double>());
+
+
 
 
       // Loop through all requested points
@@ -337,7 +350,17 @@ namespace aspect
           rheology->elastic_rheology.fill_reaction_rates(in, average_elastic_shear_moduli, out);
         }
 
-      // todo_visc
+      if (prescribe_temperature_value && (initial_temperature_manager != nullptr))
+        {
+          // the second condition makes sure this is not triggered during initialization
+          // stage
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              prescribe_temperature_value_in_region(i, in, out);
+            }
+        }
+
+
       // If reset_viscosity is set to true, reset viscosity for some parts of the domain
       if (reset_viscosity)
         {
@@ -416,7 +439,6 @@ namespace aspect
                              "If only one value is given, then all use the same value. "
                              "Units: $\\frac{\\text{W}{\\text{m}\\text{K}}$.");
 
-          // todo_visc
           // Reset Viscosity for some part as the last step of computing viscosity
           prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
                              "Reset viscosity");
@@ -424,6 +446,34 @@ namespace aspect
           {
             /**
              * Choose the coordinates to evaluate the Reset viscosity
+             * function. The function can be declared in dependence of depth,
+             * cartesian coordinates or spherical coordinates. Note that the order
+             * of spherical coordinates is r,phi,theta and not r,theta,phi, since
+             * this allows for dimension independent expressions.
+             */
+            prm.declare_entry ("Coordinate system", "cartesian",
+                               Patterns::Selection ("cartesian|spherical|depth"),
+                               "A selection that determines the assumed coordinate "
+                               "system for the function variables. Allowed values "
+                               "are `cartesian', `spherical', and `depth'. `spherical' coordinates "
+                               "are interpreted as r,phi or r,phi,theta in 2D/3D "
+                               "respectively with theta being the polar angle. `depth' "
+                               "will create a function, in which only the first "
+                               "parameter is non-zero, which is interpreted to "
+                               "be the depth of the point.");
+
+            Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
+          }
+          prm.leave_subsection();
+
+          prm.declare_entry ("Prescribe temperature value", "false", Patterns::Bool(),
+                             "Prescribe temperature value");
+          prm.declare_entry ("Prescribe temperature value from initial temperature", "false", Patterns::Bool(),
+                             "Prescribe temperature value from initial temperature");
+          prm.enter_subsection("Prescribe temperature value function");
+          {
+            /**
+             * Choose the coordinates to evaluate the Prescribed temperature
              * function. The function can be declared in dependence of depth,
              * cartesian coordinates or spherical coordinates. Note that the order
              * of spherical coordinates is r,phi,theta and not r,theta,phi, since
@@ -517,7 +567,6 @@ namespace aspect
               rheology->parse_parameters(prm, std::make_unique<std::vector<unsigned int>>(n_phases_for_each_chemical_composition));
             }
 
-          // todo_visc
           // Reset viscosity for some part as the last step of computing viscosity
           reset_viscosity = prm.get_bool("Reset viscosity");
 
@@ -540,6 +589,31 @@ namespace aspect
                         << "is shown below.\n";
               throw;
             }
+          prm.leave_subsection();
+
+          // Reset viscosity for some part as the last step of computing viscosity
+          prescribe_temperature_value = prm.get_bool("Prescribe temperature value");
+          prescribe_temperature_value_from_initial_temperature = prm.get_bool("Prescribe temperature value from initial temperature");
+
+          // A function for reset viscosity for some part as the last step of computing viscosity
+          prm.enter_subsection("Prescribe temperature value function");
+          {
+            prescribe_temperature_value_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
+            try
+              {
+                prescribe_temperature_value_function.parse_parameters (prm);
+              }
+            catch (...)
+              {
+                std::cerr << "ERROR: FunctionParser failed to parse\n"
+                          << "\t'Prescribe temperature value function.Function'\n"
+                          << "with expression\n"
+                          << "\t'" << prm.get("Function expression") << "'"
+                          << "More information about the cause of the parse error \n"
+                          << "is shown below.\n";
+                throw;
+              }
+          }
           prm.leave_subsection();
 
           // todo_cc
@@ -583,8 +657,66 @@ namespace aspect
 
       if (this->get_parameters().enable_elasticity)
         rheology->elastic_rheology.create_elastic_additional_outputs(out);
+
+      if (out.template has_additional_output_object<
+          PrescribedTemperatureOutputs<dim>>() == false)
+        {
+          const unsigned int n_points = out.n_evaluation_points();
+
+          out.additional_outputs.push_back(
+            std::make_unique<
+            MaterialModel::PrescribedTemperatureOutputs<dim>>
+            (n_points));
+
+          std::shared_ptr<PrescribedTemperatureOutputs<dim>> prescribed_temperature_out =
+            out.template get_additional_output_object<MaterialModel::PrescribedTemperatureOutputs<dim>>();
+
+          Assert(prescribed_temperature_out != nullptr,
+                 ExcInternalError());
+
+          std::fill(
+            prescribed_temperature_out->prescribed_temperature_outputs.begin(),
+            prescribed_temperature_out->prescribed_temperature_outputs.end(),
+            -1.0);
+        }
     }
 
+    template <int dim>
+    void
+    ViscoPlastic<dim>::prescribe_temperature_value_in_region( const unsigned int i,
+                                                              const MaterialModel::MaterialModelInputs<dim> &in,
+                                                              MaterialModel::MaterialModelOutputs<dim> &out) const
+    {
+
+      Assert(initial_temperature_manager != nullptr, ExcMessage("Initial temperature manager not set."));
+
+      const std::shared_ptr<PrescribedTemperatureOutputs<dim>> prescribed_temperature_out
+        = out.template get_additional_output_object<PrescribedTemperatureOutputs<dim>>();
+
+      if (prescribed_temperature_out != nullptr)
+        {
+          // convert to coordinate system used by the function
+          Utilities::NaturalCoordinate<dim> point =
+            this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], prescribe_temperature_value_function_coordinate_system);
+
+          // get value of new temperature from function
+          // use negative value as invalid value, note these values are initiated with -1.0
+          const float new_temperature_indicator = prescribe_temperature_value_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
+
+
+          if (new_temperature_indicator > 0.0)
+            {
+              if (prescribe_temperature_value_from_initial_temperature)
+                prescribed_temperature_out->prescribed_temperature_outputs[i] = initial_temperature_manager->initial_temperature(in.position[i]);
+              else
+                prescribed_temperature_out->prescribed_temperature_outputs[i] = new_temperature_indicator;
+            }
+          else
+            {
+              prescribed_temperature_out->prescribed_temperature_outputs[i] = -1.0;
+            }
+        }
+    }
 
     template <int dim>
     void

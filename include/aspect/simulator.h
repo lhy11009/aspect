@@ -1329,6 +1329,8 @@ namespace aspect
        */
       void interpolate_material_output_into_advection_field (const std::vector<AdvectionField> &adv_field);
 
+      void interpolate_material_output_into_advection_field_foo (const std::vector<AdvectionField> &adv_field);
+
 
       /**
        * Interpolate the given function onto the velocity FE space and write

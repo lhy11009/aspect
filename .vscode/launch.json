@@ -8,10 +8,10 @@
             // Resolved by CMake Tools:
             "program": "${workspaceFolder}/build_main_collision/aspect-debug",
 	    // *** replace --test by the name of the .prm file you want to run: ***
-            "args": ["case_debug.prm"],
+            "args": ["case_small.prm"],
             "stopAtEntry": true,
 	    // *** append to the path here if you want to run inside some directory like /cookbooks/ ***
-            "cwd": "/mnt/lochy/ASPECT_DATA/Collision0/collision_setup1/D1000_minV2.5e+19_WLV2.5e+19_PC5.0e-02_CTboth",
+            "cwd": "/mnt/lochy/ASPECT_DATA/Collision0/collision_setup11/D2000_minV2.5e+19_Coh1.0e+02_WLS_WLF2.0e-02_WLM2.5e+19_CTboth_SL2.00e+06_Cn_PTr_stampede3_test_corner",
             "environment": [
                 {
                     // add the directory where our target was built to the PATHs
