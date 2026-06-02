@@ -280,6 +280,35 @@ namespace aspect
          */
         std::unique_ptr<MaterialUtilities::PhaseFunctionDiscrete<dim>> phase_function_discrete;
 
+        /**
+         * todo_visc
+         */
+        /**
+         * Whether to reset viscosity for some part as the last step of computing viscosity
+         */
+        bool reset_viscosity;
+
+        /**
+         * A function object representing the temperature used to reset viscosity
+         */
+        Functions::ParsedFunction<dim> reset_viscosity_function;
+
+        /**
+         * The coordinate representation to evaluate the function to reset viscosity. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
+
+        /**
+         * A function that resets the values of viscosity in specified region with specified value.
+         * If reset_viscosity is false, this is skipped.
+         */
+        void reset_calculated_viscosities(const unsigned int point_index,
+                                          std::vector<double> &viscosities,
+                                          const MaterialModel::MaterialModelInputs<dim> &in) const;
+
+
+
     };
 
   }
