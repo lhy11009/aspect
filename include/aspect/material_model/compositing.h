@@ -101,6 +101,14 @@ namespace aspect
          */
         bool is_compressible () const override;
 
+        /**
+         * Return the subordinary models
+         */
+        inline
+        const std::vector<std::unique_ptr<Interface<dim>>> &get_models () const
+        {
+          return models;
+        }
 
 
       private:
@@ -130,6 +138,58 @@ namespace aspect
         std::vector<std::string>                             model_names;
         std::vector<std::unique_ptr<Interface<dim>>> models;
     };
+
+
+    /**
+     * Modify the Plugins::plugin_type_matches to account for the compositing material model
+    */
+    template <typename TestType, int dim>
+    inline
+    bool
+    plugin_type_matches_recursive (
+      const MaterialModel::Interface<dim> &plugin)
+    {
+      // Direct match
+      if (Plugins::plugin_type_matches<TestType>(plugin))
+        return true;
+
+      // Search inside compositing material model
+      if (const auto *compositing =
+            dynamic_cast<const MaterialModel::Compositing<dim> *>(&plugin))
+        for (const auto &submodel : compositing->get_models())
+          if (Plugins::plugin_type_matches<TestType>(*submodel))
+            return true;
+
+      return false;
+    }
+
+
+    /**
+     * Modify the Plugins::get_plugin_as_type to account for the compositing material model
+    */
+    template <typename TestType, int dim>
+    inline
+    const TestType &
+    get_plugin_as_type_recursive (
+      const MaterialModel::Interface<dim> &plugin)
+    {
+      // Direct match
+      if (Plugins::plugin_type_matches<TestType>(plugin))
+        return Plugins::get_plugin_as_type<TestType>(plugin);
+
+      // Search inside compositing material model
+      if (const auto *compositing =
+            dynamic_cast<const MaterialModel::Compositing<dim> *>(&plugin))
+        for (const auto &submodel : compositing->get_models())
+          if (Plugins::plugin_type_matches<TestType>(*submodel))
+            return Plugins::get_plugin_as_type<TestType>(*submodel);
+
+      AssertThrow(false,
+                  ExcMessage("Could not find requested plugin type."));
+
+      return *static_cast<const TestType *>(nullptr);
+    }
+
   }
 }
 
