@@ -77,6 +77,15 @@ namespace aspect
     }
 
 
+    template <int dim>
+    void
+    Compositing<dim>::initialize_initial_temperature_manager ()
+    {
+      // initialize all models
+      for (auto &model : models)
+        model->initialize_initial_temperature_manager();
+    }
+
 
     template <int dim>
     void

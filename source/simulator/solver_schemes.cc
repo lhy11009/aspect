@@ -172,6 +172,24 @@ namespace aspect
             *residual = system_rhs.block(introspection.block_indices.temperature).l2_norm();
 
           current_residual = solve_advection(adv_field);
+          
+          // modify the solution after the solving step
+          if (parameters.interpolate_temperature_from_material_model)
+            {
+              computing_timer.enter_subsection("Interpolate prescribed temperature foo");
+
+              interpolate_material_output_into_advection_field_foo({adv_field});
+
+              // Also set the old_solution block to the prescribed field. The old
+              // solution is the one that is used to assemble the diffusion system in
+              // assemble_advection_system() for this solver scheme.
+
+              // Note: I copied this line from the block above, but this will leads to convergence issue, as the old_solution would be changed
+              // even if the new solution is not changed
+
+              computing_timer.leave_subsection("Interpolate prescribed temperature foo");
+            }
+
           break;
         }
 

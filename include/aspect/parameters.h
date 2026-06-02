@@ -812,6 +812,7 @@ namespace aspect
      */
 
     typename AdvectionFieldMethod::Kind temperature_method;
+    bool interpolate_temperature_from_material_model;
 
     /**
      * @}

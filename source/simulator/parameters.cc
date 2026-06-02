@@ -1339,6 +1339,9 @@ namespace aspect
                          "this way, then it does not evolve at all. Its values are "
                          "simply set to the initial conditions, and will then "
                          "never change.");
+
+      prm.declare_entry ("Interpolate temperature from material model", "false", Patterns::Bool(),
+                         "Whether to interpolate temperature field from the material model.");
     }
     prm.leave_subsection();
 
@@ -2085,6 +2088,8 @@ namespace aspect
         temperature_method = AdvectionFieldMethod::static_field;
       else
         AssertThrow(false,ExcNotImplemented());
+
+      interpolate_temperature_from_material_model = prm.get_bool("Interpolate temperature from material model");
     }
     prm.leave_subsection();
 

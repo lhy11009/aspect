@@ -68,6 +68,8 @@ namespace aspect
         void
         initialize () override;
 
+        void initialize_initial_temperature_manager () override;
+
         /**
          * @copydoc MaterialModel::Interface::evaluate()
          */
