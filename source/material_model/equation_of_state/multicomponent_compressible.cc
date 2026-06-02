@@ -47,12 +47,27 @@ namespace aspect
         else
           pressure_for_density = in.pressure[q];
 
+
+
         for (unsigned int c=0; c < eos_outputs.densities.size(); ++c)
           {
             const double ak = reference_thermal_expansivities[c]/reference_isothermal_compressibilities[c];
             const double f = (1. + (pressure_for_density - ak*(temperature - reference_temperatures[c])) *
                               isothermal_bulk_modulus_pressure_derivatives[c] *
                               reference_isothermal_compressibilities[c]);
+
+            // lhy11009: add to check for negative values
+            AssertThrow(f >= 0.0,
+                        ExcMessage("MulticomponentCompressible::evaluate(): "
+                                   "f in computing density is negative.\n"
+                                   "  Position: " +
+                                   std::to_string(in.position[q][0]) + ", " +
+                                   std::to_string(in.position[q][1]) + ", " +
+                                   std::to_string(in.position[q][2]) + "\n"
+                                   "  pressure_for_density = " +
+                                   std::to_string(pressure_for_density) +
+                                   "  temperature = " +
+                                   std::to_string(temperature)));
 
             eos_outputs.densities[c] = reference_densities[c]*std::pow(f, 1./isothermal_bulk_modulus_pressure_derivatives[c]);
             eos_outputs.thermal_expansion_coefficients[c] = reference_thermal_expansivities[c] / f;
