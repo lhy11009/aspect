@@ -165,11 +165,15 @@ namespace aspect
             // Choice of activation volume depends on whether there is an adiabatic temperature
             // gradient used when calculating the viscosity. This allows the same activation volume
             // to be used in incompressible and compressible models.
-            const double temperature_for_viscosity = (this->simulator_is_past_initialization())
-                                                     ?
-                                                     in.temperature[i] + adiabatic_temperature_gradient_for_viscosity*in.pressure[i]
-                                                     :
-                                                     this->get_adiabatic_conditions().temperature(in.position[i]);
+            double temperature_for_viscosity_foo = (this->simulator_is_past_initialization())
+                                                   ?
+                                                   in.temperature[i] + adiabatic_temperature_gradient_for_viscosity*in.pressure[i]
+                                                   :
+                                                   this->get_adiabatic_conditions().temperature(in.position[i]);
+            // todo_mT
+            // Here, I set the default of minimum_temperature_for_viscosity to -inf, so by default, this doesn't function
+            const double temperature_for_viscosity = std::max(temperature_for_viscosity_foo, minimum_temperature_for_viscosity);
+
 
             AssertThrow(temperature_for_viscosity != 0, ExcMessage(
                           "The temperature used in the calculation of the visco-plastic rheology is zero. "
@@ -759,6 +763,14 @@ namespace aspect
                            "Using a pressure gradient of 32436 Pa/m, then a value of "
                            "0.3 K/km = 0.0003 K/m = 9.24e-09 K/Pa gives an earth-like adiabat."
                            "Units: \\si{\\kelvin\\per\\pascal}.");
+        // todo_mT
+        prm.declare_entry(
+          "Minimum temperature for viscosity",
+          "0.0",
+          Patterns::Double(-1e31),
+          "Lower bound (in Kelvin) applied to the temperature used in viscosity "
+          "calculations. A negative value disables clamping and preserves existing behavior.");
+
       }
 
 
@@ -921,6 +933,9 @@ namespace aspect
                        ExcMessage("If adiabatic heating is enabled you should not add another adiabatic gradient"
                                   "to the temperature for computing the viscosity, because the ambient"
                                   "temperature profile already includes the adiabatic gradient."));
+// todo_mT
+        minimum_temperature_for_viscosity =
+          prm.get_double("Minimum temperature for viscosity");
 
       }
 
