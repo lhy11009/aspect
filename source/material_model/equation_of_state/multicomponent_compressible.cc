@@ -37,7 +37,18 @@ namespace aspect
                const unsigned int q,
                MaterialModel::EquationOfStateOutputs<dim> &eos_outputs) const
       {
-        const double temperature = std::max(in.temperature[q], 1.); // temperature can't be zero for correct evaluation
+        // todo_density
+        double temperature = std::max(in.temperature[q], 1.); // temperature can't be zero for correct evaluation
+
+        // put limit to temperature based on the min and max temperature
+        if (limit_temperature_fraction_for_density > 0.0)
+          {
+            if (temperature < 273.15 * (1.0 - limit_temperature_fraction_for_density))
+              temperature = 273.15 * (1.0 - limit_temperature_fraction_for_density);
+
+            if (temperature > 4000.0 * (1.0 + limit_temperature_fraction_for_density))
+              temperature = 4000.0 * (1.0 + limit_temperature_fraction_for_density);
+          }
 
         // If we are using the projected density approximation then we need to use the adiabatic pressure
         double pressure_for_density;
@@ -45,7 +56,20 @@ namespace aspect
             this->get_parameters().formulation_mass_conservation==Parameters<dim>::Formulation::MassConservation::projected_density_field)
           pressure_for_density = this->get_adiabatic_conditions().pressure(in.position[q]);
         else
-          pressure_for_density = in.pressure[q];
+          {
+            const double adiabatic_pressure = this->get_adiabatic_conditions().pressure(in.position[q]);
+            pressure_for_density = in.pressure[q];
+
+            if (limit_pressure_fraction_for_density > 0.0)
+              {
+                // put limit to pressure based on the adiabatic pressure
+                if (pressure_for_density < adiabatic_pressure * (1.0 - limit_pressure_fraction_for_density))
+                  pressure_for_density = adiabatic_pressure * (1.0 - limit_pressure_fraction_for_density);
+
+                if (pressure_for_density > adiabatic_pressure * (1.0 + limit_pressure_fraction_for_density))
+                  pressure_for_density = adiabatic_pressure * (1.0 + limit_pressure_fraction_for_density);
+              }
+          }
 
 
 
@@ -182,6 +206,16 @@ namespace aspect
                            "expansivity and compressibility) that are affected by the P-T-X dependence "
                            "of the phase transition. Specifically, this means that latent heat "
                            "and excess expansivity/compressibility of reactions are neglected.");
+        // todo_density
+        prm.declare_entry ("Pressure limit for density by fraction", "-1.0",
+                           Patterns::Double(),
+                           "Whether to limit the pressure change to stablize the computation of density by "
+                           "limiting it to some fraction of the adiabatic pressure");
+
+        prm.declare_entry ("Temperature limit for density by fraction", "-1.0",
+                           Patterns::Double(),
+                           "Whether to limit the temperature change to stablize the computation of density by "
+                           "limiting it to some fraction of minimum and maximum temperature");
       }
 
 
@@ -257,6 +291,11 @@ namespace aspect
                                        "and must be explicitly enabled with 'set Enable phase transitions = true'."));
               }
           }
+
+        // todo_density
+        limit_pressure_fraction_for_density = prm.get_double("Pressure limit for density by fraction");
+
+        limit_temperature_fraction_for_density = prm.get_double("Temperature limit for density by fraction");
       }
     }
   }
