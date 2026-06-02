@@ -157,6 +157,15 @@ namespace aspect
 
     template <int dim>
     void
+    Interface<dim>::initialize_initial_temperature_manager ()
+    {
+      // by default we do nothing!
+    }
+
+
+
+    template <int dim>
+    void
     Interface<dim>::
     fill_additional_material_model_inputs(MaterialModel::MaterialModelInputs<dim> &input,
                                           const LinearAlgebra::BlockVector        &solution,

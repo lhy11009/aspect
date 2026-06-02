@@ -1431,6 +1431,9 @@ namespace aspect
                                               const FEValuesBase<dim>                 &fe_values,
                                               const Introspection<dim>                &introspection) const;
 
+        virtual
+        void initialize_initial_temperature_manager ();
+
       protected:
         /**
          * A structure that describes how each of the model's

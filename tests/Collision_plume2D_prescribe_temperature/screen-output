@@ -1,0 +1,40 @@
+
+Number of active cells: 1,024 (on 6 levels)
+Number of degrees of freedom: 13,764 (8,450+1,089+4,225)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Copying properties into prescribed temperature field... done.
+   Solving temperature system... 11 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.206917, 0.0294392
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.206917
+
+   Copying properties into prescribed temperature field... done.
+   Solving temperature system... 0 iterations.
+   Solving Stokes system (GMG)... 2+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 1.79648e-13, 1.15416e-09
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 1.15416e-09
+
+
+   Postprocessing:
+     Writing graphical output: output-Collision_plume2D_prescribe_temperature/solution/solution-00000
+     RMS, max velocity:        0.00268 m/year, 0.00617 m/year
+     Temperature min/avg/max:  273 K, 928.9 K, 3273 K
+
+*** Timestep 1:  t=100 years, dt=100 years
+   Copying properties into prescribed temperature field... done.
+   Solving temperature system... 6 iterations.
+   Solving Stokes system (GMG)... 4+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 5.56483e-07, 1.63087e-08
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 5.56483e-07
+
+
+   Postprocessing:
+     Writing graphical output: output-Collision_plume2D_prescribe_temperature/solution/solution-00001
+     RMS, max velocity:        0.00268 m/year, 0.00617 m/year
+     Temperature min/avg/max:  273 K, 928.9 K, 3273 K
+
+Termination requested by criterion: end time
+
+
+

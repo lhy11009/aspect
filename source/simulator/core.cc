@@ -359,6 +359,8 @@ namespace aspect
     initial_composition_manager->initialize_simulator(*this);
     initial_composition_manager->parse_parameters (prm);
 
+    material_model->initialize_initial_temperature_manager();
+
     // Create a boundary temperature manager
     boundary_temperature_manager.initialize_simulator (*this);
     boundary_temperature_manager.parse_parameters (prm);
