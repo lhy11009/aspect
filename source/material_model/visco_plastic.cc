@@ -20,6 +20,7 @@
 
 #include <aspect/material_model/visco_plastic.h>
 #include <aspect/utilities.h>
+#include <aspect/material_model/utilities.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/base/signaling_nan.h>
 #include <aspect/newton.h>
@@ -156,9 +157,12 @@ namespace aspect
 
           // not strictly correct if thermal expansivities are different, since we are interpreting
           // these compositions as volume fractions, but the error introduced should not be too bad.
-          out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic);
-          out.thermal_expansion_coefficients[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.thermal_expansion_coefficients, MaterialUtilities::arithmetic);
-          out.specific_heat[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.specific_heat_capacities, MaterialUtilities::arithmetic);
+          auto in_ptr =
+            std::shared_ptr<const MaterialModel::MaterialModelInputs<dim>>(&in,
+          [](const MaterialModel::MaterialModelInputs<dim> *) {});
+          out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic, std::optional<std::string>("density"), in_ptr, i);
+          out.thermal_expansion_coefficients[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.thermal_expansion_coefficients, MaterialUtilities::arithmetic, std::optional<std::string>("thermal_expansion_coefficients"),in_ptr, i);
+          out.specific_heat[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.specific_heat_capacities, MaterialUtilities::arithmetic, std::optional<std::string>("specific_heat"), in_ptr, i);
 
           if (define_conductivities == false)
             {
@@ -183,12 +187,12 @@ namespace aspect
             {
               // Use thermal conductivity values specified in the parameter file, if this
               // option was selected.
-              out.thermal_conductivities[i] = MaterialUtilities::average_value (volume_fractions, thermal_conductivities, MaterialUtilities::arithmetic);
+              out.thermal_conductivities[i] = MaterialUtilities::average_value (volume_fractions, thermal_conductivities, MaterialUtilities::arithmetic, std::optional<std::string>("thermal_conductivities"),in_ptr, i);
             }
 
-          out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.compressibilities, MaterialUtilities::arithmetic);
-          out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
-          out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+          out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.compressibilities, MaterialUtilities::arithmetic, std::optional<std::string>("compressibilities"), in_ptr, i);
+          out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic, std::optional<std::string>("entropy_derivative_pressure"), in_ptr, i);
+          out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic, std::optional<std::string>("entropy_derivative_temperature"), in_ptr, i);
 
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding.
           // Also always compute the viscosity if additional outputs are requested, because the viscosity is needed
@@ -226,7 +230,7 @@ namespace aspect
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
               // creep (where n_diff=1) viscosities are stress and strain-rate independent, so the calculation
               // of compositional field viscosities is consistent with any averaging scheme.
-              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging);
+              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging, std::optional<std::string>("viscosity"), in_ptr, i);
 
               // Decide based on the maximum composition if material is yielding.
               // This avoids for example division by zero for harmonic averaging (as plastic_yielding
@@ -281,7 +285,8 @@ namespace aspect
               // Compute average elastic shear modulus
               average_elastic_shear_moduli[i] = MaterialUtilities::average_value(volume_fractions,
                                                                                  rheology->elastic_rheology.get_elastic_shear_moduli(),
-                                                                                 rheology->viscosity_averaging);
+                                                                                 rheology->viscosity_averaging,
+                                                                                 std::optional<std::string>("elastic_shear_moduli"), in_ptr, i);
             }
 
           if (const std::shared_ptr<PrescribedPlasticDilation<dim>> plastic_dilation =
@@ -289,10 +294,12 @@ namespace aspect
             {
               const double dilation_lhs_term = MaterialUtilities::average_value(volume_fractions,
                                                                                 isostrain_viscosities.dilation_lhs_terms,
-                                                                                MaterialUtilities::arithmetic);
+                                                                                MaterialUtilities::arithmetic,
+                                                                                std::optional<std::string>("dilation_lhs_term"), in_ptr, i);
               const double dilation_rhs_term = MaterialUtilities::average_value(volume_fractions,
                                                                                 isostrain_viscosities.dilation_rhs_terms,
-                                                                                MaterialUtilities::arithmetic);
+                                                                                MaterialUtilities::arithmetic,
+                                                                                std::optional<std::string>("dilation_rhs_term"), in_ptr, i);
 
               // When plastic yielding occurs (RHS - LHS * p > 0$), the LHS and RHS terms are set to
               // the values calculated by the Drucker Prager model; otherwise, the LHS and RHS terms

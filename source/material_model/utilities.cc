@@ -1015,11 +1015,51 @@ namespace aspect
       }
 
 
-
       double
       average_value (const std::vector<double> &volume_fractions,
                      const std::vector<double> &parameter_values,
-                     const enum CompositionalAveragingOperation &average_type)
+                     const CompositionalAveragingOperation &average_type,
+                     const std::optional<std::string> &field_name)
+      {
+        // Call the templated version with a dummy dim (e.g., 3)
+        // Position is not provided anyway
+        return average_value<3>(volume_fractions,
+                                parameter_values,
+                                average_type,
+                                field_name,
+                                nullptr,
+                                numbers::invalid_unsigned_int);
+      }
+
+
+      template <int dim>
+      std::string
+      position_to_string(const std::optional<Point<dim>> &position)
+      {
+        if (!position)
+          return "<position not provided>";
+
+        std::ostringstream oss;
+        oss << "(";
+        for (unsigned int d = 0; d < dim; ++d)
+          {
+            oss << (*position)(d);
+            if (d + 1 < dim)
+              oss << ", ";
+          }
+        oss << ")";
+        return oss.str();
+      }
+
+
+      template <int dim>
+      double
+      average_value (const std::vector<double> &volume_fractions,
+                     const std::vector<double> &parameter_values,
+                     const CompositionalAveragingOperation &average_type,
+                     const std::optional<std::string> &field_name,
+                     const std::shared_ptr<const MaterialModelInputs<dim>> &in,
+                     const unsigned int q)
       {
         Assert(volume_fractions.size() == parameter_values.size(),
                ExcMessage ("The volume fractions and parameter values vectors used for averaging "
@@ -1028,6 +1068,25 @@ namespace aspect
                            " volume fractions and "
                            + Utilities::int_to_string(parameter_values.size()) +
                            " parameter values."));
+
+        const std::string field_string =
+          field_name ? "'" + *field_name + "'" : "<unknown field>"; // message for debugging
+
+        std::string position_string = "<context not provided>";
+        if (in && q != numbers::invalid_unsigned_int)
+          {
+            position_string = "position "
+                              + position_to_string(std::optional<Point<dim>>(in->position[q]));
+
+            position_string +=
+              ", T=" + Utilities::to_string(in->temperature[q]);
+
+            position_string +=
+              ", p=" + Utilities::to_string(in->pressure[q]);
+
+            // position_string +=
+            // ", |ε̇|=" + Utilities::to_string(in->strain_rate[q].norm());
+          }
 
         double averaged_parameter = 0.0;
 
@@ -1044,7 +1103,12 @@ namespace aspect
               for (unsigned int i=0; i<volume_fractions.size(); ++i)
                 {
                   AssertThrow(parameter_values[i] > 0,
-                              ExcMessage ("All parameter values must be greater than 0 for harmonic averaging!"));
+                              ExcMessage("All parameter values for field " + field_string +
+                                         " must be greater than 0 for harmonic averaging.\n"
+                                         "Failed at index " + Utilities::int_to_string(i) +
+                                         ", value " + Utilities::to_string(parameter_values[i]) +
+                                         ", position " + position_string + "."));
+
                   averaged_parameter += volume_fractions[i]/(parameter_values[i]);
                 }
               averaged_parameter = 1.0/averaged_parameter;
@@ -1055,7 +1119,12 @@ namespace aspect
               for (unsigned int i=0; i<volume_fractions.size(); ++i)
                 {
                   AssertThrow(parameter_values[i] > 0,
-                              ExcMessage ("All parameter values must be greater than 0 for geometric averaging!"));
+                              ExcMessage("All parameter values for field " + field_string +
+                                         " must be greater than 0 for geometric averaging.\n"
+                                         "Failed at index " + Utilities::int_to_string(i) +
+                                         ", value " + Utilities::to_string(parameter_values[i]) +
+                                         ", position " + position_string + "."));
+
                   averaged_parameter += volume_fractions[i] * std::log(parameter_values[i]);
                 }
               averaged_parameter = std::exp(averaged_parameter);
@@ -1799,6 +1868,12 @@ namespace aspect
                                                               const std::vector<double> &, \
                                                               const unsigned int, \
                                                               MaterialModelOutputs<dim> &); \
+  template double average_value<dim>(const std::vector<double> &, \
+                                     const std::vector<double> &, \
+                                     const CompositionalAveragingOperation &, \
+                                     const std::optional<std::string> &, \
+                                     const std::shared_ptr<const MaterialModelInputs<dim>> &, \
+                                     const unsigned int); \
   template struct PhaseFunctionInputs<dim>; \
   template class PhaseFunction<dim>; \
   template class PhaseFunctionDiscrete<dim>;
