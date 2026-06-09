@@ -172,7 +172,7 @@ namespace aspect
             *residual = system_rhs.block(introspection.block_indices.temperature).l2_norm();
 
           current_residual = solve_advection(adv_field);
-          
+
           // modify the solution after the solving step
           if (parameters.interpolate_temperature_from_material_model)
             {
