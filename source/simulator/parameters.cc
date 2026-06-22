@@ -205,6 +205,11 @@ namespace aspect
                        "This parameter indicates whether the simulator should also use "
                        "heat conduction in determining the length of each time step.");
 
+    prm.declare_entry ("Debug convection timestep", "false",
+                       Patterns::Bool (),
+                       "Add debug information to convection timestep");
+
+
     const std::string allowed_solver_schemes = "no Advection, no Stokes|"
                                                "no Advection, single Stokes|"
                                                "no Advection, single Stokes first timestep only|"
@@ -1575,6 +1580,8 @@ namespace aspect
     convert_to_years        = prm.get_bool ("Use years instead of seconds");
     timing_output_frequency = prm.get_integer ("Timing output frequency");
     world_builder_file      = prm.get("World builder file");
+
+    debug_convection_timestep = prm.get_bool ("Debug convection timestep");
 
     prm.enter_subsection("Particles");
     {

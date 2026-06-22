@@ -70,6 +70,13 @@ namespace aspect
 
       double max_local_speed_over_meshsize = 0;
 
+      // lhy11009: record the positiion of velocity/mesh size maximum
+      double max_velocity_of_max_cell = 0.0;
+      double meshsize_of_max_cell = 0.0;
+
+      typename DoFHandler<dim>::active_cell_iterator max_cell;
+      Point<dim> max_cell_center;
+
       for (const auto &cell : this->get_dof_handler().active_cell_iterators())
         if (cell->is_locally_owned())
           {
@@ -114,12 +121,39 @@ namespace aspect
                                                  fluid_velocity_values[q].norm());
               }
 
-            max_local_speed_over_meshsize = std::max(max_local_speed_over_meshsize,
-                                                     max_local_velocity
-                                                     /
-                                                     cell->minimum_vertex_distance());
+            // max_local_speed_over_meshsize = std::max(max_local_speed_over_meshsize,
+            //                                          max_local_velocity
+            //                                          /
+            //                                          cell->minimum_vertex_distance());
+            const double meshsize = cell->minimum_vertex_distance();
+
+            const double speed_over_meshsize =
+              max_local_velocity / meshsize;
+
+            if (speed_over_meshsize > max_local_speed_over_meshsize)
+              {
+                max_local_speed_over_meshsize = speed_over_meshsize;
+
+                max_velocity_of_max_cell = max_local_velocity;
+                meshsize_of_max_cell = meshsize;
+
+                max_cell = cell;
+                max_cell_center = cell->center();
+              }
 
           }
+
+      if (this->get_parameters().debug_convection_timestep)
+        {
+          this->get_pcout() << "Max CFL cell:"
+                            << "\n  velocity/meshsize = " << max_local_speed_over_meshsize
+                            << "\n  velocity = " << max_velocity_of_max_cell
+                            << "\n  meshsize = " << meshsize_of_max_cell
+                            << "\n  center = " << max_cell_center
+                            << "\n  level = " << max_cell->level()
+                            << "\n  index = " << max_cell->index()
+                            << std::endl << std::endl;
+        }
 
       const double max_global_speed_over_meshsize
         = Utilities::MPI::max (max_local_speed_over_meshsize, this->get_mpi_communicator());

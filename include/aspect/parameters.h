@@ -618,6 +618,8 @@ namespace aspect
     std::string                    world_builder_file;
     unsigned int                   n_particle_managers;
 
+    bool debug_convection_timestep;
+
     /**
      * @}
      */
