@@ -208,7 +208,35 @@ namespace aspect
                 std::size_t positions_index = 0;
                 for (const auto &itr : positions)
                   {
-                    Point<dim> relative_support_point_location = this->get_mapping().transform_real_to_unit_cell(cell, itr);
+                    Point<dim> relative_support_point_location;
+
+                    try
+                      {
+                        relative_support_point_location =
+                          this->get_mapping().transform_real_to_unit_cell(cell, itr);
+                      }
+                    catch (const dealii::ExceptionBase &exc)
+                      {
+                        std::ostringstream out;
+
+                        out << "Failed in transform_real_to_unit_cell() inside "
+                            << "LinearLeastSquares::properties_at_points().\n"
+                            << "positions_index = " << positions_index << "\n"
+                            << "real-space point = " << itr << "\n"
+                            << "cell center = " << cell->center() << "\n"
+                            << "cell level = " << cell->level() << "\n"
+                            << "cell index = " << cell->index() << "\n"
+                            << "cell active_cell_index = " << cell->active_cell_index() << "\n";
+
+                        out << "cell vertices:\n";
+                        for (unsigned int v = 0; v < GeometryInfo<dim>::vertices_per_cell; ++v)
+                          out << "  vertex " << v << " = " << cell->vertex(v) << "\n";
+
+                        AssertThrow(false,
+                                    ExcMessage(out.str() + "\nOriginal deal.II exception:\n" +
+                                               exc.what()));
+                      }
+
                     double interpolated_value = c[property_index][0];
                     for (unsigned int i = 1; i < n_matrix_columns; ++i)
                       {

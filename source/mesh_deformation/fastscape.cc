@@ -851,6 +851,8 @@ namespace aspect
       // an improperly set maximum_surface_refinement_level, additional_refinement_levels,
       // and surface_refinement_difference
       bool fastscape_mesh_filled = true;
+      std::ostringstream missing_points;
+      unsigned int n_missing_points = 0;
       const unsigned int fastscape_array_size = fastscape_nx*fastscape_ny;
       for (unsigned int i=0; i<fastscape_array_size; ++i)
         {
@@ -889,13 +891,31 @@ namespace aspect
           // If this is a boundary node that is a ghost node then ignore that it
           // has not filled yet as the ghost nodes haven't been set.
           if (elevation[i] == std::numeric_limits<double>::max() && !is_ghost_node(i,false))
-            fastscape_mesh_filled = false;
+            {
+              fastscape_mesh_filled = false;
+
+              missing_points
+                  << "\n  Missing point "
+                  << n_missing_points
+                  << ": index=" << i
+                  << " (ix=" << ix
+                  << ", iy=" << iy
+                  << "), x=" << x
+                  << ", y=" << y;
+
+              ++n_missing_points;
+            }
         }
 
       fastscape_mesh_filled = Utilities::MPI::broadcast(this->get_mpi_communicator(), fastscape_mesh_filled, 0);
       AssertThrow (fastscape_mesh_filled == true,
-                   ExcMessage("The FastScape mesh is missing data. A likely cause for this is that the "
-                              "maximum surface refinement or surface refinement difference are improperly set."));
+                   ExcMessage(
+                     "The FastScape mesh is missing data. "
+                     "A likely cause for this is that the maximum surface refinement "
+                     "or surface refinement difference are improperly set."
+                     "\nNumber of missing points: "
+                     + Utilities::int_to_string(n_missing_points)
+                     + missing_points.str()));
     }
 
 

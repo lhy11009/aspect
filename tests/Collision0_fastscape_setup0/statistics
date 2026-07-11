@@ -1,0 +1,38 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Visualization file name
+# 10: Minimal value for composition gabbro
+# 11: Maximal value for composition gabbro
+# 12: Global mass for composition gabbro
+# 13: Minimal value for composition MORB
+# 14: Maximal value for composition MORB
+# 15: Global mass for composition MORB
+# 16: Minimal value for composition sediment
+# 17: Maximal value for composition sediment
+# 18: Global mass for composition sediment
+# 19: Minimal value for composition harzburgite
+# 20: Maximal value for composition harzburgite
+# 21: Global mass for composition harzburgite
+# 22: Minimal value for composition crust_upper
+# 23: Maximal value for composition crust_upper
+# 24: Global mass for composition crust_upper
+# 25: Minimal value for composition crust_lower
+# 26: Maximal value for composition crust_lower
+# 27: Global mass for composition crust_lower
+# 28: RMS velocity (m/year)
+# 29: Max. velocity (m/year)
+# 30: Number of advected particles
+# 31: Particle file name
+# 32: Average density (kg/m^3)
+# 33: Average viscosity (Pa s)
+# 34: Total mass (kg)
+# 35: Minimum topography (m)
+# 36: Maximum topography (m)
+0 0.000000000000e+00 0.000000000000e+00 374 3688 1629 9774 0 output-Collision0_fastscape_setup0/solution/solution-00000 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.12500000e+10 0.00000000e+00 1.00000000e+00 8.68055556e+09 0.00000000e+00 1.00000000e+00 8.33333333e+10 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 18326 output-Collision0_fastscape_setup0/particles/particles-00000 4.37580361e+03 7.04631869e+22 4.81338397e+16 0.00000000e+00 0.00000000e+00 
+1 1.000000000000e+00 1.000000000000e+00 374 3688 1629 9774 0 output-Collision0_fastscape_setup0/solution/solution-00001 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 1.00000000e+00 3.12500000e+10 0.00000000e+00 1.00000000e+00 8.68055556e+09 0.00000000e+00 1.00000000e+00 8.33333333e+10 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 18326 output-Collision0_fastscape_setup0/particles/particles-00001 4.37580361e+03 7.88007124e+22 4.81338397e+16 0.00000000e+00 0.00000000e+00 

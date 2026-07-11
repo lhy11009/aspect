@@ -20,11 +20,13 @@
 
 #include <aspect/material_model/visco_plastic.h>
 #include <aspect/utilities.h>
+#include <aspect/material_model/utilities.h>
 #include <deal.II/fe/fe_values.h>
 #include <deal.II/base/signaling_nan.h>
 #include <aspect/newton.h>
 #include <aspect/adiabatic_conditions/interface.h>
 #include <aspect/gravity_model/interface.h>
+#include <aspect/initial_temperature/interface.h>
 
 namespace aspect
 {
@@ -38,6 +40,16 @@ namespace aspect
         {
           phase_function_discrete->initialize();
         }
+
+      initial_temperature_manager = nullptr;
+    }
+
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::initialize_initial_temperature_manager ()
+    {
+      initial_temperature_manager = this->get_initial_temperature_manager_pointer();
     }
 
 
@@ -117,6 +129,8 @@ namespace aspect
                                                             std::vector<double>(phase_function_discrete->n_phase_transitions(), 0.0): std::vector<double>());
 
 
+
+
       // Loop through all requested points
       for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
         {
@@ -156,9 +170,12 @@ namespace aspect
 
           // not strictly correct if thermal expansivities are different, since we are interpreting
           // these compositions as volume fractions, but the error introduced should not be too bad.
-          out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic);
-          out.thermal_expansion_coefficients[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.thermal_expansion_coefficients, MaterialUtilities::arithmetic);
-          out.specific_heat[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.specific_heat_capacities, MaterialUtilities::arithmetic);
+          auto in_ptr =
+            std::shared_ptr<const MaterialModel::MaterialModelInputs<dim>>(&in,
+          [](const MaterialModel::MaterialModelInputs<dim> *) {});
+          out.densities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.densities, MaterialUtilities::arithmetic, std::optional<std::string>("density"), in_ptr, i);
+          out.thermal_expansion_coefficients[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.thermal_expansion_coefficients, MaterialUtilities::arithmetic, std::optional<std::string>("thermal_expansion_coefficients"),in_ptr, i);
+          out.specific_heat[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.specific_heat_capacities, MaterialUtilities::arithmetic, std::optional<std::string>("specific_heat"), in_ptr, i);
 
           if (define_conductivities == false)
             {
@@ -183,12 +200,12 @@ namespace aspect
             {
               // Use thermal conductivity values specified in the parameter file, if this
               // option was selected.
-              out.thermal_conductivities[i] = MaterialUtilities::average_value (volume_fractions, thermal_conductivities, MaterialUtilities::arithmetic);
+              out.thermal_conductivities[i] = MaterialUtilities::average_value (volume_fractions, thermal_conductivities, MaterialUtilities::arithmetic, std::optional<std::string>("thermal_conductivities"),in_ptr, i);
             }
 
-          out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.compressibilities, MaterialUtilities::arithmetic);
-          out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic);
-          out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic);
+          out.compressibilities[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.compressibilities, MaterialUtilities::arithmetic, std::optional<std::string>("compressibilities"), in_ptr, i);
+          out.entropy_derivative_pressure[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_pressure, MaterialUtilities::arithmetic, std::optional<std::string>("entropy_derivative_pressure"), in_ptr, i);
+          out.entropy_derivative_temperature[i] = MaterialUtilities::average_value (volume_fractions, eos_outputs.entropy_derivative_temperature, MaterialUtilities::arithmetic, std::optional<std::string>("entropy_derivative_temperature"), in_ptr, i);
 
           // Compute the effective viscosity if requested and retrieve whether the material is plastically yielding.
           // Also always compute the viscosity if additional outputs are requested, because the viscosity is needed
@@ -226,7 +243,7 @@ namespace aspect
               // We have given the user freedom to apply alternative bounds, because in diffusion-dominated
               // creep (where n_diff=1) viscosities are stress and strain-rate independent, so the calculation
               // of compositional field viscosities is consistent with any averaging scheme.
-              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging);
+              out.viscosities[i] = MaterialUtilities::average_value(volume_fractions, isostrain_viscosities.composition_viscosities, rheology->viscosity_averaging, std::optional<std::string>("viscosity"), in_ptr, i);
 
               // Decide based on the maximum composition if material is yielding.
               // This avoids for example division by zero for harmonic averaging (as plastic_yielding
@@ -281,7 +298,8 @@ namespace aspect
               // Compute average elastic shear modulus
               average_elastic_shear_moduli[i] = MaterialUtilities::average_value(volume_fractions,
                                                                                  rheology->elastic_rheology.get_elastic_shear_moduli(),
-                                                                                 rheology->viscosity_averaging);
+                                                                                 rheology->viscosity_averaging,
+                                                                                 std::optional<std::string>("elastic_shear_moduli"), in_ptr, i);
             }
 
           if (const std::shared_ptr<PrescribedPlasticDilation<dim>> plastic_dilation =
@@ -289,10 +307,12 @@ namespace aspect
             {
               const double dilation_lhs_term = MaterialUtilities::average_value(volume_fractions,
                                                                                 isostrain_viscosities.dilation_lhs_terms,
-                                                                                MaterialUtilities::arithmetic);
+                                                                                MaterialUtilities::arithmetic,
+                                                                                std::optional<std::string>("dilation_lhs_term"), in_ptr, i);
               const double dilation_rhs_term = MaterialUtilities::average_value(volume_fractions,
                                                                                 isostrain_viscosities.dilation_rhs_terms,
-                                                                                MaterialUtilities::arithmetic);
+                                                                                MaterialUtilities::arithmetic,
+                                                                                std::optional<std::string>("dilation_rhs_term"), in_ptr, i);
 
               // When plastic yielding occurs (RHS - LHS * p > 0$), the LHS and RHS terms are set to
               // the values calculated by the Drucker Prager model; otherwise, the LHS and RHS terms
@@ -325,6 +345,26 @@ namespace aspect
           // timestep to the advected and rotated stress computed in the previous timestep ($\tau^{0}$)
           // to obtain $\tau^{t}$.
           rheology->elastic_rheology.fill_reaction_rates(in, average_elastic_shear_moduli, out);
+        }
+
+      if (prescribe_temperature_value && (initial_temperature_manager != nullptr))
+        {
+          // the second condition makes sure this is not triggered during initialization
+          // stage
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              prescribe_temperature_value_in_region(i, in, out);
+            }
+        }
+
+
+      // If reset_viscosity is set to true, reset viscosity for some parts of the domain
+      if (reset_viscosity)
+        {
+          for (unsigned int i=0; i < in.n_evaluation_points(); ++i)
+            {
+              reset_calculated_viscosities(i, out.viscosities, in);
+            }
         }
     }
 
@@ -390,7 +430,62 @@ namespace aspect
                              "for a total of N+1 values, where N is the number of all compositional fields or only "
                              "those corresponding to chemical compositions. "
                              "If only one value is given, then all use the same value. "
-                             "Units: $\\frac{\\text{W}}{\\text{m}\\text{K}}$.");
+                             "Units: $\\frac{\\text{W}{\\text{m}\\text{K}}$.");
+
+          // Reset Viscosity for some part as the last step of computing viscosity
+          prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
+                             "Reset viscosity");
+          prm.enter_subsection("Reset viscosity function");
+          {
+            /**
+             * Choose the coordinates to evaluate the Reset viscosity
+             * function. The function can be declared in dependence of depth,
+             * cartesian coordinates or spherical coordinates. Note that the order
+             * of spherical coordinates is r,phi,theta and not r,theta,phi, since
+             * this allows for dimension independent expressions.
+             */
+            prm.declare_entry ("Coordinate system", "cartesian",
+                               Patterns::Selection ("cartesian|spherical|depth"),
+                               "A selection that determines the assumed coordinate "
+                               "system for the function variables. Allowed values "
+                               "are `cartesian', `spherical', and `depth'. `spherical' coordinates "
+                               "are interpreted as r,phi or r,phi,theta in 2D/3D "
+                               "respectively with theta being the polar angle. `depth' "
+                               "will create a function, in which only the first "
+                               "parameter is non-zero, which is interpreted to "
+                               "be the depth of the point.");
+
+            Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
+          }
+          prm.leave_subsection();
+
+          prm.declare_entry ("Prescribe temperature value", "false", Patterns::Bool(),
+                             "Prescribe temperature value");
+          prm.declare_entry ("Prescribe temperature value from initial temperature", "false", Patterns::Bool(),
+                             "Prescribe temperature value from initial temperature");
+          prm.enter_subsection("Prescribe temperature value function");
+          {
+            /**
+             * Choose the coordinates to evaluate the Prescribed temperature
+             * function. The function can be declared in dependence of depth,
+             * cartesian coordinates or spherical coordinates. Note that the order
+             * of spherical coordinates is r,phi,theta and not r,theta,phi, since
+             * this allows for dimension independent expressions.
+             */
+            prm.declare_entry ("Coordinate system", "cartesian",
+                               Patterns::Selection ("cartesian|spherical|depth"),
+                               "A selection that determines the assumed coordinate "
+                               "system for the function variables. Allowed values "
+                               "are `cartesian', `spherical', and `depth'. `spherical' coordinates "
+                               "are interpreted as r,phi or r,phi,theta in 2D/3D "
+                               "respectively with theta being the polar angle. `depth' "
+                               "will create a function, in which only the first "
+                               "parameter is non-zero, which is interpreted to "
+                               "be the depth of the point.");
+
+            Functions::ParsedFunction<dim>::declare_parameters (prm, 1);
+          }
+          prm.leave_subsection();
         }
         prm.leave_subsection();
       }
@@ -456,6 +551,55 @@ namespace aspect
               rheology->parse_parameters(prm, std::make_unique<std::vector<unsigned int>>(n_phases_for_each_chemical_composition));
             }
 
+          // Reset viscosity for some part as the last step of computing viscosity
+          reset_viscosity = prm.get_bool("Reset viscosity");
+
+          // A function for reset viscosity for some part as the last step of computing viscosity
+          prm.enter_subsection("Reset viscosity function");
+          {
+            reset_viscosity_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
+          }
+          try
+            {
+              reset_viscosity_function.parse_parameters (prm);
+            }
+          catch (...)
+            {
+              std::cerr << "ERROR: FunctionParser failed to parse\n"
+                        << "\t'Reset viscosity.Function'\n"
+                        << "with expression\n"
+                        << "\t'" << prm.get("Function expression") << "'"
+                        << "More information about the cause of the parse error \n"
+                        << "is shown below.\n";
+              throw;
+            }
+          prm.leave_subsection();
+
+          // Reset viscosity for some part as the last step of computing viscosity
+          prescribe_temperature_value = prm.get_bool("Prescribe temperature value");
+          prescribe_temperature_value_from_initial_temperature = prm.get_bool("Prescribe temperature value from initial temperature");
+
+          // A function for reset viscosity for some part as the last step of computing viscosity
+          prm.enter_subsection("Prescribe temperature value function");
+          {
+            prescribe_temperature_value_function_coordinate_system = Utilities::Coordinates::string_to_coordinate_system(prm.get("Coordinate system"));
+            try
+              {
+                prescribe_temperature_value_function.parse_parameters (prm);
+              }
+            catch (...)
+              {
+                std::cerr << "ERROR: FunctionParser failed to parse\n"
+                          << "\t'Prescribe temperature value function.Function'\n"
+                          << "with expression\n"
+                          << "\t'" << prm.get("Function expression") << "'"
+                          << "More information about the cause of the parse error \n"
+                          << "is shown below.\n";
+                throw;
+              }
+          }
+          prm.leave_subsection();
+
         }
         prm.leave_subsection();
       }
@@ -479,6 +623,84 @@ namespace aspect
 
       if (this->get_parameters().enable_elasticity)
         rheology->elastic_rheology.create_elastic_additional_outputs(out);
+
+      if (out.template has_additional_output_object<
+          PrescribedTemperatureOutputs<dim>>() == false)
+        {
+          const unsigned int n_points = out.n_evaluation_points();
+
+          out.additional_outputs.push_back(
+            std::make_unique<
+            MaterialModel::PrescribedTemperatureOutputs<dim>>
+            (n_points));
+
+          std::shared_ptr<PrescribedTemperatureOutputs<dim>> prescribed_temperature_out =
+            out.template get_additional_output_object<MaterialModel::PrescribedTemperatureOutputs<dim>>();
+
+          Assert(prescribed_temperature_out != nullptr,
+                 ExcInternalError());
+
+          std::fill(
+            prescribed_temperature_out->prescribed_temperature_outputs.begin(),
+            prescribed_temperature_out->prescribed_temperature_outputs.end(),
+            -1.0);
+        }
+    }
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::prescribe_temperature_value_in_region( const unsigned int i,
+                                                              const MaterialModel::MaterialModelInputs<dim> &in,
+                                                              MaterialModel::MaterialModelOutputs<dim> &out) const
+    {
+
+      Assert(initial_temperature_manager != nullptr, ExcMessage("Initial temperature manager not set."));
+
+      const std::shared_ptr<PrescribedTemperatureOutputs<dim>> prescribed_temperature_out
+        = out.template get_additional_output_object<PrescribedTemperatureOutputs<dim>>();
+
+      if (prescribed_temperature_out != nullptr)
+        {
+          // convert to coordinate system used by the function
+          Utilities::NaturalCoordinate<dim> point =
+            this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], prescribe_temperature_value_function_coordinate_system);
+
+          // get value of new temperature from function
+          // use negative value as invalid value, note these values are initiated with -1.0
+          const float new_temperature_indicator = prescribe_temperature_value_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
+
+
+          if (new_temperature_indicator > 0.0)
+            {
+              if (prescribe_temperature_value_from_initial_temperature)
+                prescribed_temperature_out->prescribed_temperature_outputs[i] = initial_temperature_manager->initial_temperature(in.position[i]);
+              else
+                prescribed_temperature_out->prescribed_temperature_outputs[i] = new_temperature_indicator;
+            }
+          else
+            {
+              prescribed_temperature_out->prescribed_temperature_outputs[i] = -1.0;
+            }
+        }
+    }
+
+    template <int dim>
+    void
+    ViscoPlastic<dim>::reset_calculated_viscosities( const unsigned int i,
+                                                     std::vector<double> &viscosities,
+                                                     const MaterialModel::MaterialModelInputs<dim> &in) const
+    {
+      // convert to coordinate system used by the function
+      Utilities::NaturalCoordinate<dim> point =
+        this->get_geometry_model().cartesian_to_other_coordinates(in.position[i], reset_viscosity_function_coordinate_system );
+
+      // get value of new viscosity from function
+      // use negative value as invalid value
+      const float new_viscosity = reset_viscosity_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
+      if (new_viscosity > 0.0)
+        {
+          viscosities[i] = new_viscosity;
+        }
     }
 
   }

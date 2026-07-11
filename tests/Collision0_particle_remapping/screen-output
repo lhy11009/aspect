@@ -1,0 +1,104 @@
+
+Number of active cells: 64 (on 4 levels)
+Number of degrees of freedom: 1,526 (578+81+289+289+289)
+
+*** Timestep 0:  t=0 seconds, dt=0 seconds
+   Solving temperature system... 0 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 11+0 iterations.
+
+   Postprocessing:
+     Writing graphical output:  output-Collision0_particle_remapping/solution/solution-00000
+     Temperature min/avg/max:   0 K, 0.5 K, 1 K
+     Compositions min/max/mass: 0/1/0.3593 // 0/1/0.4417
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00000
+
+*** Timestep 1:  t=0.0625 seconds, dt=0.0625 seconds
+   Solving temperature system... 9 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 9+0 iterations.
+
+   Postprocessing:
+     Temperature min/avg/max:   0 K, 0.501 K, 1 K
+     Compositions min/max/mass: 0/1/0.3653 // 0/1/0.4422
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00001
+
+*** Timestep 2:  t=0.125 seconds, dt=0.0625 seconds
+   Solving temperature system... 9 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 12+0 iterations.
+
+   Postprocessing:
+     Writing graphical output:  output-Collision0_particle_remapping/solution/solution-00001
+     Temperature min/avg/max:   0 K, 0.5017 K, 1 K
+     Compositions min/max/mass: 0/1/0.3711 // 0/1/0.4417
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00002
+
+*** Timestep 3:  t=0.1875 seconds, dt=0.0625 seconds
+   Solving temperature system... 10 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 12+0 iterations.
+
+   Postprocessing:
+     Temperature min/avg/max:   0 K, 0.5022 K, 1 K
+     Compositions min/max/mass: 0/1/0.376 // 0/1/0.4413
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00003
+
+*** Timestep 4:  t=0.25 seconds, dt=0.0625 seconds
+   Solving temperature system... 10 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 12+0 iterations.
+
+   Postprocessing:
+     Writing graphical output:  output-Collision0_particle_remapping/solution/solution-00002
+     Temperature min/avg/max:   -0.004393 K, 0.5025 K, 1 K
+     Compositions min/max/mass: 0/1/0.3816 // 0/1/0.4358
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00004
+
+*** Timestep 5:  t=0.3125 seconds, dt=0.0625 seconds
+   Solving temperature system... 10 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 12+0 iterations.
+
+   Postprocessing:
+     Writing graphical output:  output-Collision0_particle_remapping/solution/solution-00003
+     Temperature min/avg/max:   -0.009266 K, 0.5029 K, 1 K
+     Compositions min/max/mass: 0/1/0.3856 // 0/1/0.4267
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00005
+
+*** Timestep 6:  t=0.375 seconds, dt=0.0625 seconds
+   Solving temperature system... 9 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 11+0 iterations.
+
+   Postprocessing:
+     Temperature min/avg/max:   -0.01223 K, 0.5032 K, 1 K
+     Compositions min/max/mass: 0/1/0.3895 // 0/1/0.4153
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00006
+
+*** Timestep 7:  t=0.4375 seconds, dt=0.0625 seconds
+   Solving temperature system... 10 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 12+0 iterations.
+
+   Postprocessing:
+     Writing graphical output:  output-Collision0_particle_remapping/solution/solution-00004
+     Temperature min/avg/max:   -0.014 K, 0.5035 K, 1 K
+     Compositions min/max/mass: 0/1/0.3941 // 0/1/0.4061
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00007
+
+*** Timestep 8:  t=0.5 seconds, dt=0.0625 seconds
+   Solving temperature system... 10 iterations.
+   Advecting particles...  done.
+   Solving Stokes system (GMG)... 12+0 iterations.
+
+   Postprocessing:
+     Writing graphical output:  output-Collision0_particle_remapping/solution/solution-00005
+     Temperature min/avg/max:   -0.01476 K, 0.5038 K, 1 K
+     Compositions min/max/mass: 0/1/0.3988 // 0/1/0.399
+     Writing particle output:   output-Collision0_particle_remapping/particles/particles-00008
+
+Termination requested by criterion: end time
+
+
+

@@ -205,6 +205,11 @@ namespace aspect
                        "This parameter indicates whether the simulator should also use "
                        "heat conduction in determining the length of each time step.");
 
+    prm.declare_entry ("Debug convection timestep", "false",
+                       Patterns::Bool (),
+                       "Add debug information to convection timestep");
+
+
     const std::string allowed_solver_schemes = "no Advection, no Stokes|"
                                                "no Advection, single Stokes|"
                                                "no Advection, single Stokes first timestep only|"
@@ -1339,6 +1344,9 @@ namespace aspect
                          "this way, then it does not evolve at all. Its values are "
                          "simply set to the initial conditions, and will then "
                          "never change.");
+
+      prm.declare_entry ("Interpolate temperature from material model", "false", Patterns::Bool(),
+                         "Whether to interpolate temperature field from the material model.");
     }
     prm.leave_subsection();
 
@@ -1572,6 +1580,8 @@ namespace aspect
     convert_to_years        = prm.get_bool ("Use years instead of seconds");
     timing_output_frequency = prm.get_integer ("Timing output frequency");
     world_builder_file      = prm.get("World builder file");
+
+    debug_convection_timestep = prm.get_bool ("Debug convection timestep");
 
     prm.enter_subsection("Particles");
     {
@@ -2085,6 +2095,8 @@ namespace aspect
         temperature_method = AdvectionFieldMethod::static_field;
       else
         AssertThrow(false,ExcNotImplemented());
+
+      interpolate_temperature_from_material_model = prm.get_bool("Interpolate temperature from material model");
     }
     prm.leave_subsection();
 

@@ -618,6 +618,8 @@ namespace aspect
     std::string                    world_builder_file;
     unsigned int                   n_particle_managers;
 
+    bool debug_convection_timestep;
+
     /**
      * @}
      */
@@ -812,6 +814,7 @@ namespace aspect
      */
 
     typename AdvectionFieldMethod::Kind temperature_method;
+    bool interpolate_temperature_from_material_model;
 
     /**
      * @}

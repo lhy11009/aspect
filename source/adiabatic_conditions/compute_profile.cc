@@ -286,7 +286,9 @@ namespace aspect
       if (std::abs(floating_index-std::floor(floating_index+0.5)) < 1e-6)
         return property[i];
 
-      Assert (i+1 < property.size(), ExcInternalError());
+      // Assert (i+1 < property.size(), ExcInternalError());
+      if (i+1 >= property.size())
+        return property[property.size()-1];
 
       // now do the linear interpolation
       const double d = floating_index - i;

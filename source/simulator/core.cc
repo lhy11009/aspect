@@ -360,6 +360,8 @@ namespace aspect
     initial_composition_manager->initialize_simulator(*this);
     initial_composition_manager->parse_parameters (prm);
 
+    material_model->initialize_initial_temperature_manager();
+
     // Create a boundary temperature manager
     boundary_temperature_manager.initialize_simulator (*this);
     boundary_temperature_manager.parse_parameters (prm);
@@ -412,6 +414,10 @@ namespace aspect
       sim->initialize_simulator (*this);
     adiabatic_conditions->parse_parameters (prm);
     adiabatic_conditions->initialize ();
+
+    if (SimulatorAccess<dim> *sim = dynamic_cast<SimulatorAccess<dim>*>(initial_topography_model.get()))
+      sim->initialize_simulator (*this);
+    initial_topography_model->required_initialize ();
 
     // Create a boundary traction manager
     boundary_traction_manager.initialize_simulator (*this);

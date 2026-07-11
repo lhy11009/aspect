@@ -191,6 +191,8 @@ namespace aspect
         void
         initialize () override;
 
+        void initialize_initial_temperature_manager () override;
+
         void evaluate(const MaterialModel::MaterialModelInputs<dim> &in,
                       MaterialModel::MaterialModelOutputs<dim> &out) const override;
 
@@ -279,6 +281,64 @@ namespace aspect
          * Object that handles discrete phase transitions for the rheology if requested by the variable use_dominant_phase_for_viscosity.
          */
         std::unique_ptr<MaterialUtilities::PhaseFunctionDiscrete<dim>> phase_function_discrete;
+
+        /**
+         * Whether to reset temperature for some part
+         */
+        bool prescribe_temperature_value;
+        bool prescribe_temperature_value_from_initial_temperature;
+
+        /**
+         * Shared pointer to the initial temperature manager. We keep this
+         * alive because the simulator may release its own pointer after
+         * initialization.
+         */
+        std::shared_ptr<const aspect::InitialTemperature::Manager<dim>> initial_temperature_manager;
+
+        /**
+         * A function object representing the indicator to prescribe temperature value
+         */
+        Functions::ParsedFunction<dim> prescribe_temperature_value_function;
+
+        /**
+         * The coordinate representation to evaluate the function to prescribe temperature value. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem prescribe_temperature_value_function_coordinate_system;
+
+        /**
+        * A function that prescribed the temperature in specified region from input values
+        * If prescribe_temperature_value is false, this is skipped.
+        */
+        void prescribe_temperature_value_in_region(const unsigned int point_index,
+                                                   const MaterialModel::MaterialModelInputs<dim> &in,
+                                                   MaterialModel::MaterialModelOutputs<dim> &out) const;
+
+        /**
+         * Whether to reset viscosity for some part as the last step of computing viscosity
+         */
+        bool reset_viscosity;
+
+        /**
+         * A function object representing the temperature used to reset viscosity
+         */
+        Functions::ParsedFunction<dim> reset_viscosity_function;
+
+        /**
+         * The coordinate representation to evaluate the function to reset viscosity. Possible
+         * choices are depth, cartesian and spherical.
+         */
+        Utilities::Coordinates::CoordinateSystem reset_viscosity_function_coordinate_system;
+
+        /**
+         * A function that resets the values of viscosity in specified region with specified value.
+         * If reset_viscosity is false, this is skipped.
+         */
+        void reset_calculated_viscosities(const unsigned int point_index,
+                                          std::vector<double> &viscosities,
+                                          const MaterialModel::MaterialModelInputs<dim> &in) const;
+
+
 
     };
 

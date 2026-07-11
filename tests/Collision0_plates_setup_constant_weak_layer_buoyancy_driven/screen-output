@@ -1,0 +1,31 @@
+
+Number of active cells: 136 (on 2 levels)
+Number of degrees of freedom: 6,385 (1,242+175+621+621+621+621+621+621+621+621)
+
+Number of mesh deformation degrees of freedom: 1,242
+   Solving mesh displacement system... 0 iterations.
+Number of active cells: 151 (on 3 levels)
+Number of degrees of freedom: 7,196 (1,400+196+700+700+700+700+700+700+700+700)
+
+Number of mesh deformation degrees of freedom: 1,400
+   Solving mesh displacement system... 0 iterations.
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving mesh displacement system... 0 iterations.
+
+   Postprocessing:
+
+**** Warning: When computing depth averages, there is at least one depth band
+     that does not have any quadrature points in it.
+     Consider reducing the number of depth layers for averaging.
+
+     Writing graphical output:                          output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/solution/solution-00000
+     Compositions min/max/mass:                         0/0/0 // 0/0/0 // 0/0/0 // 0/0/0 // 0/1/2.132e+10 // -0.125/1/2.337e+11 // 0/0/0
+     RMS, max velocity:                                 0 m/year, 0 m/year
+     Writing particle output:                           output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/particles/particles-00000
+     Average density / Average viscosity / Total mass:  3488 kg/m^3, 7.574e+21 Pa s, 3.034e+16 kg
+     Writing depth average:                             output-Collision0_plates_setup_constant_weak_layer_buoyancy_driven/depth_average
+
+Termination requested by criterion: end time
+
+
+

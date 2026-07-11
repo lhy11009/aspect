@@ -1,0 +1,109 @@
+
+Number of active cells: 64 (on 4 levels)
+Number of degrees of freedom: 948 (578+81+289)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 1.54779e-16, 0.0311767
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.0311767
+
+   Solving temperature system... 0 iterations.
+   Solving Stokes system (GMG)... 3+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 1.54779e-16, 1.61459e-09
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 1.61459e-09
+
+
+   Postprocessing:
+     Writing graphical output: output-Collision_plume2D_prescribe_no_temperature/solution/solution-00000
+     RMS, max velocity:        3.93e-05 m/year, 0.000221 m/year
+     Temperature min/avg/max:  273 K, 1032 K, 3273 K
+
+*** Timestep 1:  t=3.86826e+08 years, dt=3.86826e+08 years
+   Solving temperature system... 11 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.132711, 0.00270264
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.132711
+
+   Solving temperature system... 12 iterations.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.0294165, 0.000563915
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 0.0294165
+
+   Solving temperature system... 14 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.0464382, 0.00083627
+      Relative nonlinear residual (total system) after nonlinear iteration 3: 0.0464382
+
+   Solving temperature system... 19 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.102726, 0.00158524
+      Relative nonlinear residual (total system) after nonlinear iteration 4: 0.102726
+
+   Solving temperature system... 38 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.21959, 0.00237591
+      Relative nonlinear residual (total system) after nonlinear iteration 5: 0.21959
+
+   Solving temperature system... 132 iterations.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.192574, 0.00233507
+      Relative nonlinear residual (total system) after nonlinear iteration 6: 0.192574
+
+   Solving temperature system... 175 iterations.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.105439, 0.00118264
+      Relative nonlinear residual (total system) after nonlinear iteration 7: 0.105439
+
+   Solving temperature system... 151 iterations.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.0405108, 0.000387044
+      Relative nonlinear residual (total system) after nonlinear iteration 8: 0.0405108
+
+   Solving temperature system... 163 iterations.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.0152279, 0.000143968
+      Relative nonlinear residual (total system) after nonlinear iteration 9: 0.0152279
+
+   Solving temperature system... 144 iterations.
+   Solving Stokes system (GMG)... 8+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00422966, 4.67135e-05
+      Relative nonlinear residual (total system) after nonlinear iteration 10: 0.00422966
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     RMS, max velocity:       0.00322 m/year, 0.00727 m/year
+     Temperature min/avg/max: 273 K, 1055 K, 3273 K
+
+*** Timestep 2:  t=4e+08 years, dt=1.31742e+07 years
+   Solving temperature system... 12 iterations.
+   Solving Stokes system (GMG)... 7+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00087279, 2.52116e-05
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.00087279
+
+   Solving temperature system... 9 iterations.
+   Solving Stokes system (GMG)... 6+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 1.71083e-05, 5.03087e-07
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 1.71083e-05
+
+   Solving temperature system... 7 iterations.
+   Solving Stokes system (GMG)... 4+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 6.40757e-07, 1.93774e-08
+      Relative nonlinear residual (total system) after nonlinear iteration 3: 6.40757e-07
+
+
+   Postprocessing:
+     Writing graphical output: output-Collision_plume2D_prescribe_no_temperature/solution/solution-00001
+     RMS, max velocity:        0.00333 m/year, 0.00754 m/year
+     Temperature min/avg/max:  273 K, 1056 K, 3273 K
+
+Termination requested by criterion: end time
+
+
+
+
+WARNING: During this computation 1 nonlinear solver failures occurred!

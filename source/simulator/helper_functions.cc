@@ -2052,9 +2052,7 @@ namespace aspect
                                  ExcMessage("You are trying to use a prescribed advection field, "
                                             "but the material model you use does not fill the PrescribedFieldOutputs "
                                             "for your prescribed field, which is required for this method."));
-
-                          distributed_vector(local_dof_indices[dof_idx])
-                            = prescribed_temperature_out->prescribed_temperature_outputs[support_point_index_by_field[i][j]];
+                          distributed_vector(local_dof_indices[dof_idx]) = prescribed_temperature_out->prescribed_temperature_outputs[support_point_index_by_field[i][j]];
                         }
                       else
                         {
@@ -2096,6 +2094,149 @@ namespace aspect
     pcout << "done." << std::endl;
   }
 
+  template <int dim>
+  void Simulator<dim>::interpolate_material_output_into_advection_field_foo (const std::vector<AdvectionField> &adv_fields)
+  {
+
+
+    if (adv_fields.size() == 0)
+      return;
+    else if (adv_fields.size() == 1)
+      {
+        const AdvectionField &adv_field = adv_fields[0];
+        if (adv_field.is_temperature())
+          pcout << "   Copying properties into prescribed temperature field... "
+                << std::flush;
+        else
+          return;
+      }
+    else
+      return;
+
+    // we need a temporary vector to store our updates to the advection fields in
+    // before we copy them over to the solution vector in the end
+    // we also need this vector to have the solution value at the start and update afterwards
+    LinearAlgebra::BlockVector distributed_vector (introspection.index_sets.system_partitioning,
+                                                   mpi_communicator);
+
+    for (const auto &adv_field: adv_fields)
+      {
+        // Put the final values into the solution vector, also
+        // updating the ghost elements of the solution vector.
+        const unsigned int advection_block = adv_field.block_index(introspection);
+        distributed_vector.block(advection_block) = solution.block(advection_block);
+      }
+
+    // Advection fields can have different Finite Element discretizations (degree, continuous/discontinuous)
+    // and will have different support points. We solve this by computing the union of all support points and evaluating
+    // the material output for all these support points for every cell.
+
+    /// First compute all unique support points (temperature and compositions):
+    const unsigned int n_fields = adv_fields.size();
+    std::vector<Point<dim>> unique_support_points;
+    std::vector<std::vector<unsigned int>> support_point_index_by_field;
+    compute_unique_advection_support_points(adv_fields, unique_support_points, support_point_index_by_field);
+
+    // Create an FEValues object that allows us to interpolate onto the solution
+    // vector. To make this happen, we need to have a quadrature formula that
+    // consists of the support points of all advection field finite elements
+    const Quadrature<dim> quadrature(unique_support_points);
+
+    FEValues<dim> fe_values (*mapping,
+                             dof_handler.get_fe(),
+                             quadrature,
+                             update_quadrature_points | update_values | update_gradients);
+
+    std::vector<types::global_dof_index> local_dof_indices (dof_handler.get_fe().dofs_per_cell);
+    MaterialModel::MaterialModelInputs<dim> in(quadrature.size(), introspection.n_compositional_fields);
+    MaterialModel::MaterialModelOutputs<dim> out(quadrature.size(), introspection.n_compositional_fields);
+
+    // add the prescribed field outputs that will be used for interpolating
+    material_model->create_additional_named_outputs(out);
+
+    const std::shared_ptr<MaterialModel::PrescribedTemperatureOutputs<dim>> prescribed_temperature_out
+      = out.template get_additional_output_object<MaterialModel::PrescribedTemperatureOutputs<dim>>();
+
+    // Make a loop first over all cells, and then over all degrees of freedom in each element
+    // to interpolate material properties onto a solution vector.
+    for (const auto &cell : dof_handler.active_cell_iterators())
+      if (cell->is_locally_owned())
+        {
+          fe_values.reinit (cell);
+          cell->get_dof_indices (local_dof_indices);
+          in.reinit(fe_values, cell, introspection, solution);
+          material_model->evaluate(in, out);
+
+          for (unsigned int i=0; i<n_fields; ++i)
+            {
+              const AdvectionField &adv_field = adv_fields[i];
+
+              // Interpolate material properties onto the advection fields
+              const unsigned int advection_dofs_per_cell =
+                dof_handler.get_fe().base_element(adv_field.base_element(introspection)).dofs_per_cell;
+
+              // Make sure data structures have the expected size
+              Assert(advection_dofs_per_cell == support_point_index_by_field[i].size(), ExcInternalError());
+
+              for (unsigned int j=0; j<advection_dofs_per_cell; ++j)
+                {
+                  const unsigned int dof_idx
+                    = dof_handler.get_fe().component_to_system_index(adv_field.component_index(introspection),
+                                                                     /*dof index within component=*/ j);
+
+                  // Skip degrees of freedom that are not locally owned. These
+                  // will eventually be handled by one of the other processors.
+                  if (dof_handler.locally_owned_dofs().is_element(local_dof_indices[dof_idx]))
+                    {
+                      if (adv_field.is_temperature())
+                        {
+                          Assert(prescribed_temperature_out != nullptr,
+                                 ExcMessage("You are trying to use a prescribed temperature field, "
+                                            "but the material model you use does not support interpolating properties "
+                                            "(it does not create PrescribedTemperatureOutputs, which is required for this "
+                                            "temperature field type)."));
+                          Assert(numbers::is_finite(prescribed_temperature_out->prescribed_temperature_outputs[j]),
+                                 ExcMessage("You are trying to use a prescribed advection field, "
+                                            "but the material model you use does not fill the PrescribedFieldOutputs "
+                                            "for your prescribed field, which is required for this method."));
+
+                          const double temperature_value = prescribed_temperature_out->prescribed_temperature_outputs[support_point_index_by_field[i][j]];
+
+                          if (temperature_value > 0.0)
+                            {
+                              distributed_vector(local_dof_indices[dof_idx]) = temperature_value;
+                            }
+                        }
+                      else
+                        {
+                          Assert(false,
+                                 ExcMessage("You are trying to use a prescribed advection field other than the temperature, "
+                                            "but the method you use only deals with the temperature field."));
+                        }
+                    }
+                }
+            }
+        }
+
+    for (const auto &adv_field: adv_fields)
+      {
+        // Put the final values into the solution vector, also
+        // updating the ghost elements of the solution vector.
+        const unsigned int advection_block = adv_field.block_index(introspection);
+        distributed_vector.block(advection_block).compress(VectorOperation::insert);
+
+        // Apply boundary conditions and other constraints to all prescribed fields,
+        // except for the density field (if it exists). See this PR for a justification:
+        // https://github.com/geodynamics/aspect/pull/4450.
+        if (adv_field.is_temperature() ||
+            adv_field.compositional_variable != introspection.find_composition_type(CompositionalFieldDescription::density))
+          current_constraints.distribute (distributed_vector);
+
+        solution.block(advection_block) = distributed_vector.block(advection_block);
+      }
+
+    pcout << "done." << std::endl;
+  }
 
 
   template <int dim>
@@ -2872,6 +3013,7 @@ namespace aspect
   template void Simulator<dim>::compute_reactions(); \
   template void Simulator<dim>::initialize_current_linearization_point (); \
   template void Simulator<dim>::interpolate_material_output_into_advection_field(const std::vector<AdvectionField> &adv_field); \
+  template void Simulator<dim>::interpolate_material_output_into_advection_field_foo(const std::vector<AdvectionField> &adv_field); \
   template void Simulator<dim>::check_consistency_of_formulation(); \
   template void Simulator<dim>::replace_outflow_boundary_ids(const unsigned int boundary_id_offset, \
                                                              const bool is_composition, \

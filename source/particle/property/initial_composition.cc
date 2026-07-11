@@ -20,6 +20,7 @@
 
 #include <aspect/particle/property/initial_composition.h>
 #include <aspect/initial_composition/interface.h>
+#include <aspect/prescribed_solution/interface.h>
 
 namespace aspect
 {
@@ -80,6 +81,161 @@ namespace aspect
 
         return property_information;
       }
+
+      template <int dim>
+      void
+      InitialComposition<dim>::update_particle_properties(const ParticleUpdateInputs<dim> &/*inputs*/,
+                                                          typename ParticleHandler<dim>::particle_iterator_range &particles) const
+      {
+        const aspect::PrescribedSolution::Manager<dim> &prescribed_solution_manager = this->get_prescribed_solution();
+        const auto &plugin_objects = prescribed_solution_manager.get_active_plugins();
+
+
+        std::vector<Point<dim>> evaluation_points(1);
+        std::vector<unsigned int> component_indices(1);
+        std::vector<bool> component_is_constrained(1);
+        std::vector<double> constrained_component_value(1);
+
+        for (auto &particle : particles)
+          {
+            evaluation_points[0] = particle.get_location();
+
+            for (unsigned int j = 0; j < this->n_compositional_fields(); ++j)
+              {
+                component_indices[0] = this->introspection().component_indices.compositional_fields[j];
+                component_is_constrained[0] = false;
+                constrained_component_value[0] = 0.0;
+
+                for (const auto &plugin : plugin_objects)
+                  {
+                    typename DoFHandler<dim>::active_cell_iterator cell;
+                    plugin->constrain_solution(cell, evaluation_points, component_indices, component_is_constrained, constrained_component_value);
+                  }
+
+                if (component_is_constrained[0])
+                  particle.get_properties()[this->data_position+j] = constrained_component_value[0];
+              }
+          }
+
+        if (remap_composition)
+          {
+            for (auto &particle : particles)
+              {
+                const Point<dim> &position = particle.get_location();
+
+                const int from_component = static_cast<int>(std::round(from_composition_function.value(position)));
+                const int to_component = static_cast<int>(std::round(to_composition_function.value(position)));
+
+                if (from_component < 0)
+                  continue;
+
+                AssertThrow(from_component <= static_cast<int>(this->n_compositional_fields()),
+                            ExcMessage("You have requested the from_composition > n_compositional_fields"));
+
+                AssertThrow(to_component >= 0 && to_component <= static_cast<int>(this->n_compositional_fields()),
+                            ExcMessage("You have requested the to_composition not in range of [0, n_compositional_fields]"));
+
+                bool is_from_component = false;
+                if (from_component < static_cast<int>(this->n_compositional_fields()))
+                  {
+                    is_from_component = (particle.get_properties()[this->data_position + from_component] > 0.5);
+                  }
+                else
+                  {
+                    // In case this is the background composition, see if the sum of 
+                    // all chemical compsoition is smaller than a threshold
+                    double sum = 0.0;
+
+                    for (unsigned int j = 0; j < this->n_compositional_fields(); ++j)
+                      sum += particle.get_properties()[this->data_position + j];
+
+                    is_from_component = (sum < 0.5);
+                  }
+
+                if (is_from_component)
+                  {
+                    if (from_component < static_cast<int>(this->n_compositional_fields()))
+                      {
+                        particle.get_properties()[this->data_position + from_component] = 0.0;
+                      }
+                    else
+                      {
+                        // In case it's from the background composition, set every component
+                        // other than the to_composition to 0.0
+                        for (unsigned int j = 0; j < this->n_compositional_fields(); ++j)
+                          if (static_cast<int>(j)!= to_component)
+                            particle.get_properties()[this->data_position + j] = 0.0;
+                      }
+
+                    if (to_component < static_cast<int>(this->n_compositional_fields()))
+                      {
+                        particle.get_properties()[this->data_position + to_component] = 1.0;
+                      }
+                    else
+                      {
+                        // In case it's to the background composition, set every component
+                        // to 0.0
+                        for (unsigned int j = 0; j < this->n_compositional_fields(); ++j)
+                          particle.get_properties()[this->data_position + j] = 0.0;
+                      }
+                  }
+              }
+          }
+      }
+
+
+      template <int dim>
+      void
+      InitialComposition<dim>::declare_parameters (ParameterHandler &prm)
+      {
+        prm.enter_subsection("Initial composition");
+        {
+          prm.declare_entry("Remap composition",
+                            "false",
+                            Patterns::Bool(),
+                            "Whether to remap particle compositions during particle property updates.");
+
+          prm.enter_subsection("From composition function");
+          {
+            Functions::ParsedFunction<dim>::declare_parameters(prm, 1);
+          }
+          prm.leave_subsection();
+
+          prm.enter_subsection("To composition function");
+          {
+            Functions::ParsedFunction<dim>::declare_parameters(prm, 1);
+          }
+          prm.leave_subsection();
+        }
+        prm.leave_subsection();
+
+      }
+
+
+      template <int dim>
+      void
+      InitialComposition<dim>::parse_parameters (ParameterHandler &prm)
+      {
+        prm.enter_subsection("Initial composition");
+        {
+          remap_composition = prm.get_bool("Remap composition");
+
+          prm.enter_subsection("From composition function");
+          {
+            from_composition_function.parse_parameters(prm);
+          }
+          prm.leave_subsection();
+
+          prm.enter_subsection("To composition function");
+          {
+            to_composition_function.parse_parameters(prm);
+          }
+          prm.leave_subsection();
+        }
+        prm.leave_subsection();
+
+      }
+
     }
   }
 }

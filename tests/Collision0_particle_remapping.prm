@@ -1,0 +1,35 @@
+include $ASPECT_SOURCE_DIR/cookbooks/composition_active_particles/composition_active_particles.prm
+
+set Dimension = 2
+set End time = 0.5
+
+subsection Mesh refinement
+  set Initial adaptive refinement        = 0
+  set Initial global refinement          = 3
+  set Time steps between mesh refinement = 0
+end
+
+subsection Particles
+  subsection Initial composition
+    set Remap composition = true
+    subsection From composition function
+      set Variable names = x, y
+      set Function constants = y0=0.7, y1=0.2
+      set Function expression = ((y<y0)? ((y<y1)? 2:1): -1)
+    end
+    subsection To composition function
+      set Variable names = x, y
+      set Function constants = y0=0.7, y1=0.2
+      set Function expression = ((y<y0)? ((y<y1)? 0:2): -1)
+    end
+  end
+end
+
+subsection Postprocess
+  subsection Visualization
+    set Output format = gnuplot
+  end
+  subsection Particles
+    set Data output format =  gnuplot
+  end
+end

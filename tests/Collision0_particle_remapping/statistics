@@ -1,0 +1,33 @@
+# 1: Time step number
+# 2: Time (seconds)
+# 3: Time step size (seconds)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Iterations for temperature solver
+# 9: Iterations for Stokes solver
+# 10: Velocity iterations in Stokes preconditioner
+# 11: Schur complement iterations in Stokes preconditioner
+# 12: Visualization file name
+# 13: Minimal temperature (K)
+# 14: Average temperature (K)
+# 15: Maximal temperature (K)
+# 16: Average nondimensional temperature (K)
+# 17: Minimal value for composition lower
+# 18: Maximal value for composition lower
+# 19: Global mass for composition lower
+# 20: Minimal value for composition upper
+# 21: Maximal value for composition upper
+# 22: Global mass for composition upper
+# 23: Number of advected particles
+# 24: Particle file name
+0 0.000000000000e+00 0.000000000000e+00 64 659 289 578  0 11 12 12 output-Collision0_particle_remapping/solution/solution-00000  0.00000000e+00 5.00000000e-01 1.00000000e+00 5.00000000e-01 0.00000000e+00 1.00000000e+00 3.59259736e-01 0.00000000e+00 1.00000000e+00 4.41740137e-01 100000 output-Collision0_particle_remapping/particles/particles-00000 
+1 6.250000000000e-02 6.250000000000e-02 64 659 289 578  9  9 10 10                                                           ""  0.00000000e+00 5.01020387e-01 1.00000000e+00 5.01020387e-01 0.00000000e+00 1.00000000e+00 3.65266586e-01 0.00000000e+00 1.00000000e+00 4.42150317e-01 100000 output-Collision0_particle_remapping/particles/particles-00001 
+2 1.250000000000e-01 6.250000000000e-02 64 659 289 578  9 12 13 13 output-Collision0_particle_remapping/solution/solution-00001  0.00000000e+00 5.01705413e-01 1.00000000e+00 5.01705413e-01 0.00000000e+00 1.00000000e+00 3.71104939e-01 0.00000000e+00 1.00000000e+00 4.41679273e-01 100000 output-Collision0_particle_remapping/particles/particles-00002 
+3 1.875000000000e-01 6.250000000000e-02 64 659 289 578 10 12 13 13                                                           ""  0.00000000e+00 5.02186895e-01 1.00000000e+00 5.02186895e-01 0.00000000e+00 1.00000000e+00 3.76045884e-01 0.00000000e+00 1.00000000e+00 4.41253327e-01 100000 output-Collision0_particle_remapping/particles/particles-00003 
+4 2.500000000000e-01 6.250000000000e-02 64 659 289 578 10 12 13 13 output-Collision0_particle_remapping/solution/solution-00002 -4.39309294e-03 5.02546807e-01 1.00000000e+00 5.06939900e-01 0.00000000e+00 1.00000000e+00 3.81587264e-01 0.00000000e+00 1.00000000e+00 4.35820839e-01 100000 output-Collision0_particle_remapping/particles/particles-00004 
+5 3.125000000000e-01 6.250000000000e-02 64 659 289 578 10 12 13 13 output-Collision0_particle_remapping/solution/solution-00003 -9.26612741e-03 5.02886424e-01 1.00000000e+00 5.12152551e-01 0.00000000e+00 1.00000000e+00 3.85556379e-01 0.00000000e+00 1.00000000e+00 4.26720921e-01 100000 output-Collision0_particle_remapping/particles/particles-00005 
+6 3.750000000000e-01 6.250000000000e-02 64 659 289 578  9 11 12 12                                                           "" -1.22286626e-02 5.03202654e-01 1.00000000e+00 5.15431317e-01 0.00000000e+00 1.00000000e+00 3.89454044e-01 0.00000000e+00 1.00000000e+00 4.15288628e-01 100000 output-Collision0_particle_remapping/particles/particles-00006 
+7 4.375000000000e-01 6.250000000000e-02 64 659 289 578 10 12 13 13 output-Collision0_particle_remapping/solution/solution-00004 -1.39996250e-02 5.03463745e-01 1.00000000e+00 5.17463370e-01 0.00000000e+00 1.00000000e+00 3.94122644e-01 0.00000000e+00 1.00000000e+00 4.06057604e-01 100000 output-Collision0_particle_remapping/particles/particles-00007 
+8 5.000000000000e-01 6.250000000000e-02 64 659 289 578 10 12 13 13 output-Collision0_particle_remapping/solution/solution-00005 -1.47563029e-02 5.03775083e-01 1.00000000e+00 5.18531386e-01 0.00000000e+00 1.00000000e+00 3.98846402e-01 0.00000000e+00 1.00000000e+00 3.98954820e-01 100000 output-Collision0_particle_remapping/particles/particles-00008 

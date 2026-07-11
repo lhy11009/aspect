@@ -1,0 +1,170 @@
+
+Number of active cells: 64 (on 4 levels)
+Number of degrees of freedom: 948 (578+81+289)
+
+*** Timestep 0:  t=0 years, dt=0 years
+   Solving temperature system... 0 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 1.54779e-16, 0.0311767
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.0311767
+
+   Solving temperature system... 0 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 3+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 1.54779e-16, 1.61459e-09
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 1.61459e-09
+
+
+   Postprocessing:
+     Writing graphical output: output-Collision_plume2D_prescribe_temperature/solution/solution-00000
+     RMS, max velocity:        3.93e-05 m/year, 0.000221 m/year
+     Temperature min/avg/max:  273 K, 1032 K, 3273 K
+
+*** Timestep 1:  t=3.86826e+08 years, dt=3.86826e+08 years
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.132711, 0.00178845
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.132711
+
+   Solving temperature system... 15 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.0839356, 0.000929513
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 0.0839356
+
+   Solving temperature system... 20 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.0983514, 0.00109896
+      Relative nonlinear residual (total system) after nonlinear iteration 3: 0.0983514
+
+   Solving temperature system... 34 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 10+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.136263, 0.00135766
+      Relative nonlinear residual (total system) after nonlinear iteration 4: 0.136263
+
+   Solving temperature system... 79 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.130995, 0.00129077
+      Relative nonlinear residual (total system) after nonlinear iteration 5: 0.130995
+
+   Solving temperature system... 106 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.123682, 0.00087866
+      Relative nonlinear residual (total system) after nonlinear iteration 6: 0.123682
+
+   Solving temperature system... 108 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.109907, 0.000344386
+      Relative nonlinear residual (total system) after nonlinear iteration 7: 0.109907
+
+   Solving temperature system... 115 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 9+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.111131, 0.000113412
+      Relative nonlinear residual (total system) after nonlinear iteration 8: 0.111131
+
+   Solving temperature system... 119 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 8+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.113799, 2.69479e-05
+      Relative nonlinear residual (total system) after nonlinear iteration 9: 0.113799
+
+   Solving temperature system... 119 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 7+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.114228, 5.26256e-06
+      Relative nonlinear residual (total system) after nonlinear iteration 10: 0.114228
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     RMS, max velocity:       0.00242 m/year, 0.00547 m/year
+     Temperature min/avg/max: 273 K, 1050 K, 3273 K
+
+*** Timestep 2:  t=4e+08 years, dt=1.31742e+07 years
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 8+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00417596, 6.61085e-05
+      Relative nonlinear residual (total system) after nonlinear iteration 1: 0.00417596
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 6+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00367872, 1.53683e-06
+      Relative nonlinear residual (total system) after nonlinear iteration 2: 0.00367872
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 5+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368091, 5.65836e-08
+      Relative nonlinear residual (total system) after nonlinear iteration 3: 0.00368091
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 3+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.31267e-09
+      Relative nonlinear residual (total system) after nonlinear iteration 4: 0.00368097
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 1+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.90717e-10
+      Relative nonlinear residual (total system) after nonlinear iteration 5: 0.00368097
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.8448e-10
+      Relative nonlinear residual (total system) after nonlinear iteration 6: 0.00368097
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.8448e-10
+      Relative nonlinear residual (total system) after nonlinear iteration 7: 0.00368097
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.8448e-10
+      Relative nonlinear residual (total system) after nonlinear iteration 8: 0.00368097
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.8448e-10
+      Relative nonlinear residual (total system) after nonlinear iteration 9: 0.00368097
+
+   Solving temperature system... 11 iterations.
+   Copying properties into prescribed temperature field... done.
+   Solving Stokes system (GMG)... 0+0 iterations.
+      Relative nonlinear residuals (temperature, Stokes system): 0.00368097, 2.8448e-10
+      Relative nonlinear residual (total system) after nonlinear iteration 10: 0.00368097
+
+
+   WARNING: The nonlinear solver in the current timestep failed to converge.
+   Acting according to the parameter 'Nonlinear solver failure strategy':
+   Continuing to the next timestep even though solution is not fully converged.
+
+   Postprocessing:
+     Writing graphical output: output-Collision_plume2D_prescribe_temperature/solution/solution-00001
+     RMS, max velocity:        0.00253 m/year, 0.00571 m/year
+     Temperature min/avg/max:  273 K, 1050 K, 3273 K
+
+Termination requested by criterion: end time
+
+
+
+
+WARNING: During this computation 2 nonlinear solver failures occurred!

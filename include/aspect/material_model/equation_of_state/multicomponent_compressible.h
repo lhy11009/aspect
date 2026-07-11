@@ -152,6 +152,17 @@ namespace aspect
            * Whether to enable the use of phase transitions, which currently breaks thermodynamic consistency
            */
           bool enable_phase_transitions;
+
+          // todo_density
+          /**
+           * Limit pressure to some fraction of the adiabatic pressure in density calculation
+           */
+          double limit_pressure_fraction_for_density;
+
+          /**
+           * Limit temperature to some fraction of the adiabatic pressure in density calculation
+           */
+          double limit_temperature_fraction_for_density;
       };
     }
   }

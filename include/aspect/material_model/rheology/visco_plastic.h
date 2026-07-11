@@ -313,6 +313,10 @@ namespace aspect
            */
           double adiabatic_temperature_gradient_for_viscosity;
 
+          // todo_mT
+          double minimum_temperature_for_viscosity;
+
+
           /**
            * Objects for computing viscous creep viscosities.
            */
