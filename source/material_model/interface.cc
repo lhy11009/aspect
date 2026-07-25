@@ -225,11 +225,11 @@ namespace aspect
                                                   const unsigned int n_comp)
       :
       position(n_points, Point<dim>(numbers::signaling_nan<Tensor<1,dim>>())),
-      temperature(n_points, numbers::signaling_nan<double>()),
-      pressure(n_points, numbers::signaling_nan<double>()),
+      temperature(n_points, std::numeric_limits<double>::max()),
+      pressure(n_points, std::numeric_limits<double>::max()),
       pressure_gradient(n_points, numbers::signaling_nan<Tensor<1,dim>>()),
       velocity(n_points, numbers::signaling_nan<Tensor<1,dim>>()),
-      composition(n_points, std::vector<double>(n_comp, numbers::signaling_nan<double>())),
+      composition(n_points, std::vector<double>(n_comp, std::numeric_limits<double>::max())),
       strain_rate(n_points, numbers::signaling_nan<SymmetricTensor<2,dim>>()),
       current_cell(),
       requested_properties(MaterialProperties::all_properties)
@@ -243,11 +243,11 @@ namespace aspect
                                                   const bool compute_strain_rate)
       :
       position(input_data.evaluation_points),
-      temperature(input_data.solution_values.size(), numbers::signaling_nan<double>()),
-      pressure(input_data.solution_values.size(), numbers::signaling_nan<double>()),
+      temperature(input_data.solution_values.size(), std::numeric_limits<double>::max()),
+      pressure(input_data.solution_values.size(), std::numeric_limits<double>::max()),
       pressure_gradient(input_data.solution_values.size(), numbers::signaling_nan<Tensor<1,dim>>()),
       velocity(input_data.solution_values.size(), numbers::signaling_nan<Tensor<1,dim>>()),
-      composition(input_data.solution_values.size(), std::vector<double>(introspection.n_compositional_fields, numbers::signaling_nan<double>())),
+      composition(input_data.solution_values.size(), std::vector<double>(introspection.n_compositional_fields, std::numeric_limits<double>::max())),
       strain_rate(input_data.solution_values.size(), numbers::signaling_nan<SymmetricTensor<2,dim>>()),
       current_cell(input_data.template get_cell<dim>()),
       requested_properties(MaterialProperties::all_properties)
@@ -284,11 +284,11 @@ namespace aspect
                                                   const bool compute_strain_rate)
       :
       position(fe_values.get_quadrature_points()),
-      temperature(fe_values.n_quadrature_points, numbers::signaling_nan<double>()),
-      pressure(fe_values.n_quadrature_points, numbers::signaling_nan<double>()),
+      temperature(fe_values.n_quadrature_points, std::numeric_limits<double>::max()),
+      pressure(fe_values.n_quadrature_points, std::numeric_limits<double>::max()),
       pressure_gradient(fe_values.n_quadrature_points, numbers::signaling_nan<Tensor<1,dim>>()),
       velocity(fe_values.n_quadrature_points, numbers::signaling_nan<Tensor<1,dim>>()),
-      composition(fe_values.n_quadrature_points, std::vector<double>(introspection.n_compositional_fields, numbers::signaling_nan<double>())),
+      composition(fe_values.n_quadrature_points, std::vector<double>(introspection.n_compositional_fields, std::numeric_limits<double>::max())),
       strain_rate(fe_values.n_quadrature_points, numbers::signaling_nan<SymmetricTensor<2,dim>>()),
       current_cell (cell_x),
       requested_properties(MaterialProperties::all_properties)
@@ -383,15 +383,15 @@ namespace aspect
     MaterialModelOutputs<dim>::MaterialModelOutputs(const unsigned int n_points,
                                                     const unsigned int n_comp)
       :
-      viscosities(n_points, numbers::signaling_nan<double>()),
-      densities(n_points, numbers::signaling_nan<double>()),
-      thermal_expansion_coefficients(n_points, numbers::signaling_nan<double>()),
-      specific_heat(n_points, numbers::signaling_nan<double>()),
-      thermal_conductivities(n_points, numbers::signaling_nan<double>()),
-      compressibilities(n_points, numbers::signaling_nan<double>()),
-      entropy_derivative_pressure(n_points, numbers::signaling_nan<double>()),
-      entropy_derivative_temperature(n_points, numbers::signaling_nan<double>()),
-      reaction_terms(n_points, std::vector<double>(n_comp, numbers::signaling_nan<double>()))
+      viscosities(n_points, std::numeric_limits<double>::max()),
+      densities(n_points, std::numeric_limits<double>::max()),
+      thermal_expansion_coefficients(n_points, std::numeric_limits<double>::max()),
+      specific_heat(n_points, std::numeric_limits<double>::max()),
+      thermal_conductivities(n_points, std::numeric_limits<double>::max()),
+      compressibilities(n_points, std::numeric_limits<double>::max()),
+      entropy_derivative_pressure(n_points, std::numeric_limits<double>::max()),
+      entropy_derivative_temperature(n_points, std::numeric_limits<double>::max()),
+      reaction_terms(n_points, std::vector<double>(n_comp, std::numeric_limits<double>::max()))
     {}
 
 
@@ -788,7 +788,7 @@ namespace aspect
           {
             case none:
               // should never reach here:
-              return numbers::signaling_nan<double>();
+              return std::numeric_limits<double>::max();
 
             case arithmetic_average:
               return one_over_Nq;
@@ -960,7 +960,7 @@ namespace aspect
     NamedAdditionalMaterialOutputs(const std::vector<std::string> &output_names,
                                    const unsigned int n_points)
       :
-      output_values(output_names.size(), std::vector<double>(n_points, numbers::signaling_nan<double>())),
+      output_values(output_names.size(), std::vector<double>(n_points, std::numeric_limits<double>::max())),
       names(output_names)
     {}
 
@@ -1013,8 +1013,8 @@ namespace aspect
     template <int dim>
     PrescribedPlasticDilation<dim>::PrescribedPlasticDilation (const unsigned int n_points)
       : NamedAdditionalMaterialOutputs<dim>(make_prescribed_dilation_outputs_names()),
-        dilation_lhs_term(n_points, numbers::signaling_nan<double>()),
-        dilation_rhs_term(n_points, numbers::signaling_nan<double>())
+        dilation_lhs_term(n_points, std::numeric_limits<double>::max()),
+        dilation_rhs_term(n_points, std::numeric_limits<double>::max())
     {}
 
 
@@ -1057,8 +1057,8 @@ namespace aspect
     SeismicAdditionalOutputs<dim>::SeismicAdditionalOutputs (const unsigned int n_points)
       :
       NamedAdditionalMaterialOutputs<dim>(make_seismic_additional_outputs_names()),
-      vs(n_points, numbers::signaling_nan<double>()),
-      vp(n_points, numbers::signaling_nan<double>())
+      vs(n_points, std::numeric_limits<double>::max()),
+      vp(n_points, std::numeric_limits<double>::max())
     {}
 
 

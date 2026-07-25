@@ -1312,7 +1312,7 @@ namespace aspect
     {
       public:
         EnthalpyOutputs(const unsigned int n_points)
-          : enthalpies_of_fusion(n_points, numbers::signaling_nan<double>())
+          : enthalpies_of_fusion(n_points, std::numeric_limits<double>::max())
         {}
 
         virtual ~EnthalpyOutputs()
