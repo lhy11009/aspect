@@ -181,7 +181,7 @@ namespace aspect
                     (this->get_timestep_number() > 1) ?
                     (trace(in.strain_rate[i]))
                     :
-                    numbers::signaling_nan<double>();
+                    std::numeric_limits<double>::max();
 
                   const unsigned int peridotite_idx = this->introspection().compositional_index_for_name("peridotite");
 

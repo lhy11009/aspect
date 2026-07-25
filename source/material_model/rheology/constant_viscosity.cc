@@ -32,7 +32,7 @@ namespace aspect
     {
       ConstantViscosity::ConstantViscosity ()
         :
-        viscosity(numbers::signaling_nan<double>())
+        viscosity(std::numeric_limits<double>::max())
       {}
 
 

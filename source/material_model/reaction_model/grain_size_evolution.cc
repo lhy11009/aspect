@@ -637,7 +637,7 @@ namespace aspect
                         if (!std::isnan(out.viscosities[0]))
                           shear_heating_out->shear_heating_work_fractions[i] = 1. - f * out.viscosities[i] / dislocation_viscosities[i];
                         else
-                          shear_heating_out->shear_heating_work_fractions[i] = numbers::signaling_nan<double>();
+                          shear_heating_out->shear_heating_work_fractions[i] = std::numeric_limits<double>::max();
                       }
                     else if (grain_size_evolution_formulation == Formulation::pinned_grain_damage)
                       {

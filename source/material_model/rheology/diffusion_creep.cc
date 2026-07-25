@@ -34,11 +34,11 @@ namespace aspect
     namespace Rheology
     {
       DiffusionCreepParameters::DiffusionCreepParameters()
-        : prefactor (numbers::signaling_nan<double>()),
-          activation_energy (numbers::signaling_nan<double>()),
-          activation_volume (numbers::signaling_nan<double>()),
-          stress_exponent (numbers::signaling_nan<double>()),
-          grain_size_exponent (numbers::signaling_nan<double>())
+        : prefactor (std::numeric_limits<double>::max()),
+          activation_energy (std::numeric_limits<double>::max()),
+          activation_volume (std::numeric_limits<double>::max()),
+          stress_exponent (std::numeric_limits<double>::max()),
+          grain_size_exponent (std::numeric_limits<double>::max())
       {}
 
 

@@ -50,8 +50,8 @@ namespace aspect
     DislocationViscosityOutputs<dim>::DislocationViscosityOutputs (const unsigned int n_points)
       :
       NamedAdditionalMaterialOutputs<dim>(make_dislocation_viscosity_outputs_names()),
-      dislocation_viscosities(n_points, numbers::signaling_nan<double>()),
-      diffusion_viscosities(n_points, numbers::signaling_nan<double>())
+      dislocation_viscosities(n_points, std::numeric_limits<double>::max()),
+      diffusion_viscosities(n_points, std::numeric_limits<double>::max())
     {}
 
 

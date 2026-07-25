@@ -48,10 +48,10 @@ namespace aspect
     template <int dim>
     PlasticAdditionalOutputs<dim>::PlasticAdditionalOutputs(const unsigned int n_points)
       : NamedAdditionalMaterialOutputs<dim>(make_plastic_additional_outputs_names()),
-        cohesions(n_points, numbers::signaling_nan<double>()),
-        friction_angles(n_points, numbers::signaling_nan<double>()),
-        yield_stresses(n_points, numbers::signaling_nan<double>()),
-        yielding(n_points, numbers::signaling_nan<double>())
+        cohesions(n_points, std::numeric_limits<double>::max()),
+        friction_angles(n_points, std::numeric_limits<double>::max()),
+        yield_stresses(n_points, std::numeric_limits<double>::max()),
+        yielding(n_points, std::numeric_limits<double>::max())
     {}
 
 
@@ -166,17 +166,17 @@ namespace aspect
 
         // Initialize or fill variables used to calculate viscosities
         output_parameters.composition_yielding.resize(volume_fractions.size(), false);
-        output_parameters.composition_viscosities.resize(volume_fractions.size(), numbers::signaling_nan<double>());
+        output_parameters.composition_viscosities.resize(volume_fractions.size(), std::numeric_limits<double>::max());
         output_parameters.drucker_prager_parameters.resize(volume_fractions.size());
-        output_parameters.dilation_lhs_terms.resize(volume_fractions.size(), numbers::signaling_nan<double>());
-        output_parameters.dilation_rhs_terms.resize(volume_fractions.size(), numbers::signaling_nan<double>());
+        output_parameters.dilation_lhs_terms.resize(volume_fractions.size(), std::numeric_limits<double>::max());
+        output_parameters.dilation_rhs_terms.resize(volume_fractions.size(), std::numeric_limits<double>::max());
         output_parameters.diffusion_viscosities.resize(volume_fractions.size(), std::numeric_limits<double>::max());
         output_parameters.dislocation_viscosities.resize(volume_fractions.size(), std::numeric_limits<double>::max());
 
         // Assemble current and old stress tensor if elastic behavior is enabled
         SymmetricTensor<2, dim> stress_0_advected = numbers::signaling_nan<SymmetricTensor<2, dim>>();
         SymmetricTensor<2, dim> stress_old = numbers::signaling_nan<SymmetricTensor<2, dim>>();
-        double elastic_shear_modulus = numbers::signaling_nan<double>();
+        double elastic_shear_modulus = std::numeric_limits<double>::max();
         if (this->get_parameters().enable_elasticity)
           {
             // The first set of stresses in in.composition holds $\tau^{0adv}$
@@ -222,7 +222,7 @@ namespace aspect
         for (unsigned int j=0; j < volume_fractions.size(); ++j)
           {
             // Step 1: viscous behavior
-            double non_yielding_viscosity = numbers::signaling_nan<double>();
+            double non_yielding_viscosity = std::numeric_limits<double>::max();
 
             // Choice of activation volume depends on whether there is an adiabatic temperature
             // gradient used when calculating the viscosity. This allows the same activation volume
@@ -259,7 +259,7 @@ namespace aspect
                                                      phase_function_values,
                                                      n_phase_transitions_per_composition)
                    :
-                   numbers::signaling_nan<double>());
+                   std::numeric_limits<double>::max());
 
               // Step 1b: compute viscosity from dislocation creep law
               const double viscosity_dislocation
@@ -272,7 +272,7 @@ namespace aspect
                                                        phase_function_values,
                                                        n_phase_transitions_per_composition)
                    :
-                   numbers::signaling_nan<double>());
+                   std::numeric_limits<double>::max());
 
               // Step 1c: select which form of viscosity to use (diffusion, dislocation, their minimum or composite, or fk), and apply
               // pre-exponential weakening, if required.
@@ -663,7 +663,7 @@ namespace aspect
                   dilation_values[composition_index] = current_isostrain_values.dilation_rhs_terms[composition_index] -
                                                        current_isostrain_values.dilation_lhs_terms[composition_index] * in.pressure[i];
 
-                double dummy_averaged_parameter = numbers::signaling_nan<double>();
+                double dummy_averaged_parameter = std::numeric_limits<double>::max();
 
                 // always use arithmetic average for plastic dilation terms
                 derivatives->dilation_derivative_wrt_strain_rate[i] =

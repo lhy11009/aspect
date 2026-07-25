@@ -48,8 +48,8 @@ namespace aspect
     BoukareOutputs<dim>::BoukareOutputs (const unsigned int n_points)
       :
       NamedAdditionalMaterialOutputs<dim>(make_boukare_additional_outputs_names()),
-      bulk_composition(n_points, numbers::signaling_nan<double>()),
-      molar_volatiles_in_melt(n_points, numbers::signaling_nan<double>())
+      bulk_composition(n_points, std::numeric_limits<double>::max()),
+      molar_volatiles_in_melt(n_points, std::numeric_limits<double>::max())
     {}
 
 
@@ -126,12 +126,12 @@ namespace aspect
     MeltBoukare<dim>::
     EndmemberProperties::EndmemberProperties(const unsigned int n_endmembers)
       :
-      volumes(n_endmembers, numbers::signaling_nan<double>()),
-      gibbs_energies(n_endmembers, numbers::signaling_nan<double>()),
-      entropies(n_endmembers, numbers::signaling_nan<double>()),
-      thermal_expansivities(n_endmembers, numbers::signaling_nan<double>()),
-      bulk_moduli(n_endmembers, numbers::signaling_nan<double>()),
-      heat_capacities(n_endmembers, numbers::signaling_nan<double>())
+      volumes(n_endmembers, std::numeric_limits<double>::max()),
+      gibbs_energies(n_endmembers, std::numeric_limits<double>::max()),
+      entropies(n_endmembers, std::numeric_limits<double>::max()),
+      thermal_expansivities(n_endmembers, std::numeric_limits<double>::max()),
+      bulk_moduli(n_endmembers, std::numeric_limits<double>::max()),
+      heat_capacities(n_endmembers, std::numeric_limits<double>::max())
     {}
 
 

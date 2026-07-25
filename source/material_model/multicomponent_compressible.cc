@@ -126,7 +126,7 @@ namespace aspect
             }
           else
             {
-              out.viscosities[i] = numbers::signaling_nan<double>();
+              out.viscosities[i] = std::numeric_limits<double>::max();
             }
 
           for (unsigned int c=0; c<in.composition[i].size(); ++c)

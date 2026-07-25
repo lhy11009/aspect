@@ -33,15 +33,15 @@ namespace aspect
     namespace Rheology
     {
       PeierlsCreepParameters::PeierlsCreepParameters()
-        : prefactor (numbers::signaling_nan<double>()),
-          stress_exponent (numbers::signaling_nan<double>()),
-          activation_energy (numbers::signaling_nan<double>()),
-          activation_volume (numbers::signaling_nan<double>()),
-          peierls_stress (numbers::signaling_nan<double>()),
-          glide_parameter_p (numbers::signaling_nan<double>()),
-          glide_parameter_q (numbers::signaling_nan<double>()),
-          fitting_parameter (numbers::signaling_nan<double>()),
-          stress_cutoff (numbers::signaling_nan<double>())
+        : prefactor (std::numeric_limits<double>::max()),
+          stress_exponent (std::numeric_limits<double>::max()),
+          activation_energy (std::numeric_limits<double>::max()),
+          activation_volume (std::numeric_limits<double>::max()),
+          peierls_stress (std::numeric_limits<double>::max()),
+          glide_parameter_p (std::numeric_limits<double>::max()),
+          glide_parameter_q (std::numeric_limits<double>::max()),
+          fitting_parameter (std::numeric_limits<double>::max()),
+          stress_cutoff (std::numeric_limits<double>::max())
       {}
 
 

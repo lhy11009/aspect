@@ -30,12 +30,12 @@ namespace aspect
     template <int dim>
     EquationOfStateOutputs<dim>::EquationOfStateOutputs(const unsigned int n_individual_compositions_and_phases)
       :
-      densities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      thermal_expansion_coefficients(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      specific_heat_capacities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      compressibilities(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      entropy_derivative_pressure(n_individual_compositions_and_phases, numbers::signaling_nan<double>()),
-      entropy_derivative_temperature(n_individual_compositions_and_phases, numbers::signaling_nan<double>())
+      densities(n_individual_compositions_and_phases, std::numeric_limits<double>::max()),
+      thermal_expansion_coefficients(n_individual_compositions_and_phases, std::numeric_limits<double>::max()),
+      specific_heat_capacities(n_individual_compositions_and_phases, std::numeric_limits<double>::max()),
+      compressibilities(n_individual_compositions_and_phases, std::numeric_limits<double>::max()),
+      entropy_derivative_pressure(n_individual_compositions_and_phases, std::numeric_limits<double>::max()),
+      entropy_derivative_temperature(n_individual_compositions_and_phases, std::numeric_limits<double>::max())
     {}
 
 

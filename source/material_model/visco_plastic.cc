@@ -254,13 +254,13 @@ namespace aspect
               isostrain_viscosities.diffusion_viscosities.clear();
               isostrain_viscosities.dislocation_viscosities.clear();
 
-              out.viscosities[i] = numbers::signaling_nan<double>();
+              out.viscosities[i] = std::numeric_limits<double>::max();
 
               if (const std::shared_ptr<MaterialModel::MaterialModelDerivatives<dim>> derivatives =
                     out.template get_additional_output_object<MaterialModel::MaterialModelDerivatives<dim>>())
                 {
                   derivatives->viscosity_derivative_wrt_strain_rate[i] = numbers::signaling_nan<SymmetricTensor<2,dim>>();
-                  derivatives->viscosity_derivative_wrt_pressure[i] = numbers::signaling_nan<double>();
+                  derivatives->viscosity_derivative_wrt_pressure[i] = std::numeric_limits<double>::max();
                 }
             }
 

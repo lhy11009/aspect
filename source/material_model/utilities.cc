@@ -308,10 +308,10 @@ namespace aspect
         {
           /* Initializing variables */
           interpolation = interpol;
-          delta_press=numbers::signaling_nan<double>();
+          delta_press=std::numeric_limits<double>::max();
           min_press=std::numeric_limits<double>::max();
           max_press=std::numeric_limits<double>::lowest();
-          delta_temp=numbers::signaling_nan<double>();
+          delta_temp=std::numeric_limits<double>::max();
           min_temp=std::numeric_limits<double>::max();
           max_temp=std::numeric_limits<double>::lowest();
           n_temperature=0;
@@ -514,10 +514,10 @@ namespace aspect
         {
           /* Initializing variables */
           interpolation = interpol;
-          delta_press=numbers::signaling_nan<double>();
+          delta_press=std::numeric_limits<double>::max();
           min_press=std::numeric_limits<double>::max();
           max_press=std::numeric_limits<double>::lowest();
-          delta_temp=numbers::signaling_nan<double>();
+          delta_temp=std::numeric_limits<double>::max();
           min_temp=std::numeric_limits<double>::max();
           max_temp=std::numeric_limits<double>::lowest();
           n_temperature=0;

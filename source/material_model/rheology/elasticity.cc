@@ -53,8 +53,8 @@ namespace aspect
     ElasticAdditionalOutputs<dim>::ElasticAdditionalOutputs (const unsigned int n_points)
       :
       NamedAdditionalMaterialOutputs<dim>(make_elastic_additional_outputs_names()),
-      elastic_shear_moduli(n_points, numbers::signaling_nan<double>()),
-      elastic_viscosity(n_points, numbers::signaling_nan<double>()),
+      elastic_shear_moduli(n_points, std::numeric_limits<double>::max()),
+      elastic_viscosity(n_points, std::numeric_limits<double>::max()),
       deviatoric_stress(n_points, SymmetricTensor<2,dim>())
     {}
 

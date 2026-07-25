@@ -33,11 +33,11 @@ namespace aspect
     namespace Rheology
     {
       DruckerPragerParameters::DruckerPragerParameters()
-        : angle_internal_friction (numbers::signaling_nan<double>()),
-          angle_dilation (numbers::signaling_nan<double>()),
-          cohesion  (numbers::signaling_nan<double>()),
+        : angle_internal_friction (std::numeric_limits<double>::max()),
+          angle_dilation (std::numeric_limits<double>::max()),
+          cohesion  (std::numeric_limits<double>::max()),
           yield_stress_prefactor (1.0),
-          max_yield_stress (numbers::signaling_nan<double>())
+          max_yield_stress (std::numeric_limits<double>::max())
       {}
 
 
