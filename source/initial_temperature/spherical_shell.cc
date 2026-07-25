@@ -153,7 +153,7 @@ namespace aspect
           Assert (false, ExcMessage ("This initial condition can only be used if the geometry "
                                      "is a sphere, a spherical shell, a chunk or an "
                                      "ellipsoidal chunk."));
-          R1 = numbers::signaling_nan<double>();
+          R1 = std::numeric_limits<double>::max();
         }
     }
 
@@ -347,8 +347,8 @@ namespace aspect
                                      "is a sphere, a spherical shell, a chunk or an "
                                      "ellipsoidal chunk."));
 
-          R0 = numbers::signaling_nan<double>();
-          R1 = numbers::signaling_nan<double>();
+          R0 = std::numeric_limits<double>::max();
+          R1 = std::numeric_limits<double>::max();
         }
     }
   }

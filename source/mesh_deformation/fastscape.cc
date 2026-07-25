@@ -2107,7 +2107,7 @@ namespace aspect
                 // If using the function description for the kf, no parts of the code
                 // base should use the constant_bedrock_river_incision_rate variable. Poison it to
                 // make sure it really isn't used anywhere:
-                constant_bedrock_river_incision_rate = numbers::signaling_nan<double>();
+                constant_bedrock_river_incision_rate = std::numeric_limits<double>::max();
               }
             else
               {
@@ -2126,7 +2126,7 @@ namespace aspect
                 // If using the function description for the kd, no parts of the code
                 // base should use the constant_bedrock_river_incision_rate variable. Poison it to
                 // make sure it really isn't used anywhere:
-                constant_bedrock_transport_coefficient = numbers::signaling_nan<double>();
+                constant_bedrock_transport_coefficient = std::numeric_limits<double>::max();
               }
             else
               {
@@ -2178,7 +2178,7 @@ namespace aspect
                 // If using the function description for the sea level, no parts of the code
                 // base should use the sea_level_constant_value variable. Poison it to
                 // make sure it really isn't used anywhere:
-                sea_level_constant_value = numbers::signaling_nan<double>();
+                sea_level_constant_value = std::numeric_limits<double>::max();
               }
             else
               {
