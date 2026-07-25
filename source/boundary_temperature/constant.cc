@@ -48,7 +48,7 @@ namespace aspect
                   ExcMessage ("Unknown boundary indicator with number <" + Utilities::int_to_string(boundary_indicator) + ">. "
                               "You may not have specified the temperature for this boundary indicator "
                               "in the input file."));
-          return numbers::signaling_nan<double>();
+          return std::numeric_limits<double>::max();
         }
     }
 

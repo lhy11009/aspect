@@ -69,7 +69,7 @@ namespace aspect
                      ExcMessage ("Unknown boundary indicator for geometry model. "
                                  "The given boundary should be ``top'' or ``bottom''."));
 
-      return numbers::signaling_nan<double>();
+      return std::numeric_limits<double>::max();
     }
 
 

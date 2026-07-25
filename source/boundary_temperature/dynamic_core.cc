@@ -43,27 +43,27 @@ namespace aspect
     namespace internal
     {
       CoreData::CoreData ()
-        : Qs(numbers::signaling_nan<double>()),
-          Qr(numbers::signaling_nan<double>()),
-          Qg(numbers::signaling_nan<double>()),
-          Qk(numbers::signaling_nan<double>()),
-          Ql(numbers::signaling_nan<double>()),
-          Es(numbers::signaling_nan<double>()),
-          Er(numbers::signaling_nan<double>()),
-          Eg(numbers::signaling_nan<double>()),
-          Ek(numbers::signaling_nan<double>()),
-          El(numbers::signaling_nan<double>()),
-          Eh(numbers::signaling_nan<double>()),
-          Ri(numbers::signaling_nan<double>()),
-          Ti(numbers::signaling_nan<double>()),
-          Xi(numbers::signaling_nan<double>()),
-          Q(numbers::signaling_nan<double>()),
-          H(numbers::signaling_nan<double>()),
-          dt(numbers::signaling_nan<double>()),
-          dR_dt(numbers::signaling_nan<double>()),
-          dT_dt(numbers::signaling_nan<double>()),
-          dX_dt(numbers::signaling_nan<double>()),
-          Q_OES(numbers::signaling_nan<double>()),
+        : Qs(std::numeric_limits<double>::max()),
+          Qr(std::numeric_limits<double>::max()),
+          Qg(std::numeric_limits<double>::max()),
+          Qk(std::numeric_limits<double>::max()),
+          Ql(std::numeric_limits<double>::max()),
+          Es(std::numeric_limits<double>::max()),
+          Er(std::numeric_limits<double>::max()),
+          Eg(std::numeric_limits<double>::max()),
+          Ek(std::numeric_limits<double>::max()),
+          El(std::numeric_limits<double>::max()),
+          Eh(std::numeric_limits<double>::max()),
+          Ri(std::numeric_limits<double>::max()),
+          Ti(std::numeric_limits<double>::max()),
+          Xi(std::numeric_limits<double>::max()),
+          Q(std::numeric_limits<double>::max()),
+          H(std::numeric_limits<double>::max()),
+          dt(std::numeric_limits<double>::max()),
+          dR_dt(std::numeric_limits<double>::max()),
+          dT_dt(std::numeric_limits<double>::max()),
+          dX_dt(std::numeric_limits<double>::max()),
+          Q_OES(std::numeric_limits<double>::max()),
           is_initialized(false)
       {}
     }
@@ -821,7 +821,7 @@ namespace aspect
       Assert (numbers::is_finite(Rc), ExcInternalError());
       Assert (numbers::is_finite(core_data.H), ExcInternalError());
 
-      double It = numbers::signaling_nan<double>();
+      double It = std::numeric_limits<double>::max();
       if (D>L)
         {
           const double B = std::sqrt(1./(1./Utilities::fixed_power<2>(L)-1./Utilities::fixed_power<2>(D)));
@@ -863,7 +863,7 @@ namespace aspect
         }
       else
         {
-          double It = numbers::signaling_nan<double>();
+          double It = std::numeric_limits<double>::max();
           if (D>L)
             {
               const double B = std::sqrt(1./(1./Utilities::fixed_power<2>(L)-1./Utilities::fixed_power<2>(D)));
