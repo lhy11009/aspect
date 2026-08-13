@@ -58,6 +58,13 @@ namespace aspect
           const Point<dim> &position) const override;
 
         /**
+         * Return the maximal prescribed deformation on a boundary.
+         */
+        double
+        get_maximal_initial_deformation_on_boundary (
+          const types::boundary_id boundary_indicator) const override;
+
+        /**
          * Whether the mesh deformation requires free surface stabilization.
          */
         bool
@@ -110,6 +117,11 @@ namespace aspect
          * Maximum allowed initial topography.
          */
         double max_isostatic_topography;
+
+        /**
+         * Maximum computed initial topography.
+         */
+        double maximal_topography;
 
         /**
          * Computed topography profile.

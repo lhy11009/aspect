@@ -109,6 +109,15 @@ namespace aspect
 
 
         /**
+         * A function that returns the maximum initial deformation of points on the
+         * boundary (e.g. the surface vertices).
+         */
+        virtual
+        double
+        get_maximal_initial_deformation_on_boundary(const types::boundary_id boundary_indicator) const;
+
+
+        /**
          * A function that creates constraints for the initial deformation of the mesh.
          *
          * This function gives an alternative way to determine the initial deformation
@@ -338,6 +347,21 @@ namespace aspect
          */
         const DoFHandler<dim> &
         get_mesh_deformation_dof_handler () const;
+
+        /**
+        * Return whether initial deformation is available.
+        */
+        bool is_post_initialization () const;
+
+        /**
+        * Return the initial deformation at surface point.
+        */
+        double initial_surface_deformation (const Point<dim-1> &surface_point) const;
+
+        /**
+        * Return the maximal initial deformation at surface.
+        */
+        double maximal_initial_surface_deformation() const;
 
         /**
          * Go through the list of all mesh deformation objects that have been selected
@@ -638,6 +662,11 @@ namespace aspect
          * Explicit mapping order used when automatic selection is disabled.
          */
         unsigned int explicit_mapping_order;
+
+        /**
+        * Whether mesh deformation objects are all initialized
+        */
+        bool post_initialization;
 
         /**
          * If required, store a mapping for each multigrid level.

@@ -900,6 +900,12 @@ namespace aspect
       get_mesh_deformation_handler () const;
 
       /**
+       * Return whether there is a valid reference to the mesh deformation handler
+       */
+      bool
+      has_mesh_deformation_handler () const;
+
+      /**
        * Return a reference to the lateral averaging object owned
        * by the simulator, which can be used to query lateral averages
        * of various quantities at depth slices.

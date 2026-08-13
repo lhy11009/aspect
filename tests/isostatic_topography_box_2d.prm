@@ -29,6 +29,10 @@ subsection Geometry model
     set X repetitions = 11
     set Y repetitions = 2
   end
+
+  subsection Initial topography model
+    set Model name = mesh deformation
+  end
 end
 
 subsection Gravity model

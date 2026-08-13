@@ -799,6 +799,16 @@ namespace aspect
     return *(simulator->mesh_deformation);
   }
 
+
+  // todo_df
+  template <int dim>
+  bool
+  SimulatorAccess<dim>::has_mesh_deformation_handler () const
+  {
+    return (simulator->mesh_deformation.get() != nullptr);
+  }
+
+
   template <int dim>
   void
   SimulatorAccess<dim>::get_composition_values_at_q_point (const std::vector<std::vector<double>> &composition_values,

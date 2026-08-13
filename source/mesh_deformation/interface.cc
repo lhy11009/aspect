@@ -189,6 +189,18 @@ namespace aspect
 
 
 
+    // todo_df
+    template <int dim>
+    double
+    Interface<dim>::
+    get_maximal_initial_deformation_on_boundary(const types::boundary_id /*boundary_indicator*/
+                                               ) const
+    {
+      return 0.0;
+    }
+
+
+
     template <int dim>
     void
     Interface<dim>::
@@ -229,7 +241,8 @@ namespace aspect
         mesh_deformation_dof_handler (sim.triangulation),
         include_initial_topography(false),
         use_automatic_mapping_order(true),
-        explicit_mapping_order(1)
+        explicit_mapping_order(1),
+        post_initialization(false)
     {
     }
 
@@ -603,6 +616,8 @@ namespace aspect
             if (model->needs_surface_stabilization() == true)
               boundary_indicators_requiring_stabilization.insert(boundary_and_deformation_objects.first);
         }
+
+      post_initialization = true;
     }
 
 
@@ -1816,6 +1831,74 @@ namespace aspect
       return initial_topography;
     }
 
+
+
+    // todo_df
+    template <int dim>
+    bool
+    MeshDeformationHandler<dim>::is_post_initialization () const
+    {
+      return post_initialization;
+    }
+
+
+
+    template <int dim>
+    double
+    MeshDeformationHandler<dim>::initial_surface_deformation (const Point<dim-1> &surface_point) const
+    {
+      AssertThrow(Plugins::plugin_type_matches<GeometryModel::Box<dim>>(this->get_geometry_model()),
+                  ExcMessage("The initial surface deformation currently only supports the box geometry model."));
+
+      const auto &geometry_model = dynamic_cast<const GeometryModel::Box<dim> &>(this->get_geometry_model());
+
+      // position has to be dim instead of dim
+      Point<dim> position;
+      for (unsigned int d = 0; d < dim-1; ++d)
+        position[d] = surface_point[d];
+      position[dim-1] = geometry_model.get_extents()[dim-1];
+
+      double topography = 0.0;
+      for (const auto &boundary_and_deformation_objects : mesh_deformation_objects)
+        {
+          for (const auto &model : boundary_and_deformation_objects.second)
+            {
+              const Tensor<1,dim> deformation =  model->compute_initial_deformation_on_boundary(
+                                                   geometry_model.translate_symbolic_boundary_name_to_id("top"),
+                                                   position);
+              if (deformation.norm() > 0.0)
+                topography = deformation.norm();
+            }
+        }
+
+      return topography;
+    }
+
+    // todo_df
+    template <int dim>
+    double
+    MeshDeformationHandler<dim>::maximal_initial_surface_deformation () const
+    {
+      AssertThrow(Plugins::plugin_type_matches<GeometryModel::Box<dim>>(this->get_geometry_model()),
+                  ExcMessage("The initial surface deformation currently only supports the box geometry model."));
+
+      const auto &geometry_model = dynamic_cast<const GeometryModel::Box<dim> &>(this->get_geometry_model());
+
+      double maximal_topography = 0.0;
+      for (const auto &boundary_and_deformation_objects : mesh_deformation_objects)
+        {
+          for (const auto &model : boundary_and_deformation_objects.second)
+            {
+              const double current_maximal_topography =  model->get_maximal_initial_deformation_on_boundary(
+                                                           geometry_model.translate_symbolic_boundary_name_to_id("top")
+                                                         );
+              if (current_maximal_topography > 0.0)
+                maximal_topography = current_maximal_topography;
+            }
+        }
+
+      return maximal_topography;
+    }
 
 
     template <int dim>

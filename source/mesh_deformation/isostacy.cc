@@ -37,7 +37,8 @@ namespace aspect
   namespace MeshDeformation
   {
     template <int dim>
-    Isostacy<dim>::Isostacy ()
+    Isostacy<dim>::Isostacy ():
+      maximal_topography(0)
     {}
 
 
@@ -172,7 +173,6 @@ namespace aspect
 
           column_masses[i] = column_mass;
           total_column_mass += column_mass;
-
         }
 
       AssertThrow(ref_density > 0.0,
@@ -212,8 +212,9 @@ namespace aspect
           for (unsigned int i = 0; i < n_lateral_points; ++i)
             topography[i] = raw_topography[i];
         }
-    }
 
+      maximal_topography = *std::max_element(topography.begin(), topography.end());
+    }
 
 
     template <int dim>
@@ -251,6 +252,19 @@ namespace aspect
         deformation_direction = -gravity / gravity.norm();
 
       return topo * deformation_direction;
+    }
+
+
+    // todo_df
+    template <int dim>
+    double
+    Isostacy<dim>::
+    get_maximal_initial_deformation_on_boundary (
+      const types::boundary_id boundary_indicator) const
+    {
+      AssertThrow(boundary_indicator == this->get_geometry_model().translate_symbolic_boundary_name_to_id("top"),
+                  ExcMessage("The isostaty mesh deformation option should only be applied to the top boundary."));
+      return maximal_topography;
     }
 
 

@@ -340,6 +340,7 @@ namespace aspect
       // mesh deformation is applied in the first timestep (e.g., by the boundary
       // traction plugins), and therefore there is no guarantee
       // that the point will still lie in the domain after initial mesh deformation.
+      // todo_df
       if (this->get_parameters().mesh_deformation_enabled &&
           this->simulator_is_past_initialization())
         {
