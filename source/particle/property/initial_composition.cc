@@ -142,7 +142,7 @@ namespace aspect
                   }
                 else
                   {
-                    // In case this is the background composition, see if the sum of 
+                    // In case this is the background composition, see if the sum of
                     // all chemical compsoition is smaller than a threshold
                     double sum = 0.0;
 

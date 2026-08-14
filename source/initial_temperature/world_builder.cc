@@ -56,7 +56,7 @@ namespace aspect
     {
 #if WORLD_BUILDER_VERSION_MAJOR > 0 || WORLD_BUILDER_VERSION_MINOR >= 5
       return world_builder->temperature(Utilities::convert_point_to_array(position),
-                                        -this->get_geometry_model().height_above_reference_surface(position));
+                                        this->get_geometry_model().depth(position));
 #else
 
       return world_builder->temperature(Utilities::convert_point_to_array(position),

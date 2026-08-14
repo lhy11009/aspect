@@ -51,7 +51,7 @@ namespace aspect
     {
       if (relevant_compositions[n_comp] == true)
         return world_builder->composition(Utilities::convert_point_to_array(position),
-                                          -this->get_geometry_model().height_above_reference_surface(position),
+                                          this->get_geometry_model().depth(position),
                                           n_comp);
 
       return 0.0;
