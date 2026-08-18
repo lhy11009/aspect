@@ -435,6 +435,10 @@ namespace aspect
           // Reset Viscosity for some part as the last step of computing viscosity
           prm.declare_entry ("Reset viscosity", "false", Patterns::Bool(),
                              "Reset viscosity");
+          prm.declare_entry ("Reset viscosity as minimum", "false", Patterns::Bool(),
+                             "Reset viscosity as minimum. When this is set to true, "
+                             "The reset viscosity function will set the value as viscosity "
+                             "minimum, rather than assigning it directly as viscosity.");
           prm.enter_subsection("Reset viscosity function");
           {
             /**
@@ -553,6 +557,8 @@ namespace aspect
 
           // Reset viscosity for some part as the last step of computing viscosity
           reset_viscosity = prm.get_bool("Reset viscosity");
+
+          reset_viscosity_as_minimum= prm.get_bool("Reset viscosity as minimum");
 
           // A function for reset viscosity for some part as the last step of computing viscosity
           prm.enter_subsection("Reset viscosity function");
@@ -696,10 +702,22 @@ namespace aspect
 
       // get value of new viscosity from function
       // use negative value as invalid value
+      // todo_visc
       const float new_viscosity = reset_viscosity_function.value(Utilities::convert_array_to_point<dim>(point.get_coordinates()));
-      if (new_viscosity > 0.0)
+      if (reset_viscosity_as_minimum)
         {
-          viscosities[i] = new_viscosity;
+          if (new_viscosity > viscosities[i])
+            {
+              // Treat new viscosity as minimum, and only reset when the calculated viscosity is smaller
+              viscosities[i] = new_viscosity;
+            }
+        }
+      else
+        {
+          if (new_viscosity > 0.0)
+            {
+              viscosities[i] = new_viscosity;
+            }
         }
     }
 

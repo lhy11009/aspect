@@ -320,6 +320,11 @@ namespace aspect
         bool reset_viscosity;
 
         /**
+         * Whether to use the value from the reset viscosity function as the minimum value
+         */
+        bool reset_viscosity_as_minimum;
+
+        /**
          * A function object representing the temperature used to reset viscosity
          */
         Functions::ParsedFunction<dim> reset_viscosity_function;
