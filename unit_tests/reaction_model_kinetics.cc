@@ -16,10 +16,30 @@
 
 #include <aspect/material_model/reaction_model/kinetics/cahn1956_eutectoid_decomposition.h>
 #include <aspect/material_model/reaction_model/kinetics/cahn1956_interface_controlled_growth.h>
+#include <aspect/material_model/reaction_model/kinetics/constant.h>
 #include <aspect/material_model/reaction_model/reaction_chain.h>
 
 #include <deal.II/base/parameter_handler.h>
 #include <cmath>
+
+TEST_CASE("Constant Reaction Rate Kinetics")
+{
+  using namespace aspect::MaterialModel::ReactionModel;
+
+  ConstantReactionRate<2> kinetics;
+
+  dealii::ParameterHandler prm;
+  kinetics.declare_parameters(prm);
+
+  prm.enter_subsection("Constant reaction rate");
+  prm.set("Reaction rates", "1.25, -2.5");
+  prm.leave_subsection();
+
+  kinetics.parse_parameters(prm, 2);
+
+  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.25, 0) == Approx(1.25));
+  CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.75, 1) == Approx(-2.5));
+}
 
 TEST_CASE("Eutectoid Decomposition Kinetics")
 {
@@ -430,6 +450,26 @@ TEST_CASE("Reaction Chain Kinetic Models Parsing")
     // entirely when there are no reaction-progress fields.
     CHECK_THROWS_WITH(reaction_chain.parse_parameters(prm),
                       Contains("must contain at least one entry"));
+  }
+
+  SECTION("Constant kinetics parses and evaluates without a simulator")
+  {
+    dealii::ParameterHandler prm;
+    ReactionChain<2>::declare_parameters(prm);
+    prm.enter_subsection("Reaction chain");
+    prm.set("Kinetic models", "Constant reaction rate|Constant reaction rate");
+    prm.enter_subsection("Constant reaction rate");
+    prm.set("Reaction rates", "1.25, -2.5");
+    prm.leave_subsection();
+    prm.leave_subsection();
+
+    ReactionChain<2> reaction_chain;
+    reaction_chain.parse_parameters(prm);
+    REQUIRE(reaction_chain.n_reactions() == 2);
+    CHECK(reaction_chain.reactions[0].kinetics == reaction_chain.reactions[1].kinetics);
+    CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.25, 0) == Approx(1.25));
+    CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.25, 1) == Approx(-2.5));
+    CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.95, 0) == Approx(0.0));
   }
 
   SECTION("Parsing throws on invalid 'Tolerance in reaction progress'")
