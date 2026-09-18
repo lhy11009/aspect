@@ -1,0 +1,30 @@
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+Loading shared library </home/lochy/Softwares/aspect/build_master_TwoD_rebase/visco_plastic_TwoD/libvisco_plastic_TwoD.release.so>
+Loading shared library </home/lochy/Softwares/aspect/build_master_TwoD_rebase/prescribe_field_T_adiabat/libprescribe_field_T_adiabat.release.so>
+Loading shared library </home/lochy/Softwares/aspect/build_master_TwoD_rebase/prescribe_field/libprescribed_temperature.release.so>
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+Number of active cells: 2 (on 1 levels)
+Number of degrees of freedom: 408 (135+12+45+54+54+54+54)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output: output-MOW_eba3d_rf/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2075 K, 3189 K
+     Writing depth average:    output-MOW_eba3d_rf/depth_average
+
+Termination requested by criterion: end time
+
+
++----------------------------------------------+------------+------------+
++----------------------------------+-----------+------------+------------+
++----------------------------------+-----------+------------+------------+
+
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
