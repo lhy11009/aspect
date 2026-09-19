@@ -1,5 +1,5 @@
 # This test verifies implementation of prescribed solutions interface.
-# It sets up a 2D convection problem in a rectangular box with 
+# It sets up a 2D convection problem in a rectangular box with
 # prescribed temperature conditions from the initial temperature fields.
 # A prescribed temperature indicator function is to set the region of
 # prescribed temperature.
@@ -51,7 +51,7 @@ subsection Mesh refinement
 end
 
 # The next section deals with the initial conditions for the
-# temperature with an adiabatic condition 
+# temperature with an adiabatic condition
 subsection Initial temperature model
   set Model name = adiabatic
 end
@@ -133,7 +133,7 @@ end
 # and we choose to compute velocity and temperature statistics,
 # statistics about the heat flux through the boundaries of the
 # domain, and to generate graphical output files for later
-# visualization. 
+# visualization.
 subsection Postprocess
   set List of postprocessors = velocity statistics, temperature statistics, heat flux statistics, visualization, heat flux map
 

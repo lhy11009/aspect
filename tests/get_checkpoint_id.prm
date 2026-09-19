@@ -13,5 +13,5 @@ subsection Mesh deformation
 end
 
 subsection Postprocess
-  set List of postprocessors = 
+  set List of postprocessors =
 end

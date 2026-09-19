@@ -1,12 +1,12 @@
 # This is a simplified version of the continental extension cookbook to test
 # the combination of particles, compositing material model and plastic weakening.
 # This test modifies from the continental_extension_mixed_compositions_particles by
-# including compositing material model. 
+# including compositing material model.
 include $ASPECT_SOURCE_DIR/tests/continental_extension_mixed_compositions_particles.prm
 
 subsection Material model
   set Model name = compositing
-  
+
   set Material averaging = harmonic average only viscosity
 
   subsection Simple model

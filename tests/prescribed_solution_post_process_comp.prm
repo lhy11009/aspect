@@ -1,7 +1,7 @@
 #########################################################
 # This is modified from the composition_passive.prm
 # parameter file by prescribing the compositional solution
-# from initial compositional fields, and visualizing the 
+# from initial compositional fields, and visualizing the
 # prescribed fields.
 
 include $ASPECT_SOURCE_DIR/cookbooks/composition_passive/composition_passive.prm
