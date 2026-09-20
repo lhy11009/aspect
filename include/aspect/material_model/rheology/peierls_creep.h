@@ -37,13 +37,17 @@ namespace aspect
       {
         /**
          * The Peierls creep prefactor, stress exponent, activation energy,
-         * activation volume, Peierls stress, glide parameters p and q
-         * and fitting parameter,
+         * activation volume, activation volume difference, reference
+         * temperature, reference pressure, Peierls stress, glide parameters
+         * p and q, and fitting parameter.
          */
         double prefactor;
         double stress_exponent;
         double activation_energy;
         double activation_volume;
+        double activation_volume_difference;
+        double reference_temperature;
+        double reference_pressure;
         double peierls_stress;
         double glide_parameter_p;
         double glide_parameter_q;
@@ -239,6 +243,27 @@ namespace aspect
            * List of Peierls creep activation volumes (V).
            */
           std::vector<double> activation_volumes;
+
+          /**
+           * List of Peierls creep activation volume differences (delta V).
+           * This variable is read from the parameter file through a parameter called
+           * 'Activation volume differences for Peierls creep'.
+           */
+          std::vector<double> activation_volume_differences;
+
+          /**
+           * List of Peierls creep reference temperatures.
+           * This variable is read from the parameter file through a parameter called
+           * 'Reference temperatures for Peierls creep'.
+           */
+          std::vector<double> reference_temperatures;
+
+          /**
+           * List of Peierls creep reference pressures.
+           * This variable is read from the parameter file through a parameter called
+           * 'Reference pressures for Peierls creep'.
+           */
+          std::vector<double> reference_pressures;
 
           /**
            * List of Peierls stresses (sigma_p).

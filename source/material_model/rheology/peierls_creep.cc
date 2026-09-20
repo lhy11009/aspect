@@ -37,12 +37,34 @@ namespace aspect
           stress_exponent (numbers::signaling_nan<double>()),
           activation_energy (numbers::signaling_nan<double>()),
           activation_volume (numbers::signaling_nan<double>()),
+          activation_volume_difference (numbers::signaling_nan<double>()),
+          reference_temperature (numbers::signaling_nan<double>()),
+          reference_pressure (numbers::signaling_nan<double>()),
           peierls_stress (numbers::signaling_nan<double>()),
           glide_parameter_p (numbers::signaling_nan<double>()),
           glide_parameter_q (numbers::signaling_nan<double>()),
           fitting_parameter (numbers::signaling_nan<double>()),
           stress_cutoff (numbers::signaling_nan<double>())
       {}
+
+
+
+      namespace
+      {
+        double
+        compute_activation_term (const double pressure,
+                                 const double temperature,
+                                 const PeierlsCreepParameters &parameters)
+        {
+          return (parameters.activation_energy
+                  + pressure * (parameters.activation_volume
+                                + parameters.activation_volume_difference))
+                 / (constants::gas_constant * temperature)
+                 - parameters.reference_pressure
+                 * parameters.activation_volume_difference
+                 / (constants::gas_constant * parameters.reference_temperature);
+        }
+      }
 
 
 
@@ -69,6 +91,9 @@ namespace aspect
             creep_parameters.stress_exponent = stress_exponents[composition];
             creep_parameters.activation_energy = activation_energies[composition];
             creep_parameters.activation_volume = activation_volumes[composition];
+            creep_parameters.activation_volume_difference = activation_volume_differences[composition];
+            creep_parameters.reference_temperature = reference_temperatures[composition];
+            creep_parameters.reference_pressure = reference_pressures[composition];
             creep_parameters.peierls_stress = peierls_stresses[composition];
             creep_parameters.glide_parameter_p = glide_parameters_p[composition];
             creep_parameters.glide_parameter_q = glide_parameters_q[composition];
@@ -87,6 +112,12 @@ namespace aspect
                                                  activation_energies, composition);
             creep_parameters.activation_volume = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                                  activation_volumes, composition);
+            creep_parameters.activation_volume_difference = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
+                                                            activation_volume_differences, composition);
+            creep_parameters.reference_temperature = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
+                                                     reference_temperatures, composition);
+            creep_parameters.reference_pressure = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
+                                                  reference_pressures, composition);
             creep_parameters.peierls_stress = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                               peierls_stresses, composition);
             creep_parameters.glide_parameter_p = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
@@ -139,8 +170,9 @@ namespace aspect
          */
 
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
+        const double activation_term = compute_activation_term(pressure, temperature, p);
 
-        const double s = ( (p.activation_energy + pressure * p.activation_volume) / (constants::gas_constant * temperature)) *
+        const double s = activation_term *
                          p.glide_parameter_p * p.glide_parameter_q *
                          std::pow((1. - std::pow(p.fitting_parameter, p.glide_parameter_p)),(p.glide_parameter_q - 1.)) *
                          std::pow(p.fitting_parameter, p.glide_parameter_p);
@@ -148,7 +180,7 @@ namespace aspect
         const double stress_term = 0.5 * (p.fitting_parameter * p.peierls_stress) /
                                    std::pow((p.prefactor * std::pow(p.fitting_parameter * p.peierls_stress,p.stress_exponent)),( 1. / (s + p.stress_exponent)));
 
-        const double arrhenius_term = std::exp( ((p.activation_energy + pressure * p.activation_volume) / (constants::gas_constant * temperature)) *
+        const double arrhenius_term = std::exp( activation_term *
                                                 (std::pow((1. - std::pow(p.fitting_parameter,p.glide_parameter_p)),p.glide_parameter_q)) /
                                                 (s + p.stress_exponent) );
 
@@ -309,7 +341,7 @@ namespace aspect
                                                                          const PeierlsCreepParameters creep_parameters) const
       {
         /**
-        * b = (E+P*V)/(R*T)
+        * b = (E+P*(V+dV))/(R*T) - P_ref*dV/(R*T_ref)
         * c = std::pow(gamma, p)
         * d = std::pow(1. - c, q)
         * s = b*p*q*c*d/(1. - c)
@@ -320,7 +352,7 @@ namespace aspect
         */
         const PeierlsCreepParameters p = creep_parameters;
 
-        const double b = (p.activation_energy + pressure*p.activation_volume)/(constants::gas_constant * temperature);
+        const double b = compute_activation_term(pressure, temperature, p);
         const double c = std::pow(p.fitting_parameter, p.glide_parameter_p);
         const double d = std::pow(1. - c, p.glide_parameter_q);
         const double s = b*p.glide_parameter_p*p.glide_parameter_q*c*d/(1. - c);
@@ -342,7 +374,7 @@ namespace aspect
                                                                              const PeierlsCreepParameters creep_parameters) const
       {
         /**
-        * b = (E+P*V)/(R*T)
+        * b = (E+P*(V+dV))/(R*T) - P_ref*dV/(R*T_ref)
         * c = std::pow(gamma, p)
         * d = std::pow(1. - c, q)
         * s = b*p*q*c*d/(1. - c)
@@ -353,7 +385,7 @@ namespace aspect
         */
         const PeierlsCreepParameters p = creep_parameters;
 
-        const double b = (p.activation_energy + pressure*p.activation_volume)/(constants::gas_constant * temperature);
+        const double b = compute_activation_term(pressure, temperature, p);
         const double c = std::pow(p.fitting_parameter, p.glide_parameter_p);
         const double d = std::pow(1. - c, p.glide_parameter_q);
         const double s = b*p.glide_parameter_p*p.glide_parameter_q*c*d/(1. - c);
@@ -375,7 +407,7 @@ namespace aspect
                                                                    const PeierlsCreepParameters creep_parameters) const
       {
         /**
-        * b = (E+P*V)/(R*T)
+        * b = (E+P*(V+dV))/(R*T) - P_ref*dV/(R*T_ref)
         * c = std::pow(stress/peierls_stress, p)
         * d = std::pow(1 - c, q)
         * s = b*p*q*c*d/(1 - c)
@@ -407,7 +439,7 @@ namespace aspect
             const double quadratic_term = (deriv_cutoff - edot_ii_cutoff / p.stress_cutoff) / p.stress_cutoff / arrhenius_cutoff;
             const double linear_term = (2*(edot_ii_cutoff / p.stress_cutoff) - deriv_cutoff) / arrhenius_cutoff;
 
-            const double b = (p.activation_energy + pressure*p.activation_volume)/(constants::gas_constant * temperature);
+            const double b = compute_activation_term(pressure, temperature, p);
             const double arrhenius = std::exp(-b*d_cutoff);
             const double edot_ii = (quadratic_term*Utilities::fixed_power<2>(stress) + linear_term*stress) * arrhenius;
             const double deriv = (2*quadratic_term*stress + linear_term) * arrhenius;
@@ -417,7 +449,7 @@ namespace aspect
 
         else
           {
-            const double b = (p.activation_energy + pressure*p.activation_volume)/(constants::gas_constant * temperature);
+            const double b = compute_activation_term(pressure, temperature, p);
             const double c = std::pow(stress/p.peierls_stress, p.glide_parameter_p);
             const double d = std::pow(1. - c, p.glide_parameter_q);
             const double s = b*p.glide_parameter_p*p.glide_parameter_q*c*d/(1. - c);
@@ -440,7 +472,7 @@ namespace aspect
                                                                        const PeierlsCreepParameters creep_parameters) const
       {
         /**
-        * b = (E+P*V)/(R*T)
+        * b = (E+P*(V+dV))/(R*T) - P_ref*dV/(R*T_ref)
         * c = std::pow(stress/peierls_stress, p)
         * d = std::pow(1 - c, q)
         *
@@ -472,7 +504,7 @@ namespace aspect
             const double quadratic_term = (deriv_cutoff - edot_ii_cutoff / p.stress_cutoff) / p.stress_cutoff / arrhenius_cutoff;
             const double linear_term = (2*(edot_ii_cutoff / p.stress_cutoff) - deriv_cutoff) / arrhenius_cutoff;
 
-            const double b = (p.activation_energy + pressure*p.activation_volume)/(constants::gas_constant * temperature);
+            const double b = compute_activation_term(pressure, temperature, p);
             const double arrhenius = std::exp(-b*d_cutoff);
             const double edot_ii = (quadratic_term*Utilities::fixed_power<2>(stress) + linear_term*stress) * arrhenius;
             const double deriv_log = 2 - linear_term / (quadratic_term * stress + linear_term);
@@ -481,7 +513,7 @@ namespace aspect
           }
         else
           {
-            const double b = (p.activation_energy + pressure*p.activation_volume)/(constants::gas_constant * temperature);
+            const double b = compute_activation_term(pressure, temperature, p);
             const double c = std::pow(stress/p.peierls_stress, p.glide_parameter_p);
             const double d = std::pow(1. - c, p.glide_parameter_q);
 
@@ -574,6 +606,25 @@ namespace aspect
                            "those corresponding to chemical compositions. "
                            "If only one value is given, then all use the same value. "
                            "Units: \\si{\\meter\\cubed\\per\\mole}.");
+        prm.declare_entry ("Activation volume differences for Peierls creep", "0.0",
+                           Patterns::Anything(),
+                           "List of activation volume differences, $\\Delta V$, for background material and "
+                           "compositional fields. The pressure-dependent activation term is "
+                           "$(E + P(V+\\Delta V))/(RT) - P_{\\text{ref}}\\Delta V/(RT_{\\text{ref}})$. "
+                           "If only one value is given, then all compositions and phases use the same value. "
+                           "Units: \\si{\\meter\\cubed\\per\\mole}.");
+        prm.declare_entry ("Reference temperatures for Peierls creep", "273.0",
+                           Patterns::Anything(),
+                           "List of positive reference temperatures, $T_{\\text{ref}}$, used with the "
+                           "activation volume differences for background material and compositional fields. "
+                           "If only one value is given, then all compositions and phases use the same value. "
+                           "Units: \\si{\\kelvin}.");
+        prm.declare_entry ("Reference pressures for Peierls creep", "0.0",
+                           Patterns::Anything(),
+                           "List of reference pressures, $P_{\\text{ref}}$, used with the activation volume "
+                           "differences for background material and compositional fields. If only one value "
+                           "is given, then all compositions and phases use the same value. "
+                           "Units: \\si{\\pascal}.");
         prm.declare_entry ("Peierls stresses", "5.e9",
                            Patterns::Anything(),
                            "List of stress limits for Peierls creep $\\sigma_{\\text{peierls}}$ for background "
@@ -667,6 +718,21 @@ namespace aspect
         options.property_name = "Activation volumes for Peierls creep";
         activation_volumes = Utilities::MapParsing::parse_map_to_double_array(prm.get("Activation volumes for Peierls creep"),
                                                                               options);
+
+        options.property_name = "Activation volume differences for Peierls creep";
+        activation_volume_differences = Utilities::MapParsing::parse_map_to_double_array(prm.get("Activation volume differences for Peierls creep"),
+                                        options);
+
+        options.property_name = "Reference temperatures for Peierls creep";
+        reference_temperatures = Utilities::MapParsing::parse_map_to_double_array(prm.get("Reference temperatures for Peierls creep"),
+                                                                                  options);
+        for (const double reference_temperature : reference_temperatures)
+          AssertThrow(reference_temperature > 0.0,
+                      ExcMessage("Reference temperatures for Peierls creep must be greater than zero."));
+
+        options.property_name = "Reference pressures for Peierls creep";
+        reference_pressures = Utilities::MapParsing::parse_map_to_double_array(prm.get("Reference pressures for Peierls creep"),
+                                                                               options);
 
         options.property_name = "Peierls stresses";
         peierls_stresses = Utilities::MapParsing::parse_map_to_double_array(prm.get("Peierls stresses"),

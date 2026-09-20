@@ -1,0 +1,16 @@
+
+Number of active cells: 2 (on 1 levels)
+Number of degrees of freedom: 123 (30+6+15+18+18+18+18)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Writing graphical output: output-MOW_2d_SA80_OA40_ss300_SZV1e20_activation_volume_difference/solution/solution-00000
+     RMS, max velocity:        0 m/year, 0 m/year
+     Temperature min/avg/max:  273 K, 2078 K, 3211 K
+     Writing depth average:    output-MOW_2d_SA80_OA40_ss300_SZV1e20_activation_volume_difference/depth_average
+
+Termination requested by criterion: end time
+
+
+ 
