@@ -1,0 +1,13 @@
+
+Number of active cells: 100 (on 1 levels)
+Number of degrees of freedom: 1,885 (882+121+441+441)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Average density / Average viscosity / Total mass:  3448 kg/m^3, 2.53e+21 Pa s, 3.448e+13 kg
+
+Termination requested by criterion: end time
+
+
+ 

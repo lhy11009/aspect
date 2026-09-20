@@ -44,7 +44,8 @@ namespace aspect
           glide_parameter_p (numbers::signaling_nan<double>()),
           glide_parameter_q (numbers::signaling_nan<double>()),
           fitting_parameter (numbers::signaling_nan<double>()),
-          stress_cutoff (numbers::signaling_nan<double>())
+          stress_cutoff (numbers::signaling_nan<double>()),
+          pressure_cutoff (numbers::signaling_nan<double>())
       {}
 
 
@@ -99,6 +100,7 @@ namespace aspect
             creep_parameters.glide_parameter_q = glide_parameters_q[composition];
             creep_parameters.fitting_parameter = fitting_parameters[composition];
             creep_parameters.stress_cutoff = stress_cutoffs[composition];
+            creep_parameters.pressure_cutoff = pressure_cutoffs[composition];
           }
         else
           {
@@ -128,6 +130,8 @@ namespace aspect
                                                  fitting_parameters, composition);
             creep_parameters.stress_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
                                              stress_cutoffs, composition);
+            creep_parameters.pressure_cutoff = MaterialModel::MaterialUtilities::phase_average_value(phase_function_values, n_phase_transitions_per_composition,
+                                               pressure_cutoffs, composition);
           }
         return creep_parameters;
       }
@@ -170,6 +174,10 @@ namespace aspect
          */
 
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
+
+        if (pressure > p.pressure_cutoff)
+          return std::sqrt(std::numeric_limits<double>::max());
+
         const double activation_term = compute_activation_term(pressure, temperature, p);
 
         const double s = activation_term *
@@ -224,6 +232,9 @@ namespace aspect
          * compute_exact_strain_rate_and_derivative.
          */
         const PeierlsCreepParameters p = compute_creep_parameters(composition, phase_function_values, n_phase_transitions_per_composition);
+
+        if (pressure > p.pressure_cutoff)
+          return std::sqrt(std::numeric_limits<double>::max());
 
         // The generalized Peierls creep flow law cannot be expressed as viscosity in
         // terms of strain rate, because there are two stress-dependent terms
@@ -655,6 +666,11 @@ namespace aspect
                            Patterns::Anything(),
                            "List of the Stress thresholds below which the strain rate is solved for as a quadratic "
                            "function of stress to aid with convergence when stress exponent n=0. Units: \\si{\\pascal}");
+        prm.declare_entry ("Cutoff pressures for Peierls creep", "1.7976931348623157e308",
+                           Patterns::Anything(),
+                           "List of pressure thresholds above which Peierls creep is deactivated for background "
+                           "material, compositional fields, and their phases. If only one value is given, all "
+                           "compositions and phases use the same value. Units: \\si{\\pascal}.");
         prm.declare_entry ("Apply strict stress cutoff for Peierls creep", "false", Patterns::Bool(),
                            "Whether the cutoff stresses for Peierls creep are used as the minimum "
                            "stresses in the Peierls rheology");
@@ -753,6 +769,10 @@ namespace aspect
         options.property_name = "Cutoff stresses for Peierls creep";
         stress_cutoffs = Utilities::MapParsing::parse_map_to_double_array(prm.get("Cutoff stresses for Peierls creep"),
                                                                           options);
+
+        options.property_name = "Cutoff pressures for Peierls creep";
+        pressure_cutoffs = Utilities::MapParsing::parse_map_to_double_array(prm.get("Cutoff pressures for Peierls creep"),
+                                                                            options);
 
         apply_strict_cutoff = prm.get_bool("Apply strict stress cutoff for Peierls creep");
       }

@@ -53,6 +53,7 @@ namespace aspect
         double glide_parameter_q;
         double fitting_parameter;
         double stress_cutoff;
+        double pressure_cutoff;
 
         /**
          * Constructor. Initializes all values to NaN.
@@ -288,6 +289,11 @@ namespace aspect
           std::vector<double> glide_parameters_q;
 
           std::vector<double> stress_cutoffs;
+
+          /**
+           * List of pressures above which Peierls creep is deactivated.
+           */
+          std::vector<double> pressure_cutoffs;
 
           /**
            * A parameter determines whether a strict cutoff

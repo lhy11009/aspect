@@ -1,0 +1,19 @@
+# Test phase-dependent cutoff pressures for Peierls creep.
+# The pressure is 3 GPa throughout the domain. Peierls creep is therefore
+# active in phases with a 4 GPa cutoff and inactive in phases with a 2 GPa
+# cutoff.
+
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_phases_peierls_mei_exact.prm
+
+set Nonlinear solver scheme = no Advection, no Stokes
+
+subsection Material model
+  subsection Visco Plastic
+    set Peierls creep flow law = viscosity approximation
+    set Cutoff pressures for Peierls creep = background:2e9|4e9|2e9, right:4e9|2e9|4e9
+  end
+end
+
+subsection Postprocess
+  set List of postprocessors = material statistics
+end
