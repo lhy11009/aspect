@@ -1,0 +1,10 @@
+# Verify that material models without metastable kinetics can use the latent
+# heat heating model. The metastable entropy derivative should default to zero.
+
+include $ASPECT_SOURCE_DIR/tests/visco_plastic.prm
+
+set Output directory = output-visco_plastic_latent_heat_metastable_default
+
+subsection Heating model
+  set List of model names = latent heat
+end

@@ -418,7 +418,7 @@ namespace aspect
       compressibilities(n_points, numbers::signaling_nan<double>()),
       entropy_derivative_pressure(n_points, numbers::signaling_nan<double>()),
       entropy_derivative_temperature(n_points, numbers::signaling_nan<double>()),
-      entropy_derivative_metastable(n_points, numbers::signaling_nan<double>()),
+      entropy_derivative_metastable(n_points, 0.0),
       reaction_terms(n_points, std::vector<double>(n_comp, numbers::signaling_nan<double>()))
     {}
 
