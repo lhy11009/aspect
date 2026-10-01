@@ -42,7 +42,7 @@ TEST_CASE("Constant Reaction Rate Kinetics")
   prm.set("Reaction rates", "1.25, -2.5");
   prm.leave_subsection();
 
-  kinetics.parse_parameters(prm, 1);
+  kinetics.parse_parameters(prm, 2);
 
   CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.25, 0) == Approx(1.25));
   CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.75, 1) == Approx(-2.5));

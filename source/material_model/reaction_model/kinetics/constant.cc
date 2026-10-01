@@ -30,6 +30,15 @@ namespace aspect
     namespace ReactionModel
     {
       template <int dim>
+      void ConstantReactionRate<dim>::initialize_simulator(const Simulator<dim> &simulator_object)
+      {
+        Cahn1956Interface<dim>::initialize_simulator(simulator_object);
+        use_years_in_output = this->convert_output_to_years();
+      }
+
+
+
+      template <int dim>
       double ConstantReactionRate<dim>::
       net_forward_reaction_rate(const double,
                                 const double,
@@ -38,7 +47,8 @@ namespace aspect
                                 const unsigned int reaction_index) const
       {
         AssertIndexRange(reaction_index, reaction_rates.size());
-        return reaction_rates[reaction_index];
+        const double time_scale = use_years_in_output ? year_in_seconds : 1.0;
+        return reaction_rates[reaction_index] / time_scale;
       }
 
       template <int dim>
@@ -67,9 +77,6 @@ namespace aspect
                                  std::to_string(n_reactions) + " comma-separated entries, matching the number of "
                                  "reactions assigned to this kinetics model."));
 
-          if (this->convert_output_to_years())
-            for (double &reaction_rate : reaction_rates)
-              reaction_rate /= year_in_seconds;
         }
         prm.leave_subsection();
       }

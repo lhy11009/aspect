@@ -37,6 +37,8 @@ namespace aspect
       class ConstantReactionRate : public Cahn1956Interface<dim>
       {
         public:
+          void initialize_simulator(const Simulator<dim> &simulator_object) override;
+
           double net_forward_reaction_rate(const double temperature,
                                            const double pressure,
                                            const double delta_forward_gibbs_energy,
@@ -52,6 +54,8 @@ namespace aspect
            * The user-provided constant reaction rates.
            */
           std::vector<double> reaction_rates;
+
+          bool use_years_in_output = false;
       };
     }
   }
