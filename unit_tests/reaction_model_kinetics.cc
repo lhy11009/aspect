@@ -37,8 +37,13 @@ TEST_CASE("Constant Reaction Rate Kinetics")
 
   kinetics.parse_parameters(prm, 2);
 
-  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.25, 0) == Approx(1.25));
-  CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.75, 1) == Approx(-2.5));
+  const double tolerance_in_reaction_progress = 0.1;
+
+  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.25, tolerance_in_reaction_progress, 0) == Approx(1.25));
+  CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.75, tolerance_in_reaction_progress, 1) == Approx(-2.5));
+  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.89, tolerance_in_reaction_progress, 0) == Approx(1.25));
+  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.9, tolerance_in_reaction_progress, 0) == Approx(0.0));
+  CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.91, tolerance_in_reaction_progress, 1) == Approx(0.0));
 }
 
 TEST_CASE("Eutectoid Decomposition Kinetics")
@@ -75,7 +80,7 @@ TEST_CASE("Eutectoid Decomposition Kinetics")
       const double therm_factor = -dG_forward * std::abs(dG_forward); // 4.0e6
       const double expected_rate = 2.0e-16 * therm_factor * arrhenius * reaction_progress;
 
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0.0, 0);
       CHECK(computed_rate == Approx(expected_rate));
     }
 
@@ -87,7 +92,7 @@ TEST_CASE("Eutectoid Decomposition Kinetics")
       const double therm_factor = -dG_forward * std::abs(dG_forward); // 4.0e6
       const double expected_rate = 2.0e-16 * therm_factor * arrhenius * reaction_progress;
 
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0.0, 0);
       CHECK(computed_rate == Approx(expected_rate));
     }
 
@@ -99,13 +104,13 @@ TEST_CASE("Eutectoid Decomposition Kinetics")
       const double therm_factor = -dG_reverse * std::abs(dG_reverse); // -4.0e6
       const double expected_rate = 2.0e-16 * therm_factor * arrhenius * reaction_progress;
 
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_reverse, forward_reaction_progress, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_reverse, forward_reaction_progress, 0.0, 0);
       CHECK(computed_rate == Approx(expected_rate));
     }
 
     SECTION("Equilibrium (dG = 0)")
     {
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, 0.0, 0.5, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, 0.0, 0.5, 0.0, 0);
       CHECK(computed_rate == Approx(0.0));
     }
   }
@@ -146,7 +151,7 @@ TEST_CASE("Interface Controlled Growth Kinetics")
       const double therm_factor = 1.0 - std::exp(-std::abs(dG_forward) / (R * temperature));
       const double expected_rate = 1.0e8 * temperature * arrhenius * therm_factor * reaction_progress;
 
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0.0, 0);
       CHECK(computed_rate == Approx(expected_rate));
     }
 
@@ -158,7 +163,7 @@ TEST_CASE("Interface Controlled Growth Kinetics")
       const double therm_factor = 1.0 - std::exp(-std::abs(dG_forward) / (R * temperature));
       const double expected_rate = 1.0e8 * temperature * arrhenius * therm_factor * reaction_progress;
 
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_forward, forward_reaction_progress, 0.0, 0);
       CHECK(computed_rate == Approx(expected_rate));
     }
 
@@ -170,13 +175,13 @@ TEST_CASE("Interface Controlled Growth Kinetics")
       const double therm_factor = -(1.0 - std::exp(-std::abs(dG_reverse) / (R * temperature)));
       const double expected_rate = 1.0e8 * temperature * arrhenius * therm_factor * reaction_progress;
 
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_reverse, forward_reaction_progress, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG_reverse, forward_reaction_progress, 0.0, 0);
       CHECK(computed_rate == Approx(expected_rate));
     }
 
     SECTION("Equilibrium (dG = 0)")
     {
-      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, 0.0, 0.5, 0);
+      const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, 0.0, 0.5, 0.0, 0);
       CHECK(computed_rate == Approx(0.0));
     }
   }
@@ -213,7 +218,7 @@ TEST_CASE("Multiple Reactions Sharing One Kinetics Instance")
     const double therm_factor = 1.0 - std::exp(-std::abs(dG) / (R * temperature));
     const double expected_rate = 1.0e8 * temperature * arrhenius * therm_factor * forward_reaction_progress;
 
-    const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG, forward_reaction_progress, 0);
+    const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG, forward_reaction_progress, 0.0, 0);
     CHECK(computed_rate == Approx(expected_rate));
   }
 
@@ -223,7 +228,7 @@ TEST_CASE("Multiple Reactions Sharing One Kinetics Instance")
     const double therm_factor = 1.0 - std::exp(-std::abs(dG) / (R * temperature));
     const double expected_rate = 2.0e8 * temperature * arrhenius * therm_factor * forward_reaction_progress;
 
-    const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG, forward_reaction_progress, 1);
+    const double computed_rate = kinetics.net_forward_reaction_rate(temperature, pressure, dG, forward_reaction_progress, 0.0, 1);
     CHECK(computed_rate == Approx(expected_rate));
   }
 }
