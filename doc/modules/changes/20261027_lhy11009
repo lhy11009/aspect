@@ -1,0 +1,5 @@
+Changed: The ``Constant reaction rate`` kinetics plugin always interprets
+reaction rates in 1/s, independent of ``Use years instead of seconds``.
+Its parameter parsing no longer requires an attached simulator.
+<br>
+(Haoyuan Li, 2026/10/27)
