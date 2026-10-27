@@ -50,7 +50,7 @@ namespace aspect
                             "0.0",
                             Patterns::List(Patterns::Double(), 1, Patterns::List::max_int_value, ","),
                             "Constant net forward reaction rates, one comma-separated entry per reaction assigned to this model. "
-                            "Units: 1/s, or 1/yr if the global 'Use years instead of seconds' parameter is set.");
+                            "Units: 1/s, independent of the global 'Use years instead of seconds' parameter.");
         }
         prm.leave_subsection();
       }
@@ -66,10 +66,6 @@ namespace aspect
                       ExcMessage("The 'Constant reaction rate/Reaction rates' parameter must have exactly " +
                                  std::to_string(n_reactions) + " comma-separated entries, matching the number of "
                                  "reactions assigned to this kinetics model."));
-
-          if (this->convert_output_to_years())
-            for (double &reaction_rate : reaction_rates)
-              reaction_rate /= year_in_seconds;
         }
         prm.leave_subsection();
       }

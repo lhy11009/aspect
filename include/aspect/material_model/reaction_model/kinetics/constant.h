@@ -31,7 +31,8 @@ namespace aspect
     {
       /**
        * A trivial kinetics model that returns a user-specified constant
-       * reaction rate. This model is intended for testing reaction chains.
+       * reaction rate in 1/s, independent of the global output time unit.
+       * This model is intended for testing reaction chains.
        */
       template <int dim>
       class ConstantReactionRate : public Cahn1956Interface<dim>
@@ -49,7 +50,7 @@ namespace aspect
 
         private:
           /**
-           * The user-provided constant reaction rates.
+           * The user-provided constant reaction rates in 1/s.
            */
           std::vector<double> reaction_rates;
       };
