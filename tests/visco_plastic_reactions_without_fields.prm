@@ -1,0 +1,12 @@
+# Reject accidentally configured kinetics when there are no reaction-progress fields.
+# EXPECT FAILURE
+
+include $ASPECT_SOURCE_DIR/tests/visco_plastic.prm
+
+subsection Material model
+  subsection Visco Plastic
+    subsection Reaction chain
+      set Kinetic models = Constant reaction rate
+    end
+  end
+end

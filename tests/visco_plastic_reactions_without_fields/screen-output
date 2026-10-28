@@ -1,0 +1,15 @@
+
+
+
+Exception 'ExcMessage("'Reaction chain/Kinetic models' must be empty " "when no reaction-progress compositional fields are configured.")' on rank 0 on processing:
+
+An error occurred in file <visco_plastic.cc> in function
+(line in output replaced by default.sh script)
+The violated condition was:
+    kinetic_models.empty()
+Additional information:
+    'Reaction chain/Kinetic models' must be empty when no
+    reaction-progress compositional fields are configured.
+
+Stacktrace:
+(rest of the output replaced by default.sh script)
