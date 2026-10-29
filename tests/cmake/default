@@ -20,6 +20,10 @@ while ( <STDIN> )
   next if $_ =~ m/^\|/;
   next if $_ =~ m/^\+--/;
 
+  # Some deal.II builds print this diagnostic while unwinding an exception.
+  next if /^TimerOutput objects finalize timed values printed to the$/ ..
+          /^to avoid a possible deadlock\.$/;
+
   if ($skip>0)
   {
     print "(line in output replaced by default.sh script)\n";

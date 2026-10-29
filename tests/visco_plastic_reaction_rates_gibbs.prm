@@ -1,0 +1,20 @@
+# Check signed Gibbs-dependent rates and their operator-split integration.
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_reaction_rates.prm
+
+subsection Initial composition model
+  subsection Function
+    set Function expression = 0.25; 0.5; 0.25
+  end
+end
+subsection Material model
+  subsection Visco Plastic
+    subsection Reaction chain
+      set Kinetic models = Interface controlled growth|Interface controlled growth
+      subsection Interface controlled growth
+        set Kinetic prefactors = 1e-11|1e-11
+        set Activation enthalpies = 0|0
+        set Activation volumes = 1e-6|2e-6
+      end
+    end
+  end
+end

@@ -1,0 +1,25 @@
+
+Number of active cells: 1 (on 1 levels)
+Number of degrees of freedom: 58 (18+4+9+9+9+9)
+
+*** Timestep 0:  t=0 seconds, dt=0 seconds
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 0/0/0 // 0/0/0
+
+*** Timestep 1:  t=3.1557e+07 seconds, dt=3.1557e+07 seconds
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 0.1/0.1/0.1 // 0.05/0.05/0.05
+
+*** Timestep 2:  t=6.31139e+07 seconds, dt=3.1557e+07 seconds
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 0.2/0.2/0.2 // 0.1/0.1/0.1
+
+Termination requested by criterion: end time
+
+
+

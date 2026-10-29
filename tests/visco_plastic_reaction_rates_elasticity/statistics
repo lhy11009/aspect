@@ -1,0 +1,51 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Iterations for temperature solver
+# 10: Iterations for composition solver 1
+# 11: Iterations for composition solver 2
+# 12: Iterations for composition solver 3
+# 13: Iterations for composition solver 4
+# 14: Iterations for composition solver 5
+# 15: Iterations for composition solver 6
+# 16: Iterations for composition solver 7
+# 17: Iterations for composition solver 8
+# 18: Iterations for composition solver 9
+# 19: Iterations for Stokes solver
+# 20: Velocity iterations in Stokes preconditioner
+# 21: Schur complement iterations in Stokes preconditioner
+# 22: Minimal value for composition tracer
+# 23: Maximal value for composition tracer
+# 24: Global mass for composition tracer
+# 25: Minimal value for composition reaction_progress_1
+# 26: Maximal value for composition reaction_progress_1
+# 27: Global mass for composition reaction_progress_1
+# 28: Minimal value for composition reaction_progress_2
+# 29: Maximal value for composition reaction_progress_2
+# 30: Global mass for composition reaction_progress_2
+# 31: Minimal value for composition ve_stress_xx
+# 32: Maximal value for composition ve_stress_xx
+# 33: Global mass for composition ve_stress_xx
+# 34: Minimal value for composition ve_stress_yy
+# 35: Maximal value for composition ve_stress_yy
+# 36: Global mass for composition ve_stress_yy
+# 37: Minimal value for composition ve_stress_xy
+# 38: Maximal value for composition ve_stress_xy
+# 39: Global mass for composition ve_stress_xy
+# 40: Minimal value for composition ve_stress_xx_old
+# 41: Maximal value for composition ve_stress_xx_old
+# 42: Global mass for composition ve_stress_xx_old
+# 43: Minimal value for composition ve_stress_yy_old
+# 44: Maximal value for composition ve_stress_yy_old
+# 45: Global mass for composition ve_stress_yy_old
+# 46: Minimal value for composition ve_stress_xy_old
+# 47: Maximal value for composition ve_stress_xy_old
+# 48: Global mass for composition ve_stress_xy_old
+0 0.000000000000e+00 0.000000000000e+00 1 22 9 81 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2.50000000e-01 2.50000000e-01 2.50000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+1 1.000000000000e+00 1.000000000000e+00 1 22 9 81 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2.50000000e-01 2.50000000e-01 2.50000000e-01 1.00000000e-01 1.00000000e-01 1.00000000e-01 5.00000000e-02 5.00000000e-02 5.00000000e-02 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+2 2.000000000000e+00 1.000000000000e+00 1 22 9 81 1 0 0 0 0 0 0 0 0 0 0 0 0 0 2.50000000e-01 2.50000000e-01 2.50000000e-01 2.00000000e-01 2.00000000e-01 2.00000000e-01 1.00000000e-01 1.00000000e-01 1.00000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
