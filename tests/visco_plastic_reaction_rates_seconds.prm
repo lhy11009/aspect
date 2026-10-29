@@ -1,0 +1,10 @@
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_reaction_rates.prm
+
+set Use years instead of seconds = false
+set End time = 63113904
+set Maximum time step = 31556952
+subsection Solver parameters
+  subsection Operator splitting parameters
+    set Reaction time step = 7889238
+  end
+end

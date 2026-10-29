@@ -1,0 +1,30 @@
+# Elasticity clears its rate array before filling the stress entries.
+# Verify that kinetic rates survive while the zero-stress state stays zero.
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_reaction_rates.prm
+
+subsection Formulation
+  set Enable elasticity = true
+end
+subsection Compositional fields
+  set Number of fields = 9
+  set Names of fields = tracer, reaction_progress_1, reaction_progress_2, ve_stress_xx, ve_stress_yy, ve_stress_xy, ve_stress_xx_old, ve_stress_yy_old, ve_stress_xy_old
+  set Types of fields = generic, reaction progress, reaction progress, stress, stress, stress, stress, stress, stress
+end
+subsection Initial composition model
+  subsection Function
+    set Function expression = 0.25; 0; 0; 0; 0; 0; 0; 0; 0
+  end
+end
+subsection Material model
+  subsection Visco Plastic
+    set Use fixed elastic time step = false
+    set Fixed elastic time step = 1
+  end
+end
+subsection Discretization
+  set Use discontinuous composition discretization = true
+end
+set Nonlinear solver scheme = iterated Advection and Stokes
+subsection Boundary velocity model
+  set Zero velocity boundary indicators = left, right, bottom, top
+end

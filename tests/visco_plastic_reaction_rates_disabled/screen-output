@@ -1,0 +1,23 @@
+
+Number of active cells: 1 (on 1 levels)
+Number of degrees of freedom: 58 (18+4+9+9+9+9)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 0/0/0 // 0/0/0
+
+*** Timestep 1:  t=1 years, dt=1 years
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 0/0/0 // 0/0/0
+
+*** Timestep 2:  t=2 years, dt=1 years
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 0/0/0 // 0/0/0
+
+Termination requested by criterion: end time
+
+
+

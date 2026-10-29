@@ -1,0 +1,16 @@
+
+
+
+Exception 'ExcMessage("Visco-plastic reaction rates currently support only 'Constant Gibbs free energy'; " "thermodynamic reference inputs for other Gibbs models are not yet provided.")' on rank 0 on processing: 
+
+An error occurred in file <visco_plastic.cc> in function
+(line in output replaced by default.sh script)
+The violated condition was: 
+    model == "Constant Gibbs free energy"
+Additional information: 
+    Visco-plastic reaction rates currently support only 'Constant Gibbs
+    free energy'; thermodynamic reference inputs for other Gibbs models
+    are not yet provided.
+
+Stacktrace:
+(rest of the output replaced by default.sh script)

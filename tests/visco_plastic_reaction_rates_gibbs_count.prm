@@ -1,0 +1,12 @@
+# EXPECT FAILURE
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_reaction_rates.prm
+subsection Material model
+  subsection Visco Plastic
+    subsection Gibbs free energy
+      set Models = Constant Gibbs free energy
+    end
+  end
+end
+subsection Postprocess
+  set List of postprocessors =
+end

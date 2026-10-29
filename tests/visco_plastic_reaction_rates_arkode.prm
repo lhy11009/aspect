@@ -1,0 +1,7 @@
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_reaction_rates.prm
+
+subsection Solver parameters
+  subsection Operator splitting parameters
+    set Reaction solver type = ARKode
+  end
+end

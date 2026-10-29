@@ -1,0 +1,20 @@
+# 1: Time step number
+# 2: Time (years)
+# 3: Time step size (years)
+# 4: Number of mesh cells
+# 5: Number of Stokes degrees of freedom
+# 6: Number of temperature degrees of freedom
+# 7: Number of degrees of freedom for all compositions
+# 8: Number of nonlinear iterations
+# 9: Minimal value for composition tracer
+# 10: Maximal value for composition tracer
+# 11: Global mass for composition tracer
+# 12: Minimal value for composition reaction_progress_1
+# 13: Maximal value for composition reaction_progress_1
+# 14: Global mass for composition reaction_progress_1
+# 15: Minimal value for composition reaction_progress_2
+# 16: Maximal value for composition reaction_progress_2
+# 17: Global mass for composition reaction_progress_2
+0 0.000000000000e+00 0.000000000000e+00 1 22 9 27 0 2.50000000e-01 2.50000000e-01 2.50000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+1 1.000000000000e+00 1.000000000000e+00 1 22 9 27 0 2.50000000e-01 2.50000000e-01 2.50000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 
+2 2.000000000000e+00 1.000000000000e+00 1 22 9 27 0 2.50000000e-01 2.50000000e-01 2.50000000e-01 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 0.00000000e+00 

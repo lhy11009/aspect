@@ -1,0 +1,15 @@
+
+
+
+Exception 'ExcMessage("The number of entries in 'Gibbs free energy/Models' must match the number of reactions.")' on rank 0 on processing: 
+
+An error occurred in file <gibbs_free_energy.cc> in function
+(line in output replaced by default.sh script)
+The violated condition was: 
+    model_names.size() == n_reactions
+Additional information: 
+    The number of entries in 'Gibbs free energy/Models' must match the
+    number of reactions.
+
+Stacktrace:
+(rest of the output replaced by default.sh script)

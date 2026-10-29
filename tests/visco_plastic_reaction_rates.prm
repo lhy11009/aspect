@@ -1,0 +1,68 @@
+# Two reactions after a passive field test field mapping and rate units.
+set Dimension = 2
+set Use years instead of seconds = true
+set End time = 2
+set Maximum time step = 1
+set Nonlinear solver scheme = no Advection, no Stokes
+set Use operator splitting = true
+set Adiabatic surface temperature = 273
+
+subsection Geometry model
+  set Model name = box
+end
+subsection Gravity model
+  set Model name = vertical
+  subsection Vertical
+    set Magnitude = 0
+  end
+end
+subsection Initial temperature model
+  set List of model names = function
+  subsection Function
+    set Function expression = 273
+  end
+end
+subsection Compositional fields
+  set Number of fields = 3
+  set Names of fields = tracer, reaction_progress_1, reaction_progress_2
+  set Types of fields = generic, reaction progress, reaction progress
+end
+subsection Initial composition model
+  set List of model names = function
+  subsection Function
+    set Function expression = 0.25; 0; 0
+  end
+end
+subsection Material model
+  set Model name = visco plastic
+  subsection Visco Plastic
+    set Minimum viscosity = 1e24
+    set Maximum viscosity = 1e24
+    set Reaction progress mapping = 0, 1
+    subsection Gibbs free energy
+      set Models = Constant Gibbs free energy|Constant Gibbs free energy
+      subsection Constant Gibbs free energy
+        set Gibbs free energy differences = -1000|2000
+      end
+    end
+    subsection Reaction chain
+      set Kinetic models = Constant reaction rate|Constant reaction rate
+      subsection Constant reaction rate
+        # 0.1 and 0.05 per year, supplied in inverse seconds.
+        set Reaction rates = 3.168873850681143e-9, 1.5844369253405715e-9
+      end
+    end
+  end
+end
+subsection Solver parameters
+  subsection Operator splitting parameters
+    set Reaction solver type = fixed step
+    set Reaction time step = 0.25
+  end
+end
+subsection Mesh refinement
+  set Initial global refinement = 0
+end
+subsection Postprocess
+  set List of postprocessors = composition statistics
+end
