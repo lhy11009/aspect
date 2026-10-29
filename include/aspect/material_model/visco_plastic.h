@@ -25,6 +25,7 @@
 #include <aspect/material_model/interface.h>
 #include <aspect/material_model/equation_of_state/multicomponent_incompressible.h>
 #include <aspect/material_model/reaction_model/reaction_chain.h>
+#include <aspect/material_model/reaction_model/gibbs_free_energy.h>
 #include <aspect/material_model/rheology/visco_plastic.h>
 
 #include<deal.II/fe/component_mask.h>
@@ -283,6 +284,13 @@ namespace aspect
          * Object that validates and manages sequential reaction progress.
          */
         ReactionModel::ReactionChain<dim> reaction_chain;
+
+        /**
+         * Gibbs free-energy models providing G_B-G_A for the reaction chain.
+         * Currently only constant models are supported, because thermodynamic
+         * reference inputs for the linearized model are not provided here.
+         */
+        ReactionModel::GibbsFreeEnergy<dim> gibbs_free_energy;
 
         /**
          * Determines whether to look up the dominant phases for each composition in its respective lookup table.

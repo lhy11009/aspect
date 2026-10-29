@@ -105,6 +105,13 @@ namespace aspect
     evaluate(const MaterialModel::MaterialModelInputs<dim> &in,
              MaterialModel::MaterialModelOutputs<dim> &out) const
     {
+      const std::shared_ptr<ReactionRateOutputs<dim>> reaction_rate_out =
+        out.template get_additional_output_object<ReactionRateOutputs<dim>>();
+      if (reaction_rate_out != nullptr)
+        for (unsigned int i = 0; i < in.n_evaluation_points(); ++i)
+          for (unsigned int c = 0; c < this->n_compositional_fields(); ++c)
+            reaction_rate_out->reaction_rates[i][c] = 0.0;
+
       EquationOfStateOutputs<dim> eos_outputs (this->introspection().get_number_of_fields_of_type(CompositionalFieldDescription::chemical_composition)+1);
       EquationOfStateOutputs<dim> eos_outputs_all_phases (n_phases);
 
@@ -353,6 +360,41 @@ namespace aspect
           // to obtain $\tau^{t}$.
           rheology->elastic_rheology.fill_reaction_rates(in, average_elastic_shear_moduli, out);
         }
+
+      // Elasticity currently clears all rate entries, so fill the kinetics
+      // afterwards. Only reaction-progress fields are written here; strain and
+      // elastic updates retain their existing reaction terms and rates.
+      if (reaction_rate_out != nullptr && this->get_parameters().use_operator_splitting &&
+          (in.requests_property(MaterialProperties::reaction_rates) ||
+           in.requests_property(MaterialProperties::additional_outputs)))
+        {
+          const auto &reaction_fields = this->introspection().get_indices_for_fields_of_type(
+                                          CompositionalFieldDescription::reaction_progress);
+          for (unsigned int i = 0; i < in.n_evaluation_points(); ++i)
+            {
+              std::vector<double> progress(reaction_fields.size());
+              for (unsigned int r = 0; r < reaction_fields.size(); ++r)
+                progress[r] = in.composition[i][reaction_fields[r]];
+              const auto clamped_progress = reaction_chain.clamp_cumulative_progress(progress);
+
+              for (unsigned int r = 0; r < reaction_fields.size(); ++r)
+                {
+                  // Constant Gibbs models ignore reference-state inputs. Other
+                  // models require thermodynamic data and are rejected at parsing.
+                  const double delta_g = gibbs_free_energy.delta_gibbs_free_energy(
+                                           in.temperature[i], in.pressure[i],
+                                           ReactionModel::GibbsFreeEnergyInputs {}, r);
+                  const double rate = reaction_chain.net_forward_reaction_rate(
+                                        in.temperature[i], in.pressure[i],
+                                        delta_g, clamped_progress[r], r);
+                  AssertThrow(std::isfinite(rate), ExcMessage("Reaction-chain rates must be finite."));
+                  // ReactionRateOutputs stores rates in 1/s. The operator-split
+                  // solver integrates them; do not multiply by a timestep here
+                  // or also add them to out.reaction_terms.
+                  reaction_rate_out->reaction_rates[i][reaction_fields[r]] = rate;
+                }
+            }
+        }
     }
 
 
@@ -399,6 +441,7 @@ namespace aspect
           Rheology::ViscoPlastic<dim>::declare_parameters(prm);
 
           ReactionModel::ReactionChain<dim>::declare_parameters(prm);
+          ReactionModel::GibbsFreeEnergy<dim>::declare_parameters(prm);
 
           // Equation of state parameters
           prm.declare_entry ("Thermal diffusivities", "0.8e-6",
@@ -508,10 +551,18 @@ namespace aspect
           if (n_reaction_progress_fields > 0)
             {
               reaction_chain.parse_parameters(prm);
-
               AssertThrow(reaction_chain.n_reactions() == n_reaction_progress_fields,
                           ExcMessage("The number of reactions configured in 'Reaction chain/Kinetic models' must match "
                                      "the number of reaction progress compositional fields."));
+
+              prm.enter_subsection("Gibbs free energy");
+              const auto gibbs_models = Utilities::split_string_list(prm.get("Models"), '|');
+              prm.leave_subsection();
+              for (const auto &model : gibbs_models)
+                AssertThrow(model == "Constant Gibbs free energy",
+                            ExcMessage("Visco-plastic reaction rates currently support only 'Constant Gibbs free energy'; "
+                                       "thermodynamic reference inputs for other Gibbs models are not yet provided."));
+              gibbs_free_energy.parse_parameters(prm, n_reaction_progress_fields);
             }
           else
             {
@@ -545,6 +596,11 @@ namespace aspect
     {
       rheology->create_plastic_outputs(out);
       rheology->create_viscosity_outputs(out);
+
+      if (this->get_parameters().use_operator_splitting &&
+          out.template has_additional_output_object<ReactionRateOutputs<dim>>() == false)
+        out.additional_outputs.push_back(std::make_unique<ReactionRateOutputs<dim>>(
+                                           out.n_evaluation_points(), this->n_compositional_fields()));
 
       if (this->get_parameters().enable_elasticity)
         rheology->elastic_rheology.create_elastic_additional_outputs(out);
