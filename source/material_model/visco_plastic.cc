@@ -24,6 +24,31 @@ namespace aspect
 {
   namespace MaterialModel
   {
+    namespace
+    {
+      template <int dim>
+      class GibbsFreeEnergyOutputs : public NamedAdditionalMaterialOutputs<dim>
+      {
+        public:
+          GibbsFreeEnergyOutputs(const std::vector<std::string> &reaction_fields,
+                                 const unsigned int n_points)
+            : NamedAdditionalMaterialOutputs<dim>(output_names(reaction_fields), n_points)
+          {}
+
+        private:
+          static std::vector<std::string>
+          output_names(const std::vector<std::string> &reaction_fields)
+          {
+            std::vector<std::string> names;
+            for (const auto &field : reaction_fields)
+              names.push_back("delta_gibbs_" + field);
+            return names;
+          }
+      };
+    }
+
+
+
     template <int dim>
     void
     ViscoPlastic<dim>::initialize()
@@ -371,6 +396,7 @@ namespace aspect
           (in.requests_property(MaterialProperties::reaction_rates) ||
            in.requests_property(MaterialProperties::additional_outputs)))
         {
+          const auto gibbs_out = out.template get_additional_output_object<GibbsFreeEnergyOutputs<dim>>();
           const auto &reaction_fields = this->introspection().get_indices_for_fields_of_type(
                                           CompositionalFieldDescription::reaction_progress);
           for (unsigned int i = 0; i < in.n_evaluation_points(); ++i)
@@ -387,6 +413,9 @@ namespace aspect
                   const double delta_g = gibbs_free_energy.delta_gibbs_free_energy(
                                            in.temperature[i], in.pressure[i],
                                            ReactionModel::GibbsFreeEnergyInputs {}, r);
+                  if (gibbs_out != nullptr)
+                    gibbs_out->output_values[r][i] = delta_g;
+
                   const double rate = reaction_chain.net_forward_reaction_rate(
                                         in.temperature[i], in.pressure[i],
                                         delta_g, clamped_progress[r], r);
@@ -600,10 +629,18 @@ namespace aspect
       rheology->create_plastic_outputs(out);
       rheology->create_viscosity_outputs(out);
 
-      if (this->get_parameters().use_operator_splitting &&
-          out.template has_additional_output_object<ReactionRateOutputs<dim>>() == false)
-        out.additional_outputs.push_back(std::make_unique<ReactionRateOutputs<dim>>(
-                                           out.n_evaluation_points(), this->n_compositional_fields()));
+      if (this->get_parameters().use_operator_splitting)
+        {
+          if (out.template has_additional_output_object<ReactionRateOutputs<dim>>() == false)
+            out.additional_outputs.push_back(std::make_unique<ReactionRateOutputs<dim>>(
+                                               out.n_evaluation_points(), this->n_compositional_fields()));
+
+          if (reaction_chain.n_reactions() > 0 &&
+              out.template has_additional_output_object<GibbsFreeEnergyOutputs<dim>>() == false)
+            out.additional_outputs.push_back(std::make_unique<GibbsFreeEnergyOutputs<dim>>(
+                                               this->introspection().get_names_for_fields_of_type(CompositionalFieldDescription::reaction_progress),
+                                               out.n_evaluation_points()));
+        }
 
       if (this->get_parameters().enable_elasticity)
         rheology->elastic_rheology.create_elastic_additional_outputs(out);
