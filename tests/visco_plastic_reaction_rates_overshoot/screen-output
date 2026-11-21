@@ -82,17 +82,73 @@ Number of degrees of freedom: 58 (18+4+9+9+9+9)
    Solving composition reactions... in 4 substep(s).
 
    Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.55/0.55/0.55
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00011
+
+*** Timestep 12:  t=12 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.6/0.6/0.6
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00012
+
+*** Timestep 13:  t=13 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.65/0.65/0.65
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00013
+
+*** Timestep 14:  t=14 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.7/0.7/0.7
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00014
+
+*** Timestep 15:  t=15 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.75/0.75/0.75
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00015
+
+*** Timestep 16:  t=16 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.8/0.8/0.8
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00016
+
+*** Timestep 17:  t=17 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.85/0.85/0.85
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00017
+
+*** Timestep 18:  t=18 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.9/0.9/0.9
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00018
+
+*** Timestep 19:  t=19 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 0.95/0.95/0.95
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00019
+
+*** Timestep 20:  t=20 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.25/0.25/0.25 // 1/1/1 // 1/1/1
+     Writing graphical output:  output-visco_plastic_reaction_rates_overshoot/solution/solution-00020
+
+Termination requested by criterion: end time
 
 
-Exception on MPI process <0> while running postprocessor <N6aspect11Postprocess13VisualizationILi2EEE>:
 
-An error occurred in file <reaction_chain.cc> in function
-(line in output replaced by default.sh script)
-The violated condition was:
-    progress_value > -tolerance_in_reaction_progress && progress_value < 1.0 + tolerance_in_reaction_progress
-Additional information:
-    'reaction_progress_values[0]' = 1.100000 is too far outside the
-    physical range [0, 1] (allowed excursion is 0.100000).
-
-Stacktrace:
-(rest of the output replaced by default.sh script)

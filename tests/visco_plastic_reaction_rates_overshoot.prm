@@ -1,6 +1,5 @@
-# EXPECT FAILURE
-# TODO: Bound constant-rate integration so progress cannot overshoot 1.
-# This case currently reaches 1.1 at step 11 and fails during visualization.
+# Verify that fixed-step integration holds reaction progress at 1
+# while the constant kinetic rate continues to point out of bounds.
 
 # Two reactions after a passive field test field mapping and rate units.
 set Dimension = 2
