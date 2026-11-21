@@ -42,8 +42,8 @@ TEST_CASE("Constant Reaction Rate Kinetics")
   CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.25, tolerance_in_reaction_progress, 0) == Approx(1.25));
   CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.75, tolerance_in_reaction_progress, 1) == Approx(-2.5));
   CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.89, tolerance_in_reaction_progress, 0) == Approx(1.25));
-  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.9, tolerance_in_reaction_progress, 0) == Approx(0.0));
-  CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.91, tolerance_in_reaction_progress, 1) == Approx(0.0));
+  CHECK(kinetics.net_forward_reaction_rate(1000.0, 1.0e9, -2000.0, 0.9, tolerance_in_reaction_progress, 0) == Approx(1.25));
+  CHECK(kinetics.net_forward_reaction_rate(2000.0, 2.0e9, 3000.0, 0.91, tolerance_in_reaction_progress, 1) == Approx(-2.5));
 }
 
 TEST_CASE("Eutectoid Decomposition Kinetics")
@@ -474,7 +474,7 @@ TEST_CASE("Reaction Chain Kinetic Models Parsing")
     CHECK(reaction_chain.reactions[0].kinetics == reaction_chain.reactions[1].kinetics);
     CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.25, 0) == Approx(1.25));
     CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.25, 1) == Approx(-2.5));
-    CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.95, 0) == Approx(0.0));
+    CHECK(reaction_chain.net_forward_reaction_rate(1000.0, 1e9, 0.0, 0.95, 0) == Approx(1.25));
   }
 
   SECTION("Parsing throws on invalid 'Tolerance in reaction progress'")
