@@ -1,0 +1,6 @@
+Added: The visco-plastic material model can compute Gibbs free-energy
+differences from linearized equilibrium phase boundaries specified by
+Clapeyron slopes, reference pressures and temperatures, and molar volume
+changes.
+<br>
+(Haoyuan Li, 2026/11/23)

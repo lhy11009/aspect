@@ -96,3 +96,53 @@ TEST_CASE("Gibbs Free Energy Model Count")
 
   CHECK_THROWS_AS(gibbs_free_energy.parse_parameters(prm, 2), dealii::ExceptionBase);
 }
+
+TEST_CASE("Clapeyron Gibbs Free Energy")
+{
+  using namespace aspect::MaterialModel::ReactionModel;
+
+  dealii::ParameterHandler prm;
+  GibbsFreeEnergy<2> gibbs_free_energy;
+  GibbsFreeEnergy<2>::declare_parameters(prm);
+
+  prm.enter_subsection("Gibbs free energy");
+  prm.set("Models", "Clapeyron Gibbs free energy|Constant Gibbs free energy|Clapeyron Gibbs free energy|Clapeyron Gibbs free energy");
+  prm.enter_subsection("Clapeyron Gibbs free energy");
+  prm.set("Clapeyron slopes", "4e6|-2e6|0");
+  prm.set("Reference pressures", "1e9|1e9|1e9");
+  prm.set("Reference temperatures", "1500|1500|1500");
+  prm.set("Molar volume changes", "-2e-6|-2e-6|-2e-6");
+  prm.leave_subsection();
+  prm.leave_subsection();
+
+  SECTION("Equilibrium and Gibbs energy on either side")
+  {
+    gibbs_free_energy.parse_parameters(prm, 4);
+
+    CHECK(gibbs_free_energy.delta_gibbs_free_energy(1600, 1.4e9, {}, 0) == Approx(0));
+    CHECK(gibbs_free_energy.delta_gibbs_free_energy(1600, 1.5e9, {}, 0) == Approx(-200));
+    CHECK(gibbs_free_energy.delta_gibbs_free_energy(1600, 1.3e9, {}, 0) == Approx(200));
+    CHECK(gibbs_free_energy.delta_gibbs_free_energy(1600, 0.8e9, {}, 2) == Approx(0));
+    CHECK(gibbs_free_energy.delta_gibbs_free_energy(1600, 1e9, {}, 3) == Approx(0));
+  }
+
+  SECTION("Incorrect number of slopes")
+  {
+    prm.enter_subsection("Gibbs free energy");
+    prm.enter_subsection("Clapeyron Gibbs free energy");
+    prm.set("Clapeyron slopes", "4e6");
+    prm.leave_subsection();
+    prm.leave_subsection();
+    CHECK_THROWS_AS(gibbs_free_energy.parse_parameters(prm, 4), dealii::ExceptionBase);
+  }
+
+  SECTION("Zero molar volume change")
+  {
+    prm.enter_subsection("Gibbs free energy");
+    prm.enter_subsection("Clapeyron Gibbs free energy");
+    prm.set("Molar volume changes", "-2e-6|0|-2e-6");
+    prm.leave_subsection();
+    prm.leave_subsection();
+    CHECK_THROWS_AS(gibbs_free_energy.parse_parameters(prm, 4), dealii::ExceptionBase);
+  }
+}

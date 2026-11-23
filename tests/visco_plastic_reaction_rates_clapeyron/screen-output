@@ -1,0 +1,91 @@
+
+Number of active cells: 1 (on 1 levels)
+Number of degrees of freedom: 40 (18+4+9+9)
+
+*** Timestep 0:  t=0 years, dt=0 years
+
+   Postprocessing:
+     Compositions min/max/mass: 0/0/0
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00000
+
+*** Timestep 1:  t=1 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.11/0.11/7.04e+10
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00001
+
+*** Timestep 2:  t=2 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.22/0.22/1.408e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00002
+
+*** Timestep 3:  t=3 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.33/0.33/2.112e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00003
+
+*** Timestep 4:  t=4 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.44/0.44/2.816e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00004
+
+*** Timestep 5:  t=5 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.55/0.55/3.52e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00005
+
+*** Timestep 6:  t=6 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.66/0.66/4.224e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00006
+
+*** Timestep 7:  t=7 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.77/0.77/4.928e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00007
+
+*** Timestep 8:  t=8 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.88/0.88/5.632e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00008
+
+*** Timestep 9:  t=9 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 0.99/0.99/6.336e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00009
+
+*** Timestep 10:  t=10 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 1/1/6.4e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00010
+
+*** Timestep 11:  t=11 years, dt=1 years
+   Solving composition reactions... in 4 substep(s).
+
+   Postprocessing:
+     Compositions min/max/mass: 1/1/6.4e+11
+     Writing graphical output:  output-visco_plastic_reaction_rates_clapeyron/solution/solution-00011
+
+Termination requested by criterion: end time
+
+
+

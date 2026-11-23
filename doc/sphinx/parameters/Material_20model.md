@@ -5754,6 +5754,66 @@ If the function you are describing represents a vector-valued function with mult
 **Documentation:** The names of the variables as they will be used in the function, separated by commas. By default, the names of variables at which the function will be evaluated are &lsquo;x&rsquo; (in 1d), &lsquo;x,y&rsquo; (in 2d) or &lsquo;x,y,z&rsquo; (in 3d) for spatial coordinates and &lsquo;t&rsquo; for time. You can then use these variable names in your function expression and they will be replaced by the values of these variables at which the function is currently evaluated. However, you can also choose a different set of names for the independent variables at which to evaluate your function expression. For example, if you work in spherical coordinates, you may wish to set this input parameter to &lsquo;r,phi,theta,t&rsquo; and then use these variable names in your function expression.
 ::::
 
+(parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy)=
+## **Subsection:** Material model / Visco Plastic / Gibbs free energy
+::::{dropdown} __Parameter:__ {ref}`Models<parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Models>`
+:name: parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Models
+**Default value:** Constant Gibbs free energy
+
+**Pattern:** [List of <[Anything]> of length 0...4294967295 (inclusive)]
+
+**Documentation:** A &rsquo;|&rsquo;-separated Gibbs free-energy model for each reaction in the sequential chain. Each model computes G_B-G_A for adjacent phases A and B.
+::::
+
+(parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy)=
+## **Subsection:** Material model / Visco Plastic / Gibbs free energy / Clapeyron Gibbs free energy
+::::{dropdown} __Parameter:__ {ref}`Clapeyron slopes<parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Clapeyron_20slopes>`
+:name: parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Clapeyron_20slopes
+**Default value:** 0
+
+**Pattern:** [List of <[Double -MAX_DOUBLE...MAX_DOUBLE (inclusive)]> of length 1...4294967295 (inclusive) separated by <|>]
+
+**Documentation:** Slope dP/dT of the equilibrium phase boundary. Units: Pa/K. Supply one &rsquo;|&rsquo;-separated entry per reaction assigned to this model.
+::::
+
+::::{dropdown} __Parameter:__ {ref}`Molar volume changes<parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Molar_20volume_20changes>`
+:name: parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Molar_20volume_20changes
+**Default value:** 0
+
+**Pattern:** [List of <[Double -MAX_DOUBLE...MAX_DOUBLE (inclusive)]> of length 1...4294967295 (inclusive) separated by <|>]
+
+**Documentation:** Signed, nonzero difference V_B-V_A between the molar volumes of phases A and B. Units: m^3/mol. Supply one &rsquo;|&rsquo;-separated entry per reaction assigned to this model.
+::::
+
+::::{dropdown} __Parameter:__ {ref}`Reference pressures<parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Reference_20pressures>`
+:name: parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Reference_20pressures
+**Default value:** 0
+
+**Pattern:** [List of <[Double -MAX_DOUBLE...MAX_DOUBLE (inclusive)]> of length 1...4294967295 (inclusive) separated by <|>]
+
+**Documentation:** Pressure on the equilibrium phase boundary at the corresponding reference temperature. Units: Pa. Supply one &rsquo;|&rsquo;-separated entry per reaction assigned to this model.
+::::
+
+::::{dropdown} __Parameter:__ {ref}`Reference temperatures<parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Reference_20temperatures>`
+:name: parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Clapeyron_20Gibbs_20free_20energy/Reference_20temperatures
+**Default value:** 0
+
+**Pattern:** [List of <[Double 0...MAX_DOUBLE (inclusive)]> of length 1...4294967295 (inclusive) separated by <|>]
+
+**Documentation:** Temperature on the equilibrium phase boundary at the corresponding reference pressure. Units: K. Supply one &rsquo;|&rsquo;-separated entry per reaction assigned to this model.
+::::
+
+(parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Constant_20Gibbs_20free_20energy)=
+## **Subsection:** Material model / Visco Plastic / Gibbs free energy / Constant Gibbs free energy
+::::{dropdown} __Parameter:__ {ref}`Gibbs free energy differences<parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Constant_20Gibbs_20free_20energy/Gibbs_20free_20energy_20differences>`
+:name: parameters:Material_20model/Visco_20Plastic/Gibbs_20free_20energy/Constant_20Gibbs_20free_20energy/Gibbs_20free_20energy_20differences
+**Default value:** 0.0
+
+**Pattern:** [List of <[Double -MAX_DOUBLE...MAX_DOUBLE (inclusive)]> of length 1...4294967295 (inclusive) separated by <|>]
+
+**Documentation:** Constant values of G_B-G_A, one &rsquo;|&rsquo;-separated entry per reaction assigned to this model. Negative values favor A -> B and positive values favor B -> A. Units: J/mol.
+::::
+
 (parameters:Material_20model/Visco_20Plastic/Grain_20boundary_20sliding)=
 ## **Subsection:** Material model / Visco Plastic / Grain boundary sliding
 ::::{dropdown} __Parameter:__ {ref}`Activation energies for grain boundary sliding<parameters:Material_20model/Visco_20Plastic/Grain_20boundary_20sliding/Activation_20energies_20for_20grain_20boundary_20sliding>`

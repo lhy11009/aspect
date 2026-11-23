@@ -1,0 +1,75 @@
+# Sample P-T space as in the visualizing_phase_diagram cookbook: x sets
+# temperature and depth sets pressure. Use its 410 km transition with
+# P0 = 3300 kg/m^3 * 10 m/s^2 * 410 km and a signed molar volume change.
+include $ASPECT_SOURCE_DIR/tests/visco_plastic_reaction_rates.prm
+
+set End time = 11
+
+subsection Geometry model
+  subsection Box
+    set X extent = 800e3
+    set Y extent = 800e3
+  end
+end
+
+subsection Gravity model
+  subsection Vertical
+    set Magnitude = 10
+  end
+end
+
+subsection Initial temperature model
+  subsection Function
+    set Function expression = 273 + 2000*x/800e3
+  end
+end
+
+subsection Compositional fields
+  set Number of fields = 1
+  set Names of fields = reaction_progress
+  set Types of fields = reaction progress
+end
+
+subsection Initial composition model
+  subsection Function
+    set Function expression = 0
+  end
+end
+
+subsection Material model
+  subsection Visco Plastic
+    set Densities = 3300
+    set Thermal expansivities = 0
+    set Reaction progress mapping = 0
+    subsection Gibbs free energy
+      set Models = Clapeyron Gibbs free energy
+      subsection Clapeyron Gibbs free energy
+        set Clapeyron slopes = 4e6
+        set Reference pressures = 13.53e9
+        set Reference temperatures = 1662
+        set Molar volume changes = -2e-6
+      end
+    end
+    subsection Reaction chain
+      set Tolerance in reaction progress = 1e-6
+      set Kinetic models = Constant reaction rate
+      subsection Constant reaction rate
+        # 0.11 per year, supplied in inverse seconds.
+        set Reaction rates = 3.4857612357492573e-09
+      end
+    end
+  end
+end
+
+subsection Mesh refinement
+  set Time steps between mesh refinement = 0
+end
+
+subsection Postprocess
+  set List of postprocessors = composition statistics, visualization
+  subsection Visualization
+    set List of output variables = named additional outputs
+    set Output format = gnuplot
+    set Time between graphical output = 0
+  end
+end

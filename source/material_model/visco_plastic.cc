@@ -408,8 +408,8 @@ namespace aspect
 
               for (unsigned int r = 0; r < reaction_fields.size(); ++r)
                 {
-                  // Constant Gibbs models ignore reference-state inputs. Other
-                  // models require thermodynamic data and are rejected at parsing.
+                  // The supported Gibbs models take their reference parameters
+                  // from the input file.
                   const double delta_g = gibbs_free_energy.delta_gibbs_free_energy(
                                            in.temperature[i], in.pressure[i],
                                            ReactionModel::GibbsFreeEnergyInputs {}, r);
@@ -591,9 +591,9 @@ namespace aspect
               const auto gibbs_models = Utilities::split_string_list(prm.get("Models"), '|');
               prm.leave_subsection();
               for (const auto &model : gibbs_models)
-                AssertThrow(model == "Constant Gibbs free energy",
-                            ExcMessage("Visco-plastic reaction rates currently support only 'Constant Gibbs free energy'; "
-                                       "thermodynamic reference inputs for other Gibbs models are not yet provided."));
+                AssertThrow(model == "Constant Gibbs free energy" || model == "Clapeyron Gibbs free energy",
+                            ExcMessage("Visco-plastic reaction rates support 'Constant Gibbs free energy' and "
+                                       "'Clapeyron Gibbs free energy'. Other models require thermodynamic reference inputs."));
               gibbs_free_energy.parse_parameters(prm, n_reaction_progress_fields);
             }
           else
